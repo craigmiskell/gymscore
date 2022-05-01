@@ -4,8 +4,12 @@
   "description": "Gymnastics Competition Scores and Results",
   "main": "main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "electron ."
   },
   "author": "Craig Miskell (craig@stroppykitten.com)",
-  "license": "GPL-3.0-or-later"
+  "license": "GPL-3.0-or-later",
+  "devDependencies": {
+    "electron": "^18.2.0"
+  }
 }
