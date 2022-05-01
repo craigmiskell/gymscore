@@ -1,0 +1,11 @@
+{
+  "name": "gymscore",
+  "version": "0.0.1",
+  "description": "Gymnastics Competition Scores and Results",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Craig Miskell (craig@stroppykitten.com)",
+  "license": "GPL-3.0-or-later"
+}
