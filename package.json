@@ -5,7 +5,11 @@
   "main": "main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "electron . --use-gl=desktop"
+    "start": "electron-forge start",
+    "package": "electron-forge package",
+    "make-linux": "electron-forge make",
+    "make-osx": "electron-forge make -p darwin",
+    "make-windows": "electron-forge make -p win32"
   },
   "author": {
     "name": "Craig Miskell",
@@ -13,9 +17,38 @@
   },
   "license": "GPL-3.0-or-later",
   "devDependencies": {
+    "@electron-forge/cli": "^6.0.0-beta.63",
+    "@electron-forge/maker-deb": "^6.0.0-beta.63",
+    "@electron-forge/maker-rpm": "^6.0.0-beta.63",
+    "@electron-forge/maker-squirrel": "^6.0.0-beta.63",
+    "@electron-forge/maker-zip": "^6.0.0-beta.63",
     "electron": "^18.2.0"
   },
   "dependencies": {
-    "electron-is-dev": "^2.0.0"
+    "electron-is-dev": "^2.0.0",
+    "electron-squirrel-startup": "^1.0.0"
+  },
+  "config": {
+    "forge": {
+      "packagerConfig": {},
+      "makers": [
+        {
+          "name": "@electron-forge/maker-squirrel",
+          "config": {
+            "name": "gymscore"
+          }
+        },
+        {
+          "name": "@electron-forge/maker-zip",
+          "platforms": [
+            "darwin"
+          ]
+        },
+        {
+          "name": "@electron-forge/maker-deb",
+          "config": {}
+        }
+      ]
+    }
   }
 }
