@@ -7,6 +7,9 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "electron-forge start -- --use-gl=desktop",
     "package": "electron-forge package",
+    "eslint": "eslint .",
+    "eslintfix": "eslint . --fix",
+    "license-check": "license-checker --summary --production --onlyAllow 'MIT;Apache-2.0;GPL-3.0-or-later'",
     "make-linux": "electron-forge make",
     "make-osx": "electron-forge make -p darwin",
     "make-windows": "electron-forge make -p win32"
@@ -23,7 +26,8 @@
     "@electron-forge/maker-squirrel": "^6.0.0-beta.63",
     "@electron-forge/maker-zip": "^6.0.0-beta.63",
     "electron": "^18.2.0",
-    "eslint": "^8.14.0"
+    "eslint": "^8.14.0",
+    "license-checker": "^25.0.1"
   },
   "dependencies": {
     "electron-is-dev": "^2.0.0",
