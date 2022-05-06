@@ -5,7 +5,7 @@
   "main": "main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "electron-forge start",
+    "start": "electron-forge start -- --use-gl=desktop",
     "package": "electron-forge package",
     "make-linux": "electron-forge make",
     "make-osx": "electron-forge make -p darwin",
