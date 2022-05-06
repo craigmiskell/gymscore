@@ -1,0 +1,26 @@
+{
+    "env": {
+        "browser": true,
+        "commonjs": true,
+        "es2021": true
+    },
+    "extends": "eslint:recommended",
+    "parserOptions": {
+        "ecmaVersion": "latest"
+    },
+    "rules": {
+        "indent": [ "error", 4 ],
+        "linebreak-style": [ "error", "unix" ],
+        "quotes": [ "error", "double" ],
+        "semi": [ "error", "always" ],
+        "max-len": [ "error",
+            {
+                "code": 120,
+                "tabWidth": 2
+            }
+        ],
+        "camelcase": [ "error", {}],
+        "curly": [ "error", "all"],
+        "no-trailing-spaces":  [ "error"]
+    }
+}
