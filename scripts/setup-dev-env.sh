@@ -5,8 +5,10 @@ if ! which asdf >/dev/null 2>&1; then
   exit 1
 fi
 
-for plugin in $(cat .tool-versions | cut -d' ' -f 1); do
-  asdf plugin add $plugin 
+cut -d' ' -f 1 <.tool-versions | while read -r plugin; do
+  asdf plugin add "${plugin}"
 done
 
 asdf install
+
+pre-commit install
