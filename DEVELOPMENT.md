@@ -1,17 +1,23 @@
-# Prepare development environment
+# Development
 
-## Coding
-Clone, then run:
+## Environment setup
+After checking out the repo:
+
+1. Install [asdf](https://asdf-vm.com/guide/getting-started.html)
+2. Run ./scripts/update-dev-env.sh to install required plugins and versions
+3. Install NPM modules:
 ```shell
 $ npm install
 ```
+
+## Tasks
 
 To check style:
 ```shell
 $ npm run eslint
 ```
 
-To *fix* automatically where possible:
+To check and *fix* style automatically where possible:
 ```shell
 $ npm run eslintfix
 ```
