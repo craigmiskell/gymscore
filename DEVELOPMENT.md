@@ -36,8 +36,19 @@ The list of acceptable licenses is configured in the license-check script comman
 
 The license-check does not need to be performend on development-only modules because we are not further distributing them, they are only pulled *by* the developer into their development environment, i.e. someone else has distributed them to the developer and is responsible for ensuring the distribution is legal, and they are then used locally for development purposes.
 
-## Builds
-As well as a basic wine + mono install, on Ubuntu 20.04, we also need the following to be able to build a Windows distribution:
+## Building for distribution
+
+Run the make command for your choice of target OS.
+
+```shell
+$ npm run make-{linux,osx,windows}
+```
+
+The results will be a directory in `out/gymscore-<platform>-<arch>`; packing for distribution beyond that is not yet tested or documented.
+
+### Windows, from Linux
+
+When building for Windows from a Linux box, as well as a basic wine + mono install on Ubuntu 20.04, the following packages are also required:
 * libmono-windowsbase4.0-cil
 * libmono-system-componentmodel-composition4.0-cil
 * libmono-system-componentmodel-dataannotations4.0-cil
@@ -47,4 +58,4 @@ As well as a basic wine + mono install, on Ubuntu 20.04, we also need the follow
 * libmono-microsoft-csharp4.0-cil
 * libmono-system-io-compression-filesystem4.0-cil
 
-There may be some over-arching package that will include these, but it's not clear what that might be; these were discovered empirically in the order shown
+There may be some over-arching package that will include these, but it's not clear what that might be; these were discovered empirically in the order shown.
