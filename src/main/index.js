@@ -26,12 +26,13 @@ const createWindow = () => {
     }
   });
 
-  win.loadFile("index.html");
+  win.loadFile("dist/renderer/index.html");
   // TODO: we'll add a menu again later when we have a need
   win.setMenu(null);
   if(isDev) {
     win.webContents.openDevTools();
   }
+  console.log("Hello from src/main/index.js");
 };
 
 app.whenReady().then(() => {
