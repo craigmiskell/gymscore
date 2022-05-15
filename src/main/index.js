@@ -19,16 +19,17 @@ const isDev = require("electron-is-dev");
 
 const createWindow = () => {
   const win = new BrowserWindow({
-    width: 1024,
-    height: 768,
+    show: false,
     webPreferences: {
       preload: path.join(__dirname, "preload.js")
     }
   });
+  win.maximize();
+  win.show();
 
   win.loadFile("dist/renderer/index.html");
   // TODO: we'll add a menu again later when we have a need
-  win.setMenu(null);
+  // win.setMenu(null);
   if(isDev) {
     win.webContents.openDevTools();
   }

@@ -4,10 +4,9 @@ const path = require("path");
 const process = require("process");
 const { merge } = require("webpack-merge");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 const isProduction = process.env.NODE_ENV == "production";
-
-const stylesHandler = "style-loader";
 
 const commonConfig = {
   devServer: {
@@ -23,7 +22,7 @@ const commonConfig = {
       },
       {
         test: /\.css$/i,
-        use: [stylesHandler, "css-loader"],
+        use: [MiniCssExtractPlugin.loader, "css-loader"], // NB: no 'style-loader' with MCEP; throws errors.
       },
       {
         test: /\.(eot|svg|ttf|woff|woff2|png|jpg|gif)$/i,
@@ -34,7 +33,7 @@ const commonConfig = {
 };
 
 const rendererConfig = merge(commonConfig, {
-  entry: [ "./src/renderer/index.js" ],
+  entry: [ "./src/renderer/index.js"],
   target: "electron18.2-renderer",
   output: {
     path: path.resolve(__dirname, "dist/renderer"),
@@ -43,6 +42,7 @@ const rendererConfig = merge(commonConfig, {
     new HtmlWebpackPlugin({
       template: "src/renderer/index.html"
     }),
+    new MiniCssExtractPlugin(),
   ],
 });
 
