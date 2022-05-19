@@ -6,7 +6,7 @@
   "private": true,
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "electron-forge start -- --use-gl=desktop",
+    "start": "rm -r dist/*; webpack && electron-forge start -- --use-gl=desktop",
     "package": "electron-forge package",
     "eslint": "eslint .",
     "eslintfix": "eslint . --fix",
@@ -36,6 +36,7 @@
     "@electron-forge/maker-zip": "^6.0.0-beta.63",
     "@webpack-cli/generators": "^2.4.2",
     "babel-loader": "^8.2.5",
+    "babel-polyfill": "^6.26.0",
     "css-loader": "^6.7.1",
     "electron": "^18.2.0",
     "eslint": "^8.14.0",
@@ -55,7 +56,8 @@
     "bootstrap": "^5.1.3",
     "electron-is-dev": "^2.0.0",
     "electron-squirrel-startup": "^1.0.0",
-    "jquery": "^3.6.0"
+    "jquery": "^3.6.0",
+    "mktemp": "^1.0.0"
   },
   "config": {
     "forge": {

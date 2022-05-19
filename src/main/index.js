@@ -13,12 +13,17 @@
 // You should have received a copy of the GNU General Public License along with this program. If not,
 // see <https://www.gnu.org/licenses/>.
 
-const { app, BrowserWindow} = require("electron");
+const { app, BrowserWindow, ipcMain, shell } = require("electron");
 const path = require("path");
 const isDev = require("electron-is-dev");
+const fs = require("fs");
+const mktemp = require("mktemp");
+const os = require("os");
 
 const createWindow = () => {
   const win = new BrowserWindow({
+    nodeIntegration: false,
+    contextIsolation: true,
     show: false,
     webPreferences: {
       preload: path.join(__dirname, "preload.js")
@@ -51,3 +56,32 @@ app.whenReady().then(() => {
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {app.quit();}
 });
+
+ipcMain.on("asynchronous-message", (event, arg) => {
+  console.log(arg);
+  event.reply("asynchronous-reply", "async pong");
+});
+
+ipcMain.on("synchronous-message", (event, arg) => {
+  console.log(arg);
+  event.returnValue = "sync pong";
+});
+
+ipcMain.on("save-png", (event, arg) => {
+  savePng(arg.data, arg.filenameHint).then(() => {}, () => {});
+});
+
+async function savePng(data, filenameHint) {
+  let buffer = Buffer.from(data);
+
+  let tempDir = await mktemp.createDir(path.join(os.tmpdir(), "XXXXXXX"));
+  let filename = path.join(tempDir, filenameHint + ".png");
+  // TODO: create a singular temp directory per competition, perhaps a second hint (dirhint?)
+  fs.writeFile(filename, buffer, (error) => {
+    // Let the system open and then user can print
+    if (error) {
+      throw error;
+    }
+    shell.openPath(filename);
+  });
+}

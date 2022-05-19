@@ -33,7 +33,7 @@ const commonConfig = {
 };
 
 const rendererConfig = merge(commonConfig, {
-  entry: [ "./src/renderer/index.js"],
+  entry: ["babel-polyfill", "./src/renderer/index.js"],
   target: "electron18.2-renderer",
   output: {
     path: path.resolve(__dirname, "dist/renderer"),
@@ -47,7 +47,7 @@ const rendererConfig = merge(commonConfig, {
 });
 
 const mainConfig = merge(commonConfig, {
-  entry: "./src/main/index.js",
+  entry: ["babel-polyfill", "./src/main/index.js"],
   target: "electron18.2-main",
   output: {
     path: path.resolve(__dirname, "dist/main"),
