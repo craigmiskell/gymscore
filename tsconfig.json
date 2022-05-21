@@ -6,7 +6,8 @@
     "target": "es6",
     "allowJs": true,
     "moduleResolution": "node",
-    "typeRoots": [ "./types", "./node_modules/@types"]
+    "typeRoots": [ "./types", "./node_modules/@types"],
+    "allowSyntheticDefaultImports": true
   },
   "exclude": ["node_modules", "types"],
 }

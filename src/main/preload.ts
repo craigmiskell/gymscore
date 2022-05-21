@@ -12,7 +12,8 @@
 //
 // You should have received a copy of the GNU General Public License along with this program. If not,
 // see <https://www.gnu.org/licenses/>.
-import api from '../common/api'
+import api from "../common/api";
+import {contextBridge} from "electron";
 
 window.addEventListener("DOMContentLoaded", () => {
   const replaceText = (selector:string, text: string) => {
@@ -24,7 +25,5 @@ window.addEventListener("DOMContentLoaded", () => {
     replaceText(`${dependency}-version`, process.versions[dependency]);
   }
 });
-
-const { contextBridge } = require("electron");
 
 contextBridge.exposeInMainWorld("api", api);

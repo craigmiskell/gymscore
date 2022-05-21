@@ -5,7 +5,9 @@
         "es2021": true,
         "node": true
     },
-    "extends": "eslint:recommended",
+    "extends": [
+        "eslint:recommended"
+    ],
     "parserOptions": {
         "ecmaVersion": "latest"
     },
@@ -23,5 +25,22 @@
         "camelcase": [ "error", {}],
         "curly": [ "error", "all"],
         "no-trailing-spaces":  [ "error"]
-    }
+    },
+    "overrides": [
+        {
+            "files": ["**/*.ts", "**/*.tsx"],
+            "extends": [
+                "eslint:recommended",
+                "plugin:@typescript-eslint/eslint-recommended",
+                "plugin:@typescript-eslint/recommended"
+            ],
+            "parser": "@typescript-eslint/parser",
+            "plugins": [
+                "@typescript-eslint"
+            ],
+            "rules": {
+                "@typescript-eslint/no-explicit-any": 0
+            }
+        }
+    ]
 }

@@ -40,7 +40,7 @@ document.getElementById("printButton").addEventListener("click", async () => {
   ctx.fillStyle = "rgb(200, 0, 0)";
   ctx.fillRect(10, 10, 50, 50);
 
-  let blob = await offscreen.convertToBlob();
-  let arrayBuffer = await blob.arrayBuffer();
+  const blob = await offscreen.convertToBlob();
+  const arrayBuffer = await blob.arrayBuffer();
   api.sendAsync("save-png", {data: arrayBuffer, filenameHint: "foobar"});
 });

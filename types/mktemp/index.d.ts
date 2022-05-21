@@ -1,7 +1,9 @@
-declare module 'mktemp' {
+type MktempCallbackFunction =  (err: NodeJS.ErrnoException | null, dirname: string | null) => void
+
+declare module "mktemp" {
     export function createDir(
         template: string,
-        callback?: Function
+        callback?: MktempCallbackFunction
     ): Promise<string>
 
     export function createDirSync(
@@ -10,7 +12,7 @@ declare module 'mktemp' {
 
     export function createFile(
         template: string,
-        callback?: Function
+        callback?: MktempCallbackFunction
     ): Promise<string>
 
     export function createFileSync(

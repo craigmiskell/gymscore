@@ -13,14 +13,12 @@
 // You should have received a copy of the GNU General Public License along with this program. If not,
 // see <https://www.gnu.org/licenses/>.
 
-import {IpcMainEvent} from 'electron';
-
-const { app, BrowserWindow, ipcMain, shell } = require("electron");
-const path = require("path");
-const isDev = require("electron-is-dev");
-const fs = require("fs");
-const mktemp = require("mktemp");
-const os = require("os");
+import {IpcMainEvent, app, BrowserWindow, ipcMain, shell} from "electron";
+import path from "path";
+import isDev from "electron-is-dev";
+import fs from "fs";
+import mktemp from "mktemp";
+import os from "os";
 
 const createWindow = () => {
   const win = new BrowserWindow({
@@ -71,10 +69,10 @@ ipcMain.on("synchronous-message", (event: IpcMainEvent, arg: any) => {
 
 ipcMain.on("save-png", (event: IpcMainEvent, arg: any) => {
 
-  let buffer = Buffer.from(arg.data);
+  const buffer = Buffer.from(arg.data);
 
-  let tempDir = mktemp.createDirSync(path.join(os.tmpdir(), "XXXXXXX"));
-  let filename = path.join(tempDir, arg.filenameHint + ".png");
+  const tempDir = mktemp.createDirSync(path.join(os.tmpdir(), "XXXXXXX"));
+  const filename = path.join(tempDir, arg.filenameHint + ".png");
   // TODO: create a singular temp directory per competition, perhaps a second hint (dirhint?)
   fs.writeFile(filename, buffer, (error: any) => {
     if (error) {
