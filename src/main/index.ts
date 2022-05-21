@@ -13,6 +13,8 @@
 // You should have received a copy of the GNU General Public License along with this program. If not,
 // see <https://www.gnu.org/licenses/>.
 
+import {IpcMainEvent} from 'electron';
+
 const { app, BrowserWindow, ipcMain, shell } = require("electron");
 const path = require("path");
 const isDev = require("electron-is-dev");
@@ -22,10 +24,10 @@ const os = require("os");
 
 const createWindow = () => {
   const win = new BrowserWindow({
-    nodeIntegration: false,
-    contextIsolation: true,
     show: false,
     webPreferences: {
+      nodeIntegration: false,
+      contextIsolation: true,
       preload: path.join(__dirname, "preload.js")
     }
   });
@@ -57,31 +59,28 @@ app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {app.quit();}
 });
 
-ipcMain.on("asynchronous-message", (event, arg) => {
+ipcMain.on("asynchronous-message", (event: IpcMainEvent, arg: any) => {
   console.log(arg);
   event.reply("asynchronous-reply", "async pong");
 });
 
-ipcMain.on("synchronous-message", (event, arg) => {
+ipcMain.on("synchronous-message", (event: IpcMainEvent, arg: any) => {
   console.log(arg);
   event.returnValue = "sync pong";
 });
 
-ipcMain.on("save-png", (event, arg) => {
-  savePng(arg.data, arg.filenameHint).then(() => {}, () => {});
-});
+ipcMain.on("save-png", (event: IpcMainEvent, arg: any) => {
 
-async function savePng(data, filenameHint) {
-  let buffer = Buffer.from(data);
+  let buffer = Buffer.from(arg.data);
 
-  let tempDir = await mktemp.createDir(path.join(os.tmpdir(), "XXXXXXX"));
-  let filename = path.join(tempDir, filenameHint + ".png");
+  let tempDir = mktemp.createDirSync(path.join(os.tmpdir(), "XXXXXXX"));
+  let filename = path.join(tempDir, arg.filenameHint + ".png");
   // TODO: create a singular temp directory per competition, perhaps a second hint (dirhint?)
-  fs.writeFile(filename, buffer, (error) => {
-    // Let the system open and then user can print
+  fs.writeFile(filename, buffer, (error: any) => {
     if (error) {
       throw error;
     }
+    // Let the system open and then user can print
     shell.openPath(filename);
   });
-}
+});

@@ -13,23 +13,22 @@
 // You should have received a copy of the GNU General Public License along with this program. If not,
 // see <https://www.gnu.org/licenses/>.
 
-// From contextBridge (see preload.js)
-/*global api*/
+declare const api: typeof import("../common/api").default;
 
-require("bootstrap");
+// import "bootstrap";
 //Alternatively, more selective:
 //import { Tooltip, Toast, Popover } from 'bootstrap';
 
-require("bootstrap/dist/css/bootstrap.min.css");
+import "bootstrap/dist/css/bootstrap.min.css";
 
 console.log("Hello from Renderer!");
 
-let $ = require("jquery");
-console.log($.fn.jquery);
+import * as jq from "jquery";
+console.log(jq.fn.jquery);
 
 console.log(api.sendSync("synchronous-message", "syncping"));
 
-api.receive("asynchronous-reply", (args) => {
+api.receive("asynchronous-reply", (args: any) => {
   console.log("Received async reply");
   console.log(args);
 });

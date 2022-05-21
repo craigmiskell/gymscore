@@ -28,12 +28,20 @@ const commonConfig = {
         test: /\.(eot|svg|ttf|woff|woff2|png|jpg|gif)$/i,
         type: "asset",
       },
+      {
+        test: /\.tsx?$/,
+        use: "ts-loader",
+        exclude: /node_modules/,
+      },
     ],
-  }
+  },
+  resolve: {
+    extensions: [".tsx", ".ts", ".js"],
+  },
 };
 
 const rendererConfig = merge(commonConfig, {
-  entry: ["babel-polyfill", "./src/renderer/index.js"],
+  entry: ["babel-polyfill", "./src/renderer/index.ts"],
   target: "electron18.2-renderer",
   output: {
     path: path.resolve(__dirname, "dist/renderer"),
@@ -47,7 +55,7 @@ const rendererConfig = merge(commonConfig, {
 });
 
 const mainConfig = merge(commonConfig, {
-  entry: ["babel-polyfill", "./src/main/index.js"],
+  entry: ["babel-polyfill", "./src/main/index.ts"],
   target: "electron18.2-main",
   output: {
     path: path.resolve(__dirname, "dist/main"),
@@ -55,7 +63,7 @@ const mainConfig = merge(commonConfig, {
 });
 
 const preloadConfig = merge(commonConfig, {
-  entry: "./src/main/preload.js",
+  entry: "./src/main/preload.ts",
   target: "electron18.2-preload",
   output: {
     path: path.resolve(__dirname, "dist/main"),
