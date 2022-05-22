@@ -5,6 +5,7 @@ const process = require("process");
 const { merge } = require("webpack-merge");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const ForkTsCheckerWebpackPlugin = require("fork-ts-checker-webpack-plugin");
 
 const isProduction = process.env.NODE_ENV == "production";
 
@@ -13,7 +14,7 @@ const commonConfig = {
     open: true,
     host: "localhost",
   },
-  devtool: "cheap-source-map",
+  devtool: "cheap-source-map", //Necessary to avoid evals in dev mode which would need loose CSP rules.
   module: {
     rules: [
       {
@@ -30,18 +31,31 @@ const commonConfig = {
       },
       {
         test: /\.tsx?$/,
-        use: "ts-loader",
+        use: {
+          loader: "ts-loader",
+          options: {
+            transpileOnly: true,
+          },
+        },
         exclude: /node_modules/,
       },
     ],
   },
+  plugins: [new ForkTsCheckerWebpackPlugin()],
   resolve: {
     extensions: [".tsx", ".ts", ".js"],
   },
+  // Did nothing to build times, curiously.
+  // cache: {
+  //   type: "filesystem",
+  //   buildDependencies: {
+  //     config: [__filename],
+  //   }
+  // }
 };
 
 const rendererConfig = merge(commonConfig, {
-  entry: ["babel-polyfill", "./src/renderer/index.ts"],
+  entry: ["./src/renderer/index.ts"],
   target: "electron18.2-renderer",
   output: {
     path: path.resolve(__dirname, "dist/renderer"),
@@ -55,7 +69,7 @@ const rendererConfig = merge(commonConfig, {
 });
 
 const mainConfig = merge(commonConfig, {
-  entry: ["babel-polyfill", "./src/main/index.ts"],
+  entry: ["./src/main/index.ts"],
   target: "electron18.2-main",
   output: {
     path: path.resolve(__dirname, "dist/main"),
