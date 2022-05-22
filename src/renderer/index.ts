@@ -19,11 +19,10 @@ declare const api: typeof import("../common/api").default;
 //Alternatively, more selective:
 //import { Tooltip, Toast, Popover } from 'bootstrap';
 
-import "bootstrap/dist/css/bootstrap.min.css";
-
 console.log("Hello from Renderer!");
 
-import * as jq from "jquery";
+import "bootstrap/dist/css/bootstrap.min.css";
+import jq from "jquery";
 console.log(jq.fn.jquery);
 
 console.log(api.sendSync("synchronous-message", "syncping"));
