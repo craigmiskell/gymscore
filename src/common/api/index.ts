@@ -5,7 +5,7 @@ type ReceiveCallbackFunction = (...args: any[]) => void;
 export default {
   sendSync: (channel:string, data: any) => {
     // allowlist channels
-    const validChannels = ["synchronous-message"];
+    const validChannels = ["fetchCompetitor"];
     if (validChannels.includes(channel)) {
       return ipcRenderer.sendSync(channel, data);
     } else {
@@ -14,7 +14,7 @@ export default {
   },
   sendAsync: (channel:string, data: any) => {
     // allowlist channels
-    const validChannels = ["asynchronous-message", "save-png"];
+    const validChannels = ["save-png"];
     if (validChannels.includes(channel)) {
       ipcRenderer.send(channel, data);
     } else {

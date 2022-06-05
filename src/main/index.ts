@@ -62,13 +62,7 @@ ipcMain.on("asynchronous-message", (event: IpcMainEvent, arg: any) => {
   event.reply("asynchronous-reply", "async pong");
 });
 
-ipcMain.on("synchronous-message", (event: IpcMainEvent, arg: any) => {
-  console.log(arg);
-  event.returnValue = "sync pong";
-});
-
 ipcMain.on("save-png", (event: IpcMainEvent, arg: any) => {
-
   const buffer = Buffer.from(arg.data);
 
   const tempDir = mktemp.createDirSync(path.join(os.tmpdir(), "XXXXXXX"));
@@ -82,3 +76,5 @@ ipcMain.on("save-png", (event: IpcMainEvent, arg: any) => {
     shell.openPath(filename);
   });
 });
+
+console.log("Data storage may be in "+ app.getPath('userData'));

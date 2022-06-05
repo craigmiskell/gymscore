@@ -19,19 +19,31 @@ declare const api: typeof import("../common/api").default;
 //Alternatively, more selective:
 //import { Tooltip, Toast, Popover } from 'bootstrap';
 
-console.log("Hello from Renderer!");
+console.log("Welcome to GymScore");
 
-import "bootstrap/dist/css/bootstrap.min.css";
-import jq from "jquery";
-console.log(jq.fn.jquery);
-
-console.log(api.sendSync("synchronous-message", "syncping"));
-
-api.receive("asynchronous-reply", (args: any) => {
-  console.log("Received async reply");
-  console.log(args);
+// Looks like we get full persistent access to all available storage but this is worth reporting
+if (navigator.storage && navigator.storage.persist) {
+  navigator.storage.persist().then(function(persistent) {
+    if (persistent)
+      console.log("Storage will not be cleared except by explicit user action");
+    else
+      console.log("Storage may be cleared by the UA under storage pressure.");
+  });
+}
+navigator.storage.estimate().then(estimation =>{
+  console.log(`Quota: ${estimation.quota/1024/1024}MB`);
+  console.log(`Usage: ${estimation.usage/1024/1024}MB`);
 });
-api.sendAsync("asynchronous-message", "asyncping");
+
+// import compiles it into (eventually) main.css, so we can use that straight from HTML
+import "bootstrap/dist/css/bootstrap.min.css";
+// Will need this eventually, just not yet
+// import jq from "jquery";
+
+import { db } from "./data/gymscoredb";
+import { Gym, Competitor, Step, UnderOver } from "./data";
+
+testDB();
 
 document.getElementById("printButton").addEventListener("click", async () => {
   const offscreen = new OffscreenCanvas(256, 256);
@@ -43,3 +55,18 @@ document.getElementById("printButton").addEventListener("click", async () => {
   const arrayBuffer = await blob.arrayBuffer();
   api.sendAsync("save-png", {data: arrayBuffer, filenameHint: "foobar"});
 });
+
+async function testDB() {
+  // await db.delete();  // For debugging; uncomment when necessary
+  await db.open();
+  db.transaction('rw', db.gyms, async() => {
+    console.log("Adding a gym");
+    await db.gyms.add(new Gym("WTF"));
+    db.gyms.toArray().then((a) => {
+      for (let gym of a) {
+        console.log(gym);
+        console.log(gym.greet());
+      }
+    });
+  });
+}

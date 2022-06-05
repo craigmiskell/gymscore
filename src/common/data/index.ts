@@ -1,1 +1,0 @@
-export { Competitor} from "./competitor";
