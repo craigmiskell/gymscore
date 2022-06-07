@@ -2,14 +2,38 @@
 <html>
   <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self';">
-    <title>Hello World!</title>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'">
+    <title>GymScore</title>
   </head>
   <body>
-    <h1>Hello World!</h1>
-    We are using Node.js <span id="node-version"></span>,
-    Chromium <span id="chrome-version"></span>,
-    and Electron <span id="electron-version"></span>.
-    <input type="button" id="printButton" value="Print"/>
+    <a href="prepare_competition.html"><button type="button" class="btn btn-primary" id="createCompetition">Create New Competition</button></a>
+    <hr>
+    <i class="bi bi-pencil-square"></i>&nbsp;Preparing
+    <table class="table table-sm table-striped w-auto">
+      <tr>
+        <td>Comp 1</td>
+        <td><i class="bi bi-pencil"></i><a href="prepare_competition.html?compId=1">&nbsp;Continue preparing</a></td>
+        <td><i class="bi bi-pencil"></i><a href="start_competition.html?compId=1"></i>&nbsp;Start running</a></td>
+        <td><i class="bi bi-trash"></i><a id="deleteCompetition-1"></i>&nbsp;Delete</a></td>
+      </tr>
+      <tr>
+        <td>Comp 2</td>
+        <td><a href="prepare_competition.html?compId=2"><i class="bi bi-pencil"></i>Continue</a></td>
+        <td><a href="start_competition.html?compId=2"><i class="bi bi-pencil"></i>Start</a></td>
+        <td><a id="deleteCompetition-2"><i class="bi bi-trash"></i>Delete</a></td>
+      </tr>
+      <tr>
+        <td>Comp 3</td>
+        <td><a href="prepare_competition.html?compId=3"><i class="bi bi-pencil"></i>Continue</a></td>
+        <td><a href="start_competition.html?compId=3"><i class="bi bi-pencil"></i>Start</a></td>
+        <td><a id="deleteCompetition-3"><i class="bi bi-trash"></i>Delete</a></td>
+      </tr>
+    </table>
+    Notes: Display those in state 'preparing'
+    <hr>
+    <i class="bi bi-stopwatch"></i>&nbsp;Running
+    <hr>
+    <i class="bi bi-check"></i>&nbsp;Past
+    <hr>
   </body>
 </html>

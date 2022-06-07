@@ -39,6 +39,13 @@ const commonConfig = {
         },
         exclude: /node_modules/,
       },
+      {
+        test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
+        type: "asset/resource",
+        generator: {
+          filename: "webfonts/[name][ext]"
+        }
+      }
     ],
   },
   plugins: [new ForkTsCheckerWebpackPlugin()],
@@ -68,6 +75,25 @@ const rendererConfig = merge(commonConfig, {
   ],
 });
 
+// When adding more, do it in a loop with just the base name
+const setupCompConfig = merge(commonConfig, {
+  entry: ["./src/renderer/prepare_competition.ts"],
+  target: "electron18.2-renderer",
+  output: {
+    path: path.resolve(__dirname, "dist/renderer"),
+    filename: "prepare_competition.js",
+  },
+  plugins: [
+    new HtmlWebpackPlugin({
+      template: "src/renderer/prepare_competition.html",
+      filename: "prepare_competition.html",
+    }),
+    new MiniCssExtractPlugin({
+      filename: "prepare_competition.css"
+    }),
+  ],
+});
+
 const mainConfig = merge(commonConfig, {
   entry: ["./src/main/index.ts"],
   target: "electron18.2-main",
@@ -87,7 +113,7 @@ const preloadConfig = merge(commonConfig, {
 
 module.exports = () => {
   let configMode = isProduction ? "production" : "development";
-  let configs = [rendererConfig, mainConfig, preloadConfig];
+  let configs = [rendererConfig, setupCompConfig, mainConfig, preloadConfig];
   for (let c of configs) {
     c.mode = configMode;
   }

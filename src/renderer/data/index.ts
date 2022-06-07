@@ -1,3 +1,4 @@
 export { Step, UnderOver } from "./step";
-export { Gym } from "./gym";
-export { Competitor } from "./competitor";
+export { Gym, IGym } from "./gym";
+export { Competitor, ICompetitor } from "./competitor";
+export { Competition, ICompetition, CompetitionState } from "./competition";

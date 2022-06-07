@@ -1,3 +1,4 @@
+* Debug log viewer (from cookiemaster?)
 * Consider dexie-export-import module for externalizing/sharing the DB (and maybe stream-to-blob; see https://gauriatiq.medium.com/electron-app-database-with-dexie-js-indexeddb-and-web-worker-570d9a66a47a)
 * Consider a DAO layer to handle relationships between DB rows (and singleton for any given row, and save, etc).  You know, ORM stuff but as cheap as I can make it.
 * Collate all production licenses and put them in an 'about' page/window.  Show "NOTICE" files from any Apache 2.0; check other license types for any other requirements

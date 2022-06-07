@@ -13,24 +13,28 @@
 // You should have received a copy of the GNU General Public License along with this program. If not,
 // see <https://www.gnu.org/licenses/>.
 
-import Dexie from 'dexie';
-import { IGym, Gym } from './gym';
-import { ICompetitor, Competitor } from './competitor';
+import Dexie from "dexie";
+import { IGym, Gym } from "./gym";
+import { ICompetitor, Competitor } from "./competitor";
+import { ICompetition, Competition } from "./competition";
 
 // See https://dexie.org/docs/Typescript
 class GymScoreDB extends Dexie {
+  competitions!: Dexie.Table<ICompetition, number>;
   competitors!: Dexie.Table<ICompetitor, number>;
   gyms!: Dexie.Table<IGym, number>;
 
   constructor () {
-      super("GymScoreDB");
-      this.version(1).stores({
-        competitors: '++id, identifier, name, _stepString, gymId',
-        gyms: '++id, name, ',
-      });
+    super("GymScoreDB");
+    this.version(1).stores({
+      competitions: "++id, name, date, location, state",
+      competitors: "++id, identifier, name, stepString, gymId",
+      gyms: "++id, name",
+    });
   }
 }
 
-export var db = new GymScoreDB();
+export const db = new GymScoreDB();
 db.gyms.mapToClass(Gym);
 db.competitors.mapToClass(Competitor);
+db.competitions.mapToClass(Competition);

@@ -28,7 +28,7 @@ export class Gym implements IGym {
 
   constructor(name: string, id?:number) {
     this.name = name;
-    if (id) this.id = id;
+    if (id) {this.id = id;}
   }
 
   greet() {

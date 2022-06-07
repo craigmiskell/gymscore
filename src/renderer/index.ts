@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU General Public License along with this program. If not,
 // see <https://www.gnu.org/licenses/>.
 
-declare const api: typeof import("../common/api").default;
+// declare const api: typeof import("../common/api").default;
 
 // import "bootstrap";
 //Alternatively, more selective:
@@ -21,13 +21,16 @@ declare const api: typeof import("../common/api").default;
 
 console.log("Welcome to GymScore");
 
+//TODO: move this to a data place; maybe gymscoredb.ts?
 // Looks like we get full persistent access to all available storage but this is worth reporting
 if (navigator.storage && navigator.storage.persist) {
   navigator.storage.persist().then(function(persistent) {
-    if (persistent)
+    if (persistent) {
       console.log("Storage will not be cleared except by explicit user action");
-    else
+    } else {
+      // TODO: alert the user to tell me that this unexpected event has happened.
       console.log("Storage may be cleared by the UA under storage pressure.");
+    }
   });
 }
 navigator.storage.estimate().then(estimation =>{
@@ -35,37 +38,37 @@ navigator.storage.estimate().then(estimation =>{
   console.log(`Usage: ${estimation.usage/1024/1024}MB`);
 });
 
-// import compiles it into (eventually) main.css, so we can use that straight from HTML
-import "bootstrap/dist/css/bootstrap.min.css";
 // Will need this eventually, just not yet
 // import jq from "jquery";
 
 import { db } from "./data/gymscoredb";
-import { Gym, Competitor, Step, UnderOver } from "./data";
+// import { Gym, Competitor, Step, UnderOver } from "./data";
+// import { GymscoreVersion } from "./data/version";
+import * as pageCommon from "./page_common";
+pageCommon.setup();
 
 testDB();
 
-document.getElementById("printButton").addEventListener("click", async () => {
-  const offscreen = new OffscreenCanvas(256, 256);
-  const ctx = offscreen.getContext("2d");
-  ctx.fillStyle = "rgb(200, 0, 0)";
-  ctx.fillRect(10, 10, 50, 50);
+// Leave this as an example for how to draw to a canvas and then save to disk
+// via the main context.  We'll move it elsewhere and add actual useful drawing later.
+// document.getElementById("printButton").addEventListener("click", async () => {
+//   const offscreen = new OffscreenCanvas(256, 256);
+//   const ctx = offscreen.getContext("2d");
+//   ctx.fillStyle = "rgb(200, 0, 0)";
+//   ctx.fillRect(10, 10, 50, 50);
 
-  const blob = await offscreen.convertToBlob();
-  const arrayBuffer = await blob.arrayBuffer();
-  api.sendAsync("save-png", {data: arrayBuffer, filenameHint: "foobar"});
-});
+//   const blob = await offscreen.convertToBlob();
+//   const arrayBuffer = await blob.arrayBuffer();
+//   api.sendAsync("save-png", {data: arrayBuffer, filenameHint: "foobar"});
+// });
 
 async function testDB() {
   // await db.delete();  // For debugging; uncomment when necessary
-  await db.open();
-  db.transaction('rw', db.gyms, async() => {
-    console.log("Adding a gym");
-    await db.gyms.add(new Gym("WTF"));
-    db.gyms.toArray().then((a) => {
-      for (let gym of a) {
-        console.log(gym);
-        console.log(gym.greet());
+  // await db.open();
+  db.transaction("rw", db.competitions, async() => {
+    db.competitions.toArray().then((a) => {
+      for (const c of a) {
+        console.log(c);
       }
     });
   });

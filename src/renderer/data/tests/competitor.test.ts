@@ -12,6 +12,8 @@ describe("Constructor", () => {
     const name="craig";
     const step = new Step(BigInt(3), UnderOver.Over);
     const c = new Competitor("W123", name, step, BigInt(1));
-    // Just looking for no exception being thrown
+    // Just looking for no exception being thrown, but use it
+    // to convince eslint everything is fine
+    expect(c.name).toEqual("craig");
   });
 });

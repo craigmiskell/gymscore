@@ -29,7 +29,7 @@ const maxLevel = 10;
 // to de/hydrate it
 export class Step { // implements IStep {
   _level: bigint;
-  underOver: UnderOver
+  underOver: UnderOver;
 
   constructor(level: bigint, underOver: UnderOver) {
     this.level = level;
@@ -38,13 +38,13 @@ export class Step { // implements IStep {
 
   static fromString(step: string) :Step {
     // TODO: error handling (count of bits != 2, parse failures, out of bounds, etc)
-    let bits = step.split("-");
+    const bits = step.split("-");
     if(bits.length != 2) {
-      throw new TypeError(`Step string "${step}" had ${bits.length} parts; expected 2`)
+      throw new TypeError(`Step string "${step}" had ${bits.length} parts; expected 2`);
     }
-    let uo = parseInt(bits[1])
+    const uo = parseInt(bits[1]);
     if (Number.isNaN(uo) || (uo > UnderOver.Over)) {
-      throw new TypeError(`UnderOver in serialised Step string "${step}" was not a valid value`)
+      throw new TypeError(`UnderOver in serialised Step string "${step}" was not a valid value`);
     }
     return new Step(BigInt(parseInt(bits[0])), uo);
   }
@@ -54,12 +54,12 @@ export class Step { // implements IStep {
   }
 
   set level(value: bigint) {
-      if (value < minLevel || value > maxLevel) {
-          throw new RangeError("Level must be between 1 and 10 inclusive")
-      }
-      this._level = value;
+    if (value < minLevel || value > maxLevel) {
+      throw new RangeError("Level must be between 1 and 10 inclusive");
+    }
+    this._level = value;
   }
   get level() {
-      return this._level;
+    return this._level;
   }
 }

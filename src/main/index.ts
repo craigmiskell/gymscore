@@ -77,4 +77,4 @@ ipcMain.on("save-png", (event: IpcMainEvent, arg: any) => {
   });
 });
 
-console.log("Data storage may be in "+ app.getPath('userData'));
+console.log("Data storage may be in "+ app.getPath("userData"));
