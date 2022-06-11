@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self' data:;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self' data:; img-src 'self' data:;">
     <title>GymScore - Preparing Competition</title>
   </head>
   <body>
@@ -10,21 +10,40 @@
     <a href="index.html"><i class="bi bi-arrow-90deg-left"></i></a>
     <hr>
     <h2>Competition details</h2>
-    <form id="detailsForm">
-      <div class="form-group">
-        <label for="competitionName">Name</label>
-        <input type="text" class="form-control" id="competitionName" placeholder="Competition title/name">
-        <label for="competitionDate">Date</label>
-        <input type="date" class="form-control" id="competitionDate" placeholder="DD/MM/YYYY">
-        <label for="competitionLocation">Name</label>
-        <input type="text" class="form-control" id="competitionLocation" placeholder="Location">
+    <form id="detailsForm" class="needs-validation" novalidate>
+      <div class="row">
+        <label for="competitionName" class="form-label col-2 col-md-1 col-form-label">Name</label>
+        <div class="col">
+          <input type="text" class="form-control" id="competitionName" placeholder="Competition title/name" required>
+          <div class="invalid-feedback">
+            A competition name is required
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <label for="competitionDate" class="form-label col-2 col-md-1 col-form-label">Date</label>
+        <div class="col">
+          <input type="date" class="form-control w-25" id="competitionDate" placeholder="DD/MM/YYYY" required>
+          <div class="invalid-feedback">
+            A competition date is required
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <label for="competitionLocation" class="form-label col-2 col-md-1 col-form-label">Location</label>
+        <div class="col">
+          <input type="text" class="form-control w-75" id="competitionLocation" placeholder="Location" required>
+          <div class="invalid-feedback">
+            A location is required
+          </div>
+        </div>
       </div>
       <button type="button" class="btn btn-primary" id="detailsEditButton">Edit</button>
       <button type="button" class="btn btn-primary" id="detailsSaveButton">Save</button>
     </form>
     <hr>
     <h2>Disciplines</h2>
-    TBD
+    List of known disciplines with checkboxes (a grid, not just a vertical list).  Hard-code, no need to be editable at this point.
     <h2>Competitors</h2>
     Vertically scrolling table, with add button at top, delete button on right
     Add auto-completes known Competitors, asks for team they're in for *this* competition.

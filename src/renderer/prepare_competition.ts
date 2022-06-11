@@ -63,6 +63,13 @@ async function loadCompetition(compId: number) {
 }
 
 async function saveCompetitionDetails() {
+  let form = <HTMLFormElement>elements.detailsForm;
+
+  if (!form.checkValidity()) {
+    form.classList.add('was-validated')
+    return
+  }
+
   if(competition) {
     competition.name =(<HTMLInputElement>elements.competitionName).value;
     competition.date = (<HTMLInputElement>elements.competitionDate).value;
@@ -108,5 +115,8 @@ function setDetailsEditing(editing: boolean) {
   for (const i of disabled) {
     i.classList.add("disabled");
     (<HTMLInputElement>i).disabled = true;
+  }
+  if(editing) {
+    elements.detailsForm.classList.remove('was-validated')
   }
 }
