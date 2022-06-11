@@ -43,7 +43,24 @@
     </form>
     <hr>
     <h2>Disciplines</h2>
-    List of known disciplines with checkboxes (a grid, not just a vertical list).  Hard-code, no need to be editable at this point.
+    <div class="row">
+      <div class="col-3">
+        <label for="enableVault" class="form-label">Vault</label>
+        <input type="checkbox" class="form-check-input" id="enableVault">
+      </div>
+      <div class="col-3">
+        <label for="enableBars" class="form-label">Uneven Bars</label>
+        <input type="checkbox" class="form-check-input" id="enableBars">
+      </div>
+      <div class="col-3">
+        <label for="enableBeam" class="form-label">Balance Beam</label>
+        <input type="checkbox" class="form-check-input" id="enableBeam">
+      </div>
+      <div class="col-3">
+        <label for="enableFloor" class="form-label">Floor</label>
+        <input type="checkbox" class="form-check-input" id="enableFloor">
+      </div>
+    </div>
     <h2>Competitors</h2>
     Vertically scrolling table, with add button at top, delete button on right
     Add auto-completes known Competitors, asks for team they're in for *this* competition.
