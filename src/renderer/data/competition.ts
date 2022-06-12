@@ -19,6 +19,10 @@ export interface ICompetition {
   date: string,
   location: string,
   state: CompetitionState,
+  vault: boolean,
+  bars: boolean,
+  beam: boolean,
+  floor: boolean,
 }
 export enum CompetitionState {
   Preparing = 0,
@@ -32,12 +36,20 @@ export class Competition implements ICompetition {
   date: string;
   location: string;
   state: CompetitionState;
+  vault: boolean = false;
+  bars: boolean = false;
+  beam: boolean = false;
+  floor: boolean = false;
 
-  constructor(name: string, date: string, location:string, state: CompetitionState, id?:number) {
+  constructor(name: string, date: string, location:string, id?:number) {
     this.name = name;
     this.date = date;
     this.location = location;
-    this.state = state;
+    this.state = CompetitionState.Preparing;
+    this.vault = false;
+    this.bars = false;
+    this.beam = false;
+    this.floor = false;
     if (id) {this.id = id;}
   }
 }

@@ -34,6 +34,10 @@ class Elements extends pageCommon.BaseElements {
   competitionName: HTMLElement = null;
   competitionDate: HTMLElement = null;
   competitionLocation: HTMLElement = null;
+  enableVault: HTMLElement = null;
+  enableBars: HTMLElement = null;
+  enableBeam: HTMLElement = null;
+  enableFloor: HTMLElement = null;
 }
 
 const elements = new Elements();
@@ -75,6 +79,7 @@ async function saveCompetitionDetails() {
     competition.date = (<HTMLInputElement>elements.competitionDate).value;
     competition.location = (<HTMLInputElement>elements.competitionLocation).value;
     competition.state = CompetitionState.Preparing;
+    populateCompetitionDisciplines(competition);
     db.competitions.put(competition);
   } else {
     await createCompetition();
@@ -93,9 +98,16 @@ async function createCompetition() {
     (<HTMLInputElement>elements.competitionName).value,
     (<HTMLInputElement>elements.competitionDate).value,
     (<HTMLInputElement>elements.competitionLocation).value,
-    CompetitionState.Preparing
   );
+  populateCompetitionDisciplines(competition);
   await db.competitions.add(competition);
+}
+
+function populateCompetitionDisciplines(competition: ICompetition) {
+  competition.vault = (<HTMLInputElement>elements.enableVault).checked;
+  competition.bars = (<HTMLInputElement>elements.enableBars).checked;
+  competition.beam = (<HTMLInputElement>elements.enableBeam).checked;
+  competition.floor = (<HTMLInputElement>elements.enableFloor).checked;
 }
 
 function setDetailsEditing(editing: boolean) {
@@ -116,6 +128,7 @@ function setDetailsEditing(editing: boolean) {
     i.classList.add("disabled");
     (<HTMLInputElement>i).disabled = true;
   }
+
   if(editing) {
     elements.detailsForm.classList.remove('was-validated')
   }
