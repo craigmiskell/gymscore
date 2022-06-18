@@ -2,38 +2,32 @@
 <html>
   <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:;">
     <title>GymScore</title>
   </head>
   <body>
     <a href="prepare_competition.html"><button type="button" class="btn btn-primary" id="createCompetition">Create New Competition</button></a>
     <hr>
     <i class="bi bi-pencil-square"></i>&nbsp;Preparing
-    <table class="table table-sm table-striped w-auto">
-      <tr>
-        <td>Comp 1</td>
-        <td><i class="bi bi-pencil"></i><a href="prepare_competition.html?compId=1">&nbsp;Continue preparing</a></td>
-        <td><i class="bi bi-pencil"></i><a href="start_competition.html?compId=1"></i>&nbsp;Start running</a></td>
-        <td><i class="bi bi-trash"></i><a id="deleteCompetition-1"></i>&nbsp;Delete</a></td>
-      </tr>
-      <tr>
-        <td>Comp 2</td>
-        <td><a href="prepare_competition.html?compId=2"><i class="bi bi-pencil"></i>Continue</a></td>
-        <td><a href="start_competition.html?compId=2"><i class="bi bi-pencil"></i>Start</a></td>
-        <td><a id="deleteCompetition-2"><i class="bi bi-trash"></i>Delete</a></td>
-      </tr>
-      <tr>
-        <td>Comp 3</td>
-        <td><a href="prepare_competition.html?compId=3"><i class="bi bi-pencil"></i>Continue</a></td>
-        <td><a href="start_competition.html?compId=3"><i class="bi bi-pencil"></i>Start</a></td>
-        <td><a id="deleteCompetition-3"><i class="bi bi-trash"></i>Delete</a></td>
-      </tr>
-    </table>
-    Notes: Display those in state 'preparing'
+    <table class="table table-sm table-striped w-auto" id="preparingCompetitions"></table>
     <hr>
     <i class="bi bi-stopwatch"></i>&nbsp;Running
     <hr>
     <i class="bi bi-check"></i>&nbsp;Past
     <hr>
+    <div class="modal fade" tabindex="-1" data-bs-backdrop="static" role="dialog" aria-hidden="true" id="deleteConfirmationModal">
+      <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h4 class="modal-title">Delete competition?</h4>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" id="deleteConfirmationModalYes">Yes</button>
+            <button type="button" class="btn btn-primary" data-bs-dismiss="modal" id="deleteConfirmationModalNo">No</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </body>
 </html>

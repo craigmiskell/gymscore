@@ -21,6 +21,8 @@
 
 console.log("Welcome to GymScore");
 
+const COMPETITION_ID_ATTR = "competitionId";
+
 //TODO: move this to a data place; maybe gymscoredb.ts?
 // Looks like we get full persistent access to all available storage but this is worth reporting
 if (navigator.storage && navigator.storage.persist) {
@@ -38,16 +40,111 @@ navigator.storage.estimate().then(estimation =>{
   console.log(`Usage: ${estimation.usage/1024/1024}MB`);
 });
 
-// Will need this eventually, just not yet
-// import jq from "jquery";
-
 import { db } from "./data/gymscoredb";
-// import { Gym, Competitor, Step, UnderOver } from "./data";
-// import { GymscoreVersion } from "./data/version";
+import { ICompetition, Competition, CompetitionState } from "./data";
 import * as pageCommon from "./page_common";
 pageCommon.setup();
+import { Modal } from "bootstrap";
 
-testDB();
+window.addEventListener("DOMContentLoaded", () => {
+  onLoaded();
+});
+
+async function onLoaded() {
+  var modal = document.getElementById("deleteConfirmationModal");
+
+  modal.addEventListener("hide.bs.modal", () => {
+    modal.removeAttribute(COMPETITION_ID_ATTR);
+  });
+
+  document.getElementById("deleteConfirmationModalYes").addEventListener(
+    "click",
+    function() {
+      doDeleteCompetition(parseInt(modal.getAttribute(COMPETITION_ID_ATTR)));
+      // Hide must happen *after* deleting, because a hook on hiding unsets the ID
+      // we use to do the deletion.
+      // If this causes trouble (e.g. we can't catch errors when failing to delete), we may
+      // need to just remove the hide hook
+      Modal.getOrCreateInstance(modal).hide();
+    }
+  );
+
+  displayPreparingCompetitions();
+}
+
+function promptDeleteCompetition(competition: ICompetition) {
+  let modal = document.getElementById("deleteConfirmationModal");
+  modal.setAttribute(COMPETITION_ID_ATTR, competition.id.toString());
+  Modal.getOrCreateInstance(modal).show();
+}
+
+function doDeleteCompetition(competitionId: number) {
+  console.log(`Deleting: ${competitionId}`);
+  db.competitions.delete(competitionId);
+  const table = <HTMLTableElement>document.getElementById("preparingCompetitions");
+
+  let row = table.querySelector(`tr[${COMPETITION_ID_ATTR}="${competitionId}"]`);
+  if (row == null) {
+    console.log(`Did not find row with competition ID ${competitionId}`);
+    return;
+  }
+  row.remove();
+}
+
+async function displayPreparingCompetitions() {
+  const table = <HTMLTableElement>document.getElementById("preparingCompetitions");
+  db.transaction("rw", db.competitions, async() => {
+    db.competitions.toArray().then((a) => {
+      for (const c of a) {
+        displayPreparingCompetition(table, c);
+      }
+    });
+  });
+}
+
+function displayPreparingCompetition(table: HTMLTableElement, competition: ICompetition) {
+  let row = table.insertRow();
+  row.setAttribute(COMPETITION_ID_ATTR, competition.id.toString());
+  row.insertCell().textContent = competition.name;
+  displayCompetitionLink(row, getPageLink(competition, "prepare_competition", "Continue preparing", "pencil"));
+  displayCompetitionLink(row, getPageLink(competition, "start_competition", "Start", "play"));
+  displayCompetitionLink(row, getJSLink(competition, promptDeleteCompetition, "Delete", "trash"));
+}
+
+function displayCompetitionLink(row: HTMLTableRowElement, link: HTMLAnchorElement) {
+  let cell = row.insertCell();
+  cell.appendChild(link);
+}
+
+function getPageLink(competition: ICompetition, pageName: String, text: String, iconName: String): HTMLAnchorElement {
+  let link = document.createElement("a");
+  link.href = `${pageName}.html?compId=${competition.id}`;
+  fillInLink(link, text, iconName);
+  return link;
+}
+
+function getJSLink(competition: ICompetition, callback: Function, text: String, iconName: String): HTMLAnchorElement {
+  let link = document.createElement("a");
+  link.href = "";
+  link.addEventListener("click", (event: Event) => {
+    callback(competition);
+    event.preventDefault();
+  });
+  fillInLink(link, text, iconName);
+  return link;
+}
+
+function fillInLink(link: HTMLAnchorElement, text: String, iconName: String) {
+  let icon = document.createElement("i");
+  icon.classList.add("bi", `bi-${iconName}`);
+  link.appendChild(icon);
+  link.appendChild(new Text(` ${text}`));
+}
+
+async function clearDB() {
+  await db.delete();
+  await db.open();
+}
 
 // Leave this as an example for how to draw to a canvas and then save to disk
 // via the main context.  We'll move it elsewhere and add actual useful drawing later.
@@ -61,15 +158,3 @@ testDB();
 //   const arrayBuffer = await blob.arrayBuffer();
 //   api.sendAsync("save-png", {data: arrayBuffer, filenameHint: "foobar"});
 // });
-
-async function testDB() {
-  // await db.delete();  // For debugging; uncomment when necessary
-  // await db.open();
-  db.transaction("rw", db.competitions, async() => {
-    db.competitions.toArray().then((a) => {
-      for (const c of a) {
-        console.log(c);
-      }
-    });
-  });
-}

@@ -38,7 +38,6 @@ const createWindow = () => {
   if(isDev) {
     win.webContents.openDevTools();
   }
-  console.log("Hello from src/main/index.js");
 };
 
 app.whenReady().then(() => {
