@@ -62,6 +62,10 @@ async function loadCompetition(compId: number) {
       (<HTMLInputElement>elements.competitionName).value = competition.name;
       (<HTMLInputElement>elements.competitionDate).value = competition.date;
       (<HTMLInputElement>elements.competitionLocation).value = competition.location;
+      (<HTMLInputElement>elements.enableBars).checked = competition.bars;
+      (<HTMLInputElement>elements.enableBeam).checked = competition.beam;
+      (<HTMLInputElement>elements.enableFloor).checked = competition.floor;
+      (<HTMLInputElement>elements.enableVault).checked = competition.vault;
     }
   }
 }
@@ -113,7 +117,8 @@ function populateCompetitionDisciplines(competition: ICompetition) {
 function setDetailsEditing(editing: boolean) {
   const enabledWhenEditing = [
     elements.detailsSaveButton, elements.competitionName, elements.competitionDate,
-    elements.competitionLocation
+    elements.competitionLocation, elements.enableBars, elements.enableBeam, elements.enableFloor,
+    elements.enableVault
   ];
   const enabledWhenNotEditing = [elements.detailsEditButton];
 
