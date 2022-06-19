@@ -23,8 +23,8 @@ export { Gym, IGym };
 export { Step, UnderOver } from "./step";
 import { Competitor } from "./competitor";
 import type { ICompetitor } from "./competitor";
-export { Competitor, ICompetitor }
+export { Competitor, ICompetitor };
 
 import { Competition, CompetitionState} from "./competition";
 import type { ICompetition } from "./competition";
-export { Competition, ICompetition, CompetitionState }
+export { Competition, ICompetition, CompetitionState };

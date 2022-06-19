@@ -58,7 +58,7 @@ describe("Fails on poor input to fromString", () => {
   test("Too many components", () => {
     expect(
       () => {
-        const result = Step.fromString("1-2-3");
+        Step.fromString("1-2-3");
       }
     ).toThrow(TypeError);
   });
