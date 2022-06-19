@@ -43,8 +43,12 @@ navigator.storage.estimate().then(estimation =>{
 import { db } from "./data/gymscoredb";
 import { ICompetition, CompetitionState } from "./data";
 import * as pageCommon from "./page_common";
-pageCommon.setup();
 import { Modal } from "bootstrap";
+
+type CompetitionRowDisplayFunc = (row: HTMLTableRowElement, competition: ICompetition) => void;
+type CompetitionCallback = (competition: ICompetition) => void;
+
+pageCommon.setup();
 
 window.addEventListener("DOMContentLoaded", () => {
   onLoaded();
@@ -99,7 +103,11 @@ async function startCompetition(competition: ICompetition) {
   window.location.href = `live_competition.html?compId=${competition.id}`;
 }
 
-async function displayCompetitionTable(tableName: string, state: CompetitionState, displayFunc: Function) {
+async function displayCompetitionTable(
+  tableName: string,
+  state: CompetitionState,
+  displayFunc: CompetitionRowDisplayFunc) {
+
   const table = <HTMLTableElement>document.getElementById(tableName);
   db.transaction("r", db.competitions, async() => {
     db.competitions.where("state").equals(state).toArray().then((a) => {
@@ -115,7 +123,6 @@ async function displayCompetitionTable(tableName: string, state: CompetitionStat
 
 function displayPreparingCompetition(row: HTMLTableRowElement, competition: ICompetition) {
   displayCompetitionLink(row, getPageLink(competition, "prepare_competition", "Continue preparing", "pencil"));
-  // displayCompetitionLink(row, getPageLink(competition, "live_competition", "Start", "play")); // TODO: consider a jslink that sets the competition state then redirects to live_competition?
   displayCompetitionLink(row, getJSLink(competition, startCompetition, "Start", "play"));
   displayCompetitionLink(row, getJSLink(competition, promptDeleteCompetition, "Delete", "trash"));
 }
@@ -141,7 +148,12 @@ function getPageLink(competition: ICompetition, pageName: string, text: string, 
   return link;
 }
 
-function getJSLink(competition: ICompetition, callback: Function, text: string, iconName: string): HTMLAnchorElement {
+function getJSLink(
+  competition: ICompetition,
+  callback: CompetitionCallback,
+  text: string,
+  iconName: string): HTMLAnchorElement {
+
   const link = document.createElement("a");
   link.href = "";
   link.addEventListener("click", (event: Event) => {

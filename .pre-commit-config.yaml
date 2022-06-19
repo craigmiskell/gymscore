@@ -12,6 +12,8 @@ repos:
   rev: v8.14.0
   hooks:
     - id: eslint
+      files: \.[jt]sx?$  # *.js, *.jsx, *.ts and *.tsx
+      types: [file]
 - repo: https://github.com/jumanjihouse/pre-commit-hooks
   rev: 2.1.6
   hooks:
