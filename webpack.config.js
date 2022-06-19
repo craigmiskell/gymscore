@@ -75,24 +75,27 @@ const rendererConfig = merge(commonConfig, {
   ],
 });
 
-// When adding more, do it in a loop with just the base name
-const setupCompConfig = merge(commonConfig, {
-  entry: ["./src/renderer/prepare_competition.ts"],
-  target: "electron18.2-renderer",
-  output: {
-    path: path.resolve(__dirname, "dist/renderer"),
-    filename: "prepare_competition.js",
-  },
-  plugins: [
-    new HtmlWebpackPlugin({
-      template: "src/renderer/prepare_competition.html",
-      filename: "prepare_competition.html",
-    }),
-    new MiniCssExtractPlugin({
-      filename: "prepare_competition.css"
-    }),
-  ],
-});
+const pageConfigs = ["prepare_competition", "live_competition"].map(
+  (pageName) => {
+    return merge(commonConfig, {
+      entry: [`./src/renderer/${pageName}.ts`],
+      target: "electron18.2-renderer",
+      output: {
+        path: path.resolve(__dirname, "dist/renderer"),
+        filename: `${pageName}.js`,
+      },
+      plugins: [
+        new HtmlWebpackPlugin({
+          template: `src/renderer/${pageName}.html`,
+          filename: `${pageName}.html`,
+        }),
+        new MiniCssExtractPlugin({
+          filename: `${pageName}.css`
+        }),
+      ],
+    });
+  }
+);
 
 const mainConfig = merge(commonConfig, {
   entry: ["./src/main/index.ts"],
@@ -113,7 +116,7 @@ const preloadConfig = merge(commonConfig, {
 
 module.exports = () => {
   let configMode = isProduction ? "production" : "development";
-  let configs = [rendererConfig, setupCompConfig, mainConfig, preloadConfig];
+  let configs = [rendererConfig, mainConfig, preloadConfig].concat(pageConfigs);
   for (let c of configs) {
     c.mode = configMode;
   }

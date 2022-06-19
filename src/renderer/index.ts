@@ -51,7 +51,7 @@ window.addEventListener("DOMContentLoaded", () => {
 });
 
 async function onLoaded() {
-  var modal = document.getElementById("deleteConfirmationModal");
+  const modal = document.getElementById("deleteConfirmationModal");
 
   modal.addEventListener("hide.bs.modal", () => {
     modal.removeAttribute(COMPETITION_ID_ATTR);
@@ -69,11 +69,13 @@ async function onLoaded() {
     }
   );
 
-  displayPreparingCompetitions();
+  displayCompetitionTable("preparingCompetitions", CompetitionState.Preparing, displayPreparingCompetition);
+  displayCompetitionTable("liveCompetitions", CompetitionState.Live, displayLiveCompetition);
+  displayCompetitionTable("pastCompetitions", CompetitionState.Completed, displayCompletedCompetition);
 }
 
 function promptDeleteCompetition(competition: ICompetition) {
-  let modal = document.getElementById("deleteConfirmationModal");
+  const modal = document.getElementById("deleteConfirmationModal");
   modal.setAttribute(COMPETITION_ID_ATTR, competition.id.toString());
   Modal.getOrCreateInstance(modal).show();
 }
@@ -83,7 +85,7 @@ function doDeleteCompetition(competitionId: number) {
   db.competitions.delete(competitionId);
   const table = <HTMLTableElement>document.getElementById("preparingCompetitions");
 
-  let row = table.querySelector(`tr[${COMPETITION_ID_ATTR}="${competitionId}"]`);
+  const row = table.querySelector(`tr[${COMPETITION_ID_ATTR}="${competitionId}"]`);
   if (row == null) {
     console.log(`Did not find row with competition ID ${competitionId}`);
     return;
@@ -91,40 +93,56 @@ function doDeleteCompetition(competitionId: number) {
   row.remove();
 }
 
-async function displayPreparingCompetitions() {
-  const table = <HTMLTableElement>document.getElementById("preparingCompetitions");
-  db.transaction("rw", db.competitions, async() => {
-    db.competitions.toArray().then((a) => {
-      for (const c of a) {
-        displayPreparingCompetition(table, c);
+async function startCompetition(competition: ICompetition) {
+  competition.state = CompetitionState.Live;
+  await db.competitions.put(competition);
+  window.location.href = `live_competition.html?compId=${competition.id}`;
+}
+
+async function displayCompetitionTable(tableName: string, state: CompetitionState, displayFunc: Function) {
+  const table = <HTMLTableElement>document.getElementById(tableName);
+  db.transaction("r", db.competitions, async() => {
+    db.competitions.where("state").equals(state).toArray().then((a) => {
+      for (const competition of a) {
+        const row = table.insertRow();
+        row.setAttribute(COMPETITION_ID_ATTR, competition.id.toString());
+        row.insertCell().textContent = competition.name;
+        displayFunc(row, competition);
       }
     });
   });
 }
 
-function displayPreparingCompetition(table: HTMLTableElement, competition: ICompetition) {
-  let row = table.insertRow();
-  row.setAttribute(COMPETITION_ID_ATTR, competition.id.toString());
-  row.insertCell().textContent = competition.name;
+function displayPreparingCompetition(row: HTMLTableRowElement, competition: ICompetition) {
   displayCompetitionLink(row, getPageLink(competition, "prepare_competition", "Continue preparing", "pencil"));
-  displayCompetitionLink(row, getPageLink(competition, "start_competition", "Start", "play"));
+  // displayCompetitionLink(row, getPageLink(competition, "live_competition", "Start", "play")); // TODO: consider a jslink that sets the competition state then redirects to live_competition?
+  displayCompetitionLink(row, getJSLink(competition, startCompetition, "Start", "play"));
+  displayCompetitionLink(row, getJSLink(competition, promptDeleteCompetition, "Delete", "trash"));
+}
+
+function displayLiveCompetition(row: HTMLTableRowElement, competition: ICompetition) {
+  displayCompetitionLink(row, getPageLink(competition, "live_competition", "Continue", "play"));
+}
+
+function displayCompletedCompetition(row: HTMLTableRowElement, competition: ICompetition) {
+  // TODO: add page to view the results, re-open, etc.
   displayCompetitionLink(row, getJSLink(competition, promptDeleteCompetition, "Delete", "trash"));
 }
 
 function displayCompetitionLink(row: HTMLTableRowElement, link: HTMLAnchorElement) {
-  let cell = row.insertCell();
+  const cell = row.insertCell();
   cell.appendChild(link);
 }
 
-function getPageLink(competition: ICompetition, pageName: String, text: String, iconName: String): HTMLAnchorElement {
-  let link = document.createElement("a");
+function getPageLink(competition: ICompetition, pageName: string, text: string, iconName: string): HTMLAnchorElement {
+  const link = document.createElement("a");
   link.href = `${pageName}.html?compId=${competition.id}`;
   fillInLink(link, text, iconName);
   return link;
 }
 
-function getJSLink(competition: ICompetition, callback: Function, text: String, iconName: String): HTMLAnchorElement {
-  let link = document.createElement("a");
+function getJSLink(competition: ICompetition, callback: Function, text: string, iconName: string): HTMLAnchorElement {
+  const link = document.createElement("a");
   link.href = "";
   link.addEventListener("click", (event: Event) => {
     callback(competition);
@@ -134,8 +152,8 @@ function getJSLink(competition: ICompetition, callback: Function, text: String, 
   return link;
 }
 
-function fillInLink(link: HTMLAnchorElement, text: String, iconName: String) {
-  let icon = document.createElement("i");
+function fillInLink(link: HTMLAnchorElement, text: string, iconName: string) {
+  const icon = document.createElement("i");
   icon.classList.add("bi", `bi-${iconName}`);
   link.appendChild(icon);
   link.appendChild(new Text(` ${text}`));

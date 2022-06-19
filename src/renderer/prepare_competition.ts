@@ -23,10 +23,6 @@ pageCommon.setup();
 
 let competition: ICompetition = undefined;
 
-window.addEventListener("DOMContentLoaded", () => {
-  onLoaded();
-});
-
 class Elements extends pageCommon.BaseElements {
   detailsSaveButton: HTMLElement = null;
   detailsEditButton: HTMLElement = null;
@@ -39,11 +35,15 @@ class Elements extends pageCommon.BaseElements {
   enableBeam: HTMLElement = null;
   enableFloor: HTMLElement = null;
 }
-
 const elements = new Elements();
-pageCommon.findElements(elements);
+
+window.addEventListener("DOMContentLoaded", () => {
+  onLoaded();
+});
 
 async function onLoaded() {
+  pageCommon.findElements(elements);
+
   const urlParams = new URLSearchParams(window.location.search);
   const compId = urlParams.get("compId");
   console.log(`Competition ID from query string: ${compId}`);
@@ -67,11 +67,11 @@ async function loadCompetition(compId: number) {
 }
 
 async function saveCompetitionDetails() {
-  let form = <HTMLFormElement>elements.detailsForm;
+  const form = <HTMLFormElement>elements.detailsForm;
 
   if (!form.checkValidity()) {
-    form.classList.add('was-validated')
-    return
+    form.classList.add("was-validated");
+    return;
   }
 
   if(competition) {
@@ -130,6 +130,6 @@ function setDetailsEditing(editing: boolean) {
   }
 
   if(editing) {
-    elements.detailsForm.classList.remove('was-validated')
+    elements.detailsForm.classList.remove("was-validated");
   }
 }
