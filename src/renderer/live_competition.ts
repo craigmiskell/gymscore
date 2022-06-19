@@ -44,7 +44,7 @@ async function onLoaded() {
 
   document.getElementById("pauseCompetitionLink").addEventListener(
     "click",
-    async (event: Event) => {
+    async () => {
       competition.state = CompetitionState.Preparing;
       await db.competitions.put(competition);
     }
