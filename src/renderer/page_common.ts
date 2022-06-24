@@ -49,3 +49,22 @@ export function findElements<T extends BaseElements>(els: T) {
     els[field as keyof BaseElements] = document.getElementById(field);
   }
 }
+
+// TODO: verify whether this can be hit
+window.addEventListener("error", (error) => {
+  alert("Caught unexpected exception " + error);
+  console.log("Caught exception");
+  console.log(error);
+});
+
+window.addEventListener("unhandledrejection", (event) => {
+  // TODO: keep the output somewhere we can copy out later, particularly if the page reloads
+  // because of a failure in a handler (although we try to avoid that happening)
+  // and it should really be in a log file we can ask the user to send in.
+
+  // Log the stack trace
+  console.log(event.reason._e);
+
+  // TODO: make this much prettier; bootstrap?
+  alert(`Unexpected error: ${event.reason.name} : ${event.reason.message}`);
+});
