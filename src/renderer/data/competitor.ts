@@ -20,6 +20,10 @@ export interface ICompetitor {
   identifier: string,
   name: string,
   _stepString: string,
+  gymId: number,
+  step: Step,
+
+  greet(): string;
 }
 
 export class Competitor implements ICompetitor {
@@ -29,36 +33,33 @@ export class Competitor implements ICompetitor {
   identifier: string;
   name: string;
   _stepString: string;
-  _step: Step;
-  gymId: bigint;
+  gymId: number;
 
-  constructor(identifier: string, name: string, step: string | Step, gymId: bigint, id?:number) {
+  constructor(identifier: string, name: string, step: string | Step, gymId: number, id?:number) {
     this.identifier = identifier;
     this.name = name;
     this.gymId = gymId;
 
     if (typeof step === "string") {
       this._stepString = step;
-      this._step = Step.fromString(this._stepString);
     }
 
     if (step instanceof Step) {
-      this.step = step;
+      this._stepString = step.toString();
     }
     if (id) {this.id = id;}
   }
 
-  // Just to prove testing.
+  // Just for testing.
   greet() {
     return `Hello ${this.name}`;
   }
 
   set step(value: Step) {
-    this._step = value;
-    this._stepString = this._step.toString();
+    this._stepString = value.toString();
   }
 
   get step() :Step {
-    return this._step;
+    return Step.fromString(this._stepString);
   }
 }

@@ -20,14 +20,9 @@ export enum UnderOver {
 const minLevel = 1;
 const maxLevel = 10;
 
-// export interface IStep {
-//   level: bigint;
-//   underOver: UnderOver;
-// }
-
 // Just a convenience class; persisted as strings, and use toString/fromString
 // to de/hydrate it
-export class Step { // implements IStep {
+export class Step {
   _level: bigint;
   underOver: UnderOver;
 
@@ -38,6 +33,7 @@ export class Step { // implements IStep {
 
   static fromString(step: string) :Step {
     // TODO: error handling (count of bits != 2, parse failures, out of bounds, etc)
+    // TODO: A static store/cache of step objects, keyed on the strong value, so we don't create them needlessly
     const bits = step.split("-");
     if(bits.length != 2) {
       throw new TypeError(`Step string "${step}" had ${bits.length} parts; expected 2`);
@@ -51,6 +47,10 @@ export class Step { // implements IStep {
 
   toString() :string {
     return `${this.level}-${this.underOver}`;
+  }
+
+  humanString() :string {
+    return `${this.level} ${this.underOver == UnderOver.Under ? "Under" : "Over"}`;
   }
 
   set level(value: bigint) {

@@ -16,7 +16,7 @@
 console.log("Preparing competition");
 
 import { db } from "./data/gymscoredb";
-import { ICompetition, Competition, CompetitionState } from "./data";
+import { ICompetition, CompetitionState } from "./data";
 import * as pageCommon from "./page_common";
 
 pageCommon.setup();

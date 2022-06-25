@@ -73,6 +73,10 @@ async function onLoaded() {
     }
   );
 
+  document.getElementById("delete-database-button").addEventListener(
+    "click", clearDB
+  );
+
   displayCompetitionTable("preparingCompetitions", CompetitionState.Preparing, displayPreparingCompetition);
   displayCompetitionTable("liveCompetitions", CompetitionState.Live, displayLiveCompetition);
   displayCompetitionTable("pastCompetitions", CompetitionState.Completed, displayCompletedCompetition);
@@ -157,8 +161,8 @@ function getJSLink(
   const link = document.createElement("a");
   link.href = "";
   link.addEventListener("click", (event: Event) => {
-    callback(competition);
     event.preventDefault();
+    callback(competition);
   });
   fillInLink(link, text, iconName);
   return link;

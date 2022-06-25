@@ -21,6 +21,7 @@ import type {IGym}  from "./gym";
 export { Gym, IGym };
 
 export { Step, UnderOver } from "./step";
+
 import { Competitor } from "./competitor";
 import type { ICompetitor } from "./competitor";
 export { Competitor, ICompetitor };

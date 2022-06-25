@@ -63,13 +63,23 @@
     <hr>
 
     <h2>Competitors</h2>
-    Vertically scrolling table, with add button at top, delete button on right
-    Add auto-completes known Competitors, asks for team they're in for *this* competition.
-    Auto-complete filtering
+    <div class="row">
+      <input type="text" class="form-control col-9 w-75" id="competitorName" placeholder="Competitor Name"></input>
+      <button type="button" class="btn btn-primary col-3" id="addCompetitorButton">Add to Competition</button>
+    </div>
+    <table class="table table-sm table-striped table-bordered w-auto competitors-table" id="competitors">
+      <thead><tr><th>Name</th><th>Step</th><th>Club</th><th>Team</th><th>Remove from competition</th></tr></thead>
+      <tbody></tbody>
+    </table>
+    <br>
+    TODO: When adding known competitors, ask for team they're in for *this* competition.
+    TODO: When name not found, prompt for other details (step, club)
     Column to show when competitor isn't in a group.
     <h2>Setup groups</h2>
     If this doesn't go better in Competitors; suspect it might be clearer as an operation to do *after* adding all competitors.
     Drag'n'drop or other really ergonomic mechanism.
     <h2></h2>
+    <hr>
+    <button type="button" class="btn btn-primary" id="create-fake-competitors-button">Create set of fake competitors</button>
   </body>
 </html>

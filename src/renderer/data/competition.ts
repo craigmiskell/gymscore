@@ -12,6 +12,10 @@
 //
 // You should have received a copy of the GNU General Public License along with this program. If not,
 // see <https://www.gnu.org/licenses/>.
+interface CompetitorIds {
+  [key: string]: boolean;
+}
+
 
 export interface ICompetition {
   id?: number,
@@ -23,6 +27,7 @@ export interface ICompetition {
   bars: boolean,
   beam: boolean,
   floor: boolean,
+  competitorIds: CompetitorIds,
 }
 export enum CompetitionState {
   Preparing = 0,
@@ -40,16 +45,13 @@ export class Competition implements ICompetition {
   bars = false;
   beam = false;
   floor = false;
+  competitorIds = {};
 
   constructor(name: string, date: string, location:string, id?:number) {
     this.name = name;
     this.date = date;
     this.location = location;
     this.state = CompetitionState.Preparing;
-    this.vault = false;
-    this.bars = false;
-    this.beam = false;
-    this.floor = false;
     if (id) {this.id = id;}
   }
 }

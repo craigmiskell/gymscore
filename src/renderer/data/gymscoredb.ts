@@ -28,7 +28,7 @@ class GymScoreDB extends Dexie {
     super("GymScoreDB");
     this.version(1).stores({
       competitions: "++id, name, date, location, state",
-      competitors: "++id, identifier, name, stepString, gymId",
+      competitors: "++id, identifier, name, gymId",
       gyms: "++id, name",
     });
   }
