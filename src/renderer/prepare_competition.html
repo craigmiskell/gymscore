@@ -65,21 +65,71 @@
     <h2>Competitors</h2>
     <div class="row">
       <input type="text" class="form-control col-9 w-75" id="competitorName" placeholder="Competitor Name"></input>
-      <button type="button" class="btn btn-primary col-3" id="addCompetitorButton">Add to Competition</button>
+      <button type="button" class="btn btn-primary col-2" id="addCompetitorButton" disabled>Add to Competition</button>
     </div>
     <table class="table table-sm table-striped table-bordered w-auto competitors-table" id="competitors">
-      <thead><tr><th>Name</th><th>Step</th><th>Club</th><th>Team</th><th>Remove from competition</th></tr></thead>
+      <thead><tr><th>Name</th><th>Step</th><th>Club</th><th>Team</th><th>Group</th></th><th>Remove from competition</th></tr></thead>
       <tbody></tbody>
     </table>
-    <br>
-    TODO: When adding known competitors, ask for team they're in for *this* competition.
-    TODO: When name not found, prompt for other details (step, club)
-    Column to show when competitor isn't in a group.
-    <h2>Setup groups</h2>
-    If this doesn't go better in Competitors; suspect it might be clearer as an operation to do *after* adding all competitors.
-    Drag'n'drop or other really ergonomic mechanism.
-    <h2></h2>
     <hr>
-    <button type="button" class="btn btn-primary" id="create-fake-competitors-button">Create set of fake competitors</button>
+    <button type="button" class="btn btn-primary d-none" id="create-fake-competitors-button">Create set of fake competitors</button>
+
+    <div class="modal fade" tabindex="-1" data-bs-backdrop="static" role="dialog" aria-hidden="true" id="addCompetitorModal">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h4 class="modal-title">Adding competitor</h4>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cancel"></button>
+          </div>
+          <div class="modal-footer">
+            <form id="competitorDetailsForm" class="needs-validation" novalidate>
+              <div class="row">
+                <label for="competitorNameModal" class="form-label col-3 col-md-1 col-form-label">Name</label>
+                <div class="col">
+                  <input type="text" class="form-control" id="competitorNameModal" placeholder="Competitor Name" required>
+                  <div class="invalid-feedback">
+                    A competitor must have a name
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <label for="competitorIdModal" class="form-label col-3 col-md-1 col-form-label">National ID</label>
+                <div class="col">
+                  <input type="text" class="form-control w-25" id="competitorIdModal" required>
+                  <div class="invalid-feedback">
+                    A competitor must have a National ID
+                  </div>
+                </div>
+                <label for="competitorStepSelectModal" class="form-label col-1 col-md-1 col-form-label">Step</label>
+                <div class="col">
+                  <select class="form-select form-select-sm col-2" id="competitorStepSelectModal">
+                    <!-- Populated in code -->
+                  </select>
+                </div>
+              </div>
+              <div class="row">
+                <label for="competitorGymModal" class="form-label col-1 col-md-1 col-form-label">Gym</label>
+                <div class="col">
+                  <input type="text" class="form-control col-5" id="competitorGymModal" placeholder="Gym Name" required></input>
+                </div>
+                <div class="invalid-feedback">
+                  A competitor must compete for a gym
+                </div>
+                <label for="competitorTeamModal" class="form-label col-1 col-md-1 col-form-label">Team</label>
+                <div class="col">
+                  <input type="text" class="form-control col-5" id="competitorTeamModal" placeholder="Team Name" required></input>
+                </div>
+                <div class="invalid-feedback">
+                  A competitor must be in a team
+                </div>
+              </div>
+            <ul>
+              <li>Select team from list for gym in this comp, with ability to add new (same as gym on defocus/finish)</li>
+            </ul>
+            <button type="button" class="btn btn-primary" id="addCompetitorModalYes">Add to competition</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </body>
 </html>

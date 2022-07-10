@@ -31,6 +31,11 @@ export class Step {
     this.underOver = underOver;
   }
 
+  // Convenience for getting a starting value (e.g. for new competitors)
+  static first() :Step {
+    return new Step(BigInt(1), UnderOver.Under);
+  }
+
   static fromString(step: string) :Step {
     // TODO: error handling (count of bits != 2, parse failures, out of bounds, etc)
     // TODO: A static store/cache of step objects, keyed on the strong value, so we don't create them needlessly
@@ -51,6 +56,10 @@ export class Step {
 
   humanString() :string {
     return `${this.level} ${this.underOver == UnderOver.Under ? "Under" : "Over"}`;
+  }
+
+  equals(other: Step) :boolean {
+    return (this._level == other._level) && (this.underOver == other.underOver);
   }
 
   set level(value: bigint) {

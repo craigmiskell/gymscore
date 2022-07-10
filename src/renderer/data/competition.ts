@@ -12,10 +12,39 @@
 //
 // You should have received a copy of the GNU General Public License along with this program. If not,
 // see <https://www.gnu.org/licenses/>.
-interface CompetitorIds {
-  [key: string]: boolean;
+
+import { ICompetitor } from "./competitor";
+
+// Details of a competitor *at a given competition*
+// They will, over their competitive lifetime, change steps as they grow
+// and may change gyms.  So while we store those details against the competitor
+// as the current/last known value, it's more important to know what state they
+// were in at a given competition.
+// This is the data object stored competitors list for the competition.
+export class CompetitionCompetitorDetails {
+  competitorId: number;
+  competitorName: string;
+  stepString: string;
+  gymId: number;
+  teamIndex: number;
+  groupNumber: number;
+
+  constructor(competitor: ICompetitor, stepString: string, gymId: number, teamIndex: number, groupNumber: number) {
+    this.competitorId = competitor.id;
+    this.competitorName = competitor.name;
+    this.stepString = stepString;
+    this.gymId = gymId;
+    this.teamIndex = teamIndex;
+    this.groupNumber = groupNumber;
+  }
 }
 
+export class Team {
+  constructor(
+    public name: string,
+    public gymId: number,
+  ) {}
+}
 
 export interface ICompetition {
   id?: number,
@@ -27,8 +56,13 @@ export interface ICompetition {
   bars: boolean,
   beam: boolean,
   floor: boolean,
-  competitorIds: CompetitorIds,
+  competitors: CompetitionCompetitorDetails[],
+  teams: Team[],
+
+  removeCompetitorById(competitorId: number): void;
+  getCompetitorById(competitorId: number): CompetitionCompetitorDetails;
 }
+
 export enum CompetitionState {
   Preparing = 0,
   Live,
@@ -45,7 +79,8 @@ export class Competition implements ICompetition {
   bars = false;
   beam = false;
   floor = false;
-  competitorIds = {};
+  competitors: CompetitionCompetitorDetails[] = [];
+  teams: Team[] = [];
 
   constructor(name: string, date: string, location:string, id?:number) {
     this.name = name;
@@ -53,5 +88,25 @@ export class Competition implements ICompetition {
     this.location = location;
     this.state = CompetitionState.Preparing;
     if (id) {this.id = id;}
+  }
+
+  removeCompetitorById(competitorId: number) {
+    const index = this.competitors.findIndex(
+      (otherCompetitor: CompetitionCompetitorDetails) => {
+        return competitorId == otherCompetitor.competitorId;
+      }
+    );
+    if(index < 0) {
+      return; //Ignore; -1 or not-found.
+    }
+    this.competitors.splice(index, 1);
+  }
+
+  getCompetitorById(competitorId: number) {
+    return this.competitors.find(
+      (otherCompetitor: CompetitionCompetitorDetails) => {
+        return competitorId == otherCompetitor.competitorId;
+      }
+    );
   }
 }
