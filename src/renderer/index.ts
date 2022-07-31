@@ -101,6 +101,7 @@ function doDeleteCompetition(competitionId: number) {
   row.remove();
 }
 
+// TODO: validate all competitors are in groups (non-0); alert/prevent if not
 async function startCompetition(competition: ICompetition) {
   competition.state = CompetitionState.Live;
   await db.competitions.put(competition);
@@ -118,7 +119,7 @@ async function displayCompetitionTable(
       for (const competition of a) {
         const row = table.insertRow();
         row.setAttribute(COMPETITION_ID_ATTR, competition.id.toString());
-        row.insertCell().textContent = competition.name;
+        row.insertCell().textContent = `${competition.name} (${competition.location})`;
         displayFunc(row, competition);
       }
     });
@@ -126,7 +127,7 @@ async function displayCompetitionTable(
 }
 
 function displayPreparingCompetition(row: HTMLTableRowElement, competition: ICompetition) {
-  displayCompetitionLink(row, getPageLink(competition, "prepare_competition", "Continue preparing", "pencil"));
+  displayCompetitionLink(row, getPageLink(competition, "prepare_competition", "Prepare", "pencil"));
   displayCompetitionLink(row, getJSLink(competition, startCompetition, "Start", "play"));
   displayCompetitionLink(row, getJSLink(competition, promptDeleteCompetition, "Delete", "trash"));
 }

@@ -44,7 +44,7 @@ class Elements extends pageCommon.BaseElements {
   competitionDate: HTMLElement = null;
   competitionLocation: HTMLElement = null;
   enableVault: HTMLElement = null;
-  enableBars: HTMLElement = null;
+  enableBar: HTMLElement = null;
   enableBeam: HTMLElement = null;
   enableFloor: HTMLElement = null;
   competitorName: HTMLInputElement = null;
@@ -458,7 +458,7 @@ async function loadCompetition(compId: number) {
       (<HTMLInputElement>elements.competitionName).value = competition.name;
       (<HTMLInputElement>elements.competitionDate).value = competition.date;
       (<HTMLInputElement>elements.competitionLocation).value = competition.location;
-      (<HTMLInputElement>elements.enableBars).checked = competition.bars;
+      (<HTMLInputElement>elements.enableBar).checked = competition.bar;
       (<HTMLInputElement>elements.enableBeam).checked = competition.beam;
       (<HTMLInputElement>elements.enableFloor).checked = competition.floor;
       (<HTMLInputElement>elements.enableVault).checked = competition.vault;
@@ -505,7 +505,7 @@ async function createCompetition() {
 
 function populateCompetitionDisciplines(competition: ICompetition) {
   competition.vault = (<HTMLInputElement>elements.enableVault).checked;
-  competition.bars = (<HTMLInputElement>elements.enableBars).checked;
+  competition.bar = (<HTMLInputElement>elements.enableBar).checked;
   competition.beam = (<HTMLInputElement>elements.enableBeam).checked;
   competition.floor = (<HTMLInputElement>elements.enableFloor).checked;
 }
@@ -513,7 +513,7 @@ function populateCompetitionDisciplines(competition: ICompetition) {
 function setDetailsEditing(editing: boolean) {
   const enabledWhenEditing = [
     elements.detailsSaveButton, elements.competitionName, elements.competitionDate,
-    elements.competitionLocation, elements.enableBars, elements.enableBeam, elements.enableFloor,
+    elements.competitionLocation, elements.enableBar, elements.enableBeam, elements.enableFloor,
     elements.enableVault
   ];
   const enabledWhenNotEditing = [elements.detailsEditButton];
@@ -585,3 +585,5 @@ async function populateFakeCompetitors() {
     ));
   }
 }
+
+// TODO: some sort of alert if not all competitors are in groups

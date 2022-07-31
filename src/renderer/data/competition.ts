@@ -15,12 +15,29 @@
 
 import { ICompetitor } from "./competitor";
 
+interface CompetitorScores {
+  [key: string]: CompetitorScore
+}
+
+// Values are all * 1000 and are integers, to be rendered as floating point (to 3dp) by the UI.
+export class CompetitorScore {
+  constructor(
+    public difficulty: number,
+    public e1: number,
+    public e2: number,
+    public e3: number,
+    public e4: number,
+    public neutralDeductions: number,
+    public finalScore: number, // Can be calculated from the other data, but it's easier to store it as well.
+  ) {}
+}
+
 // Details of a competitor *at a given competition*
 // They will, over their competitive lifetime, change steps as they grow
 // and may change gyms.  So while we store those details against the competitor
 // as the current/last known value, it's more important to know what state they
 // were in at a given competition.
-// This is the data object stored competitors list for the competition.
+// This is the data object stored in competitors list for the competition.
 export class CompetitionCompetitorDetails {
   competitorId: number;
   competitorName: string;
@@ -28,6 +45,7 @@ export class CompetitionCompetitorDetails {
   gymId: number;
   teamIndex: number;
   groupNumber: number;
+  scores: CompetitorScores;
 
   constructor(competitor: ICompetitor, stepString: string, gymId: number, teamIndex: number, groupNumber: number) {
     this.competitorId = competitor.id;
@@ -36,6 +54,7 @@ export class CompetitionCompetitorDetails {
     this.gymId = gymId;
     this.teamIndex = teamIndex;
     this.groupNumber = groupNumber;
+    this.scores = {};
   }
 }
 
@@ -53,7 +72,7 @@ export interface ICompetition {
   location: string,
   state: CompetitionState,
   vault: boolean,
-  bars: boolean,
+  bar: boolean,
   beam: boolean,
   floor: boolean,
   competitors: CompetitionCompetitorDetails[],
@@ -76,7 +95,7 @@ export class Competition implements ICompetition {
   location: string;
   state: CompetitionState;
   vault = false;
-  bars = false;
+  bar = false;
   beam = false;
   floor = false;
   competitors: CompetitionCompetitorDetails[] = [];

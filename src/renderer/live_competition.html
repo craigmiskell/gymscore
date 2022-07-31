@@ -21,5 +21,36 @@
       </span>
     </div>
     <hr>
+    <h2>Results</h2>
+    <table class="table table-sm table-striped table-bordered w-auto" id="compResultsTable">
+      <thead>
+        <tr id="compResultsTableHeaderRow"><th>Group</th></tr>
+      </thead>
+    </table>
+    <div class="modal fade" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" role="dialog" aria-hidden="true" id="groupApparatusResultsModal">
+      <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h4 class="modal-title" id="groupApparatusResultsModalTitle"></h4>
+            <button type="button" id="groupApparatusResultsModalDismiss" class="btn-close"aria-label="Cancel"></button>
+          </div>
+          <div class="modal-footer">
+            <form id="groupApparatusResultsModalForm" class="needs-validation" novalidate>
+              <table class="table table-sm table-striped table-bordered w-auto" id="groupApparatusResultsModalTable">
+                <thead>
+                  <tr>
+                    <th>Competitor</th><th>D Score</th><th>E1</th><th>E2</th><th>E3</th><th>E4</th><th>Average</th><th>E Score</th><th colspan="2">Neutral Deductions</th><th>Final Score</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- Populated in code -->
+                </tbody>
+              </table>
+              <button type="button" class="btn btn-primary" id="saveScores">Save</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
   </body>
 </html>
