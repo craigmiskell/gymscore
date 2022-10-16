@@ -22,8 +22,6 @@ export interface ICompetitor {
   _stepString: string,
   gymId: number,
   step: Step,
-
-  greet(): string;
 }
 
 export class Competitor implements ICompetitor {
@@ -48,11 +46,6 @@ export class Competitor implements ICompetitor {
       this._stepString = step.toString();
     }
     if (id) {this.id = id;}
-  }
-
-  // Just for testing.
-  greet() {
-    return `Hello ${this.name}`;
   }
 
   set step(value: Step) {

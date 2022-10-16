@@ -40,18 +40,23 @@ export class CompetitorScore {
 // This is the data object stored in competitors list for the competition.
 export class CompetitionCompetitorDetails {
   competitorId: number;
+  competitorIdentifier: string;
   competitorName: string;
   stepString: string;
   gymId: number;
+  gymName: string;
   teamIndex: number;
   groupNumber: number;
   scores: CompetitorScores;
 
-  constructor(competitor: ICompetitor, stepString: string, gymId: number, teamIndex: number, groupNumber: number) {
+  constructor(competitor: ICompetitor, stepString: string, gymId: number,
+    gymName: string, teamIndex: number, groupNumber: number) {
     this.competitorId = competitor.id;
+    this.competitorIdentifier = competitor.identifier,
     this.competitorName = competitor.name;
     this.stepString = stepString;
     this.gymId = gymId;
+    this.gymName = gymName;
     this.teamIndex = teamIndex;
     this.groupNumber = groupNumber;
     this.scores = {};

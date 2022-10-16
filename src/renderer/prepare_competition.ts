@@ -15,6 +15,8 @@
 
 console.log("Preparing competition");
 
+declare const api: typeof import("../common/api").default;
+
 import { db } from "./data/gymscoredb";
 import { ICompetition, Competition, CompetitionState,
   ICompetitor, Competitor, Step, UnderOver,
@@ -58,6 +60,7 @@ class Elements extends pageCommon.BaseElements {
   addCompetitorButton: HTMLButtonElement = null;
   competitorDetailsForm: HTMLFormElement = null;
   groupSelectTemplate: HTMLSelectElement = null;
+  createRecorderSheetsButton: HTMLButtonElement = null;
 }
 const elements = new Elements();
 
@@ -79,6 +82,7 @@ async function onLoaded() {
   document.getElementById("addCompetitorButton").addEventListener("click", openAddCompetitorModal);
   document.getElementById("create-fake-competitors-button").addEventListener("click", populateFakeCompetitors);
   document.getElementById("addCompetitorModalYes").addEventListener("click", addCompetitor);
+  elements.createRecorderSheetsButton.addEventListener("click", createRecorderSheets);
 
   await setupCompetitorAutoComplete();
   await setupGymAutoComplete();
@@ -353,7 +357,8 @@ async function addCompetitor() {
   modal.hide();
 
   const gymId = await gymIdWhenAddingCompetitor();
-  const teamId = await teamIndexWhenAddingCompetitor(await gymById(gymId));
+  const gym = await gymById(gymId);
+  const teamId = await teamIndexWhenAddingCompetitor(gym);
   let competitor;
 
   if(elements.competitorName.hasAttribute(COMPETITOR_ID_ATTR_NAME)) {
@@ -379,6 +384,7 @@ async function addCompetitor() {
     competitor,
     elements.competitorStepSelectModal.value,
     gymId,
+    gym.name, // A convenience, because we need it in the main process and won't be able to look things up in the DB.
     teamId,
     0, // Default is "no group", index 0
   ));
@@ -562,6 +568,11 @@ const getAllSteps = <GetAllStepsFunc>(() => {
   return getAllSteps.steps;
 });
 
+
+function createRecorderSheets() {
+  // Collate necessary data, send it to the main thread which can do pdfs
+  api.sendAsync("create-recorder-sheets", {competition: competition});
+}
 
 async function populateFakeCompetitors() {
   db.competitors.toCollection().delete();

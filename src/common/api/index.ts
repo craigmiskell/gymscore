@@ -4,7 +4,7 @@ type ReceiveCallbackFunction = (...args: any[]) => void;
 
 export default {
   sendSync: (channel:string, data: any) => {
-    // allowlist channels
+    // allowlist channels (fetchCompetitor not in use, just an exemplar from early testing)
     const validChannels = ["fetchCompetitor"];
     if (validChannels.includes(channel)) {
       return ipcRenderer.sendSync(channel, data);
@@ -14,7 +14,7 @@ export default {
   },
   sendAsync: (channel:string, data: any) => {
     // allowlist channels
-    const validChannels = ["save-png"];
+    const validChannels = ["save-png", "create-recorder-sheets"];
     if (validChannels.includes(channel)) {
       ipcRenderer.send(channel, data);
     } else {

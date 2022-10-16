@@ -61,7 +61,6 @@
       <button type="button" class="btn btn-primary" id="detailsSaveButton">Save</button>
     </form>
     <hr>
-
     <h2>Competitors</h2>
     <div class="row">
       <input type="text" class="form-control col-9 w-75" id="competitorName" placeholder="Competitor Name"></input>
@@ -72,6 +71,8 @@
       <tbody></tbody>
     </table>
     <hr>
+    <button type="button" class="btn btn-primary" id="createRecorderSheetsButton">Create Recorder Sheets</button>
+
     <button type="button" class="btn btn-primary d-none" id="create-fake-competitors-button">Create set of fake competitors</button>
 
     <div class="modal fade" tabindex="-1" data-bs-backdrop="static" role="dialog" aria-hidden="true" id="addCompetitorModal">
@@ -123,9 +124,6 @@
                   A competitor must be in a team
                 </div>
               </div>
-            <ul>
-              <li>Select team from list for gym in this comp, with ability to add new (same as gym on defocus/finish)</li>
-            </ul>
             <button type="button" class="btn btn-primary" id="addCompetitorModalYes">Add to competition</button>
           </div>
         </div>

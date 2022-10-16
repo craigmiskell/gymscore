@@ -19,6 +19,13 @@ import isDev from "electron-is-dev";
 import fs from "fs";
 import mktemp from "mktemp";
 import os from "os";
+import Blob from "cross-blob"; // Used by jsPDF to save
+// And this is necessary for jsPDF to find the Blob object (using Blob from buffer is insufficient)
+globalThis.Blob = Blob;
+
+import { Competition } from "../renderer/data";
+import { generateRecorderSheets } from "./recorder-sheets";
+import { savePDF } from "./savePdf";
 
 const createWindow = () => {
   const win = new BrowserWindow({
@@ -61,6 +68,7 @@ ipcMain.on("asynchronous-message", (event: IpcMainEvent, arg: any) => {
   event.reply("asynchronous-reply", "async pong");
 });
 
+// Old code, kept for reference only
 ipcMain.on("save-png", (event: IpcMainEvent, arg: any) => {
   const buffer = Buffer.from(arg.data);
 
@@ -74,6 +82,19 @@ ipcMain.on("save-png", (event: IpcMainEvent, arg: any) => {
     // Let the system open and then user can print
     shell.openPath(filename);
   });
+});
+
+ipcMain.on("create-recorder-sheets", (event: IpcMainEvent, arg: any) => {
+  const competition: Competition = arg.competition;
+
+  const sheets = generateRecorderSheets(competition);
+
+  const competitionSlug = competition.name.replace(/([^a-zA-Z0-1])+/g, "-") + " - " + competition.date;
+  const dirPath = path.join(os.homedir(), "GymScore", competitionSlug);
+  fs.mkdirSync(dirPath, { recursive: true});
+  const filename = path.join(dirPath, "recorder-sheets" + ".pdf");
+
+  savePDF(sheets, dirPath, filename);
 });
 
 console.log("Data storage may be in "+ app.getPath("userData"));
