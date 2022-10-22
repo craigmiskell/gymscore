@@ -469,6 +469,11 @@ async function loadCompetition(compId: number) {
       (<HTMLInputElement>elements.enableFloor).checked = competition.floor;
       (<HTMLInputElement>elements.enableVault).checked = competition.vault;
     }
+  } else {
+    (<HTMLInputElement>elements.enableBar).checked =
+    (<HTMLInputElement>elements.enableBeam).checked =
+    (<HTMLInputElement>elements.enableFloor).checked =
+    (<HTMLInputElement>elements.enableVault).checked = true;
   }
 }
 
