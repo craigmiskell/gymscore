@@ -12,8 +12,9 @@
   * Cols: Div, App, Place, Name/Club name, Score, Club/teammembers
 * MPlaces
   * Possibly some sort of combined view, so that if a competitor placed in more than one apparatus (or overall), they get a single row for each listing their placement + score + club/members.
-  * MIght be only an intermediate one used for doing other stuff.
+  * Might be only an intermediate one used for doing other stuff.
 * Certificates
+* Think about another UI for the front page: set of "unfinished" competitions; click one to go to a Comp page that offers further links to preparing, printing sheets/programmes/etc, collecting results, and printing results + certificates.
 * Debug log viewer (from cookiemaster?)
 * Consider dexie-export-import module for externalizing/sharing the DB (and maybe stream-to-blob; see https://gauriatiq.medium.com/electron-app-database-with-dexie-js-indexeddb-and-web-worker-570d9a66a47a)
 * Consider a DAO layer to handle relationships between DB rows (and singleton for any given row, and save, etc).  You know, ORM stuff but as cheap as I can make it.
