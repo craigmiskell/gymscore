@@ -86,15 +86,7 @@ ipcMain.on("save-png", (event: IpcMainEvent, arg: any) => {
 
 ipcMain.on("create-recorder-sheets", (event: IpcMainEvent, arg: any) => {
   const competition: Competition = arg.competition;
-
-  const sheets = generateRecorderSheets(competition);
-
-  const competitionSlug = competition.name.replace(/([^a-zA-Z0-1])+/g, "-") + " - " + competition.date;
-  const dirPath = path.join(os.homedir(), "GymScore", competitionSlug);
-  fs.mkdirSync(dirPath, { recursive: true});
-  const filename = path.join(dirPath, "recorder-sheets" + ".pdf");
-
-  savePDF(sheets, dirPath, filename);
+  savePDF(competition, generateRecorderSheets(competition), "recorder-sheets");
 });
 
 console.log("Data storage may be in "+ app.getPath("userData"));
