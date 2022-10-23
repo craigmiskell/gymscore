@@ -14,7 +14,7 @@ export default {
   },
   sendAsync: (channel:string, data: any) => {
     // allowlist channels
-    const validChannels = ["save-png", "create-recorder-sheets"];
+    const validChannels = ["save-png", "generate-pdfs"];
     if (validChannels.includes(channel)) {
       ipcRenderer.send(channel, data);
     } else {

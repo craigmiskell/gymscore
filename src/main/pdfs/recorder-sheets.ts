@@ -1,9 +1,24 @@
-import { Competition, Step } from "../renderer/data";
-import { jsPDF, CellConfig } from "jspdf";
-import { CompetitionCompetitorDetails } from "../renderer/data/competition";
+// Copyright 2022 Craig Miskell (craig@stroppykitten.com)
+//
+// This file is part of gymscore
+//
+// Gymscore is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+// License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+// version.
+//
+// Gymscore is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the
+// implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+// details.
+//
+// You should have received a copy of the GNU General Public License along with this program. If not,
+// see <https://www.gnu.org/licenses/>.
 
-const PAGE_WIDTH=297;
-//const PAGE_HEIGHT=210;
+import { Competition, Step } from "../../renderer/data";
+import { jsPDF, CellConfig } from "jspdf";
+import { CompetitionCompetitorDetails } from "../../renderer/data/competition";
+import { getCompetitorsByGroup, getCompetitorsByStep } from "./common";
+
+const PAGE_WIDTH_LANDSCAPE=297;
 
 interface Titles {
   competitionSlug: string,
@@ -42,22 +57,16 @@ export function generateRecorderSheets(competition: Competition) {
   if (competition.vault) {
     addSheetsForApparatus(doc, titles, competition.competitors, "Vault");
   }
+  if (competition.bar) {
+    addSheetsForApparatus(doc, titles, competition.competitors, "Bar");
+  }
+  if (competition.beam) {
+    addSheetsForApparatus(doc, titles, competition.competitors, "Beam");
+  }
+  if (competition.floor) {
+    addSheetsForApparatus(doc, titles, competition.competitors, "Floor");
+  }
   return doc;
-}
-
-interface KeyedCompetitors {
-  [key: string]: CompetitionCompetitorDetails[]
-}
-
-function createKeyedCompetitorsProxy() {
-  return new Proxy({}, {
-    get: function(object: KeyedCompetitors, property: string) {
-      if (!Object.prototype.hasOwnProperty.call(object, property)) {
-        object[property] = new Array<CompetitionCompetitorDetails>();
-      }
-      return object[property];
-    }
-  });
 }
 
 function addSheetsForApparatus(doc: jsPDF, titles: Titles,
@@ -65,11 +74,7 @@ function addSheetsForApparatus(doc: jsPDF, titles: Titles,
 
   titles.apparatus = apparatus;
 
-  const stepCompetitors: KeyedCompetitors = createKeyedCompetitorsProxy();
-
-  for (const competitor of competitors) {
-    stepCompetitors[competitor.stepString].push(competitor);
-  }
+  const stepCompetitors = getCompetitorsByStep(competitors);
 
   // Sort them; conveniently the string-form is intuitively sortable by default.
   const sortedSteps = Array.from(Object.keys(stepCompetitors)).sort();
@@ -80,11 +85,8 @@ function addSheetsForApparatus(doc: jsPDF, titles: Titles,
 }
 
 function addSheetsForStep(doc: jsPDF, titles: Titles, competitors: CompetitionCompetitorDetails[], step: Step) {
-  const groupCompetitors: KeyedCompetitors = createKeyedCompetitorsProxy();
+  const groupCompetitors = getCompetitorsByGroup(competitors);
 
-  for (const competitor of competitors) {
-    groupCompetitors[competitor.groupNumber.toString()].push(competitor);
-  }
   titles.step = step.humanString();
 
   for (const group of Object.keys(groupCompetitors).sort()) {
@@ -104,13 +106,13 @@ function addSheetsForStepGroup(doc: jsPDF, titles: Titles, competitors: Competit
   }
 
   doc.text(titles.competitionSlug, 10, lineY(0), {align: "left"});
-  doc.text("WAG Step" + titles.step, 10, lineY(1), {align: "left"});
-  doc.text("Apparatus: " + titles.apparatus, PAGE_WIDTH - 10, lineY(1), {align: "right"});
+  doc.text("WAG Step " + titles.step, 10, lineY(1), {align: "left"});
+  doc.text("Apparatus: " + titles.apparatus, PAGE_WIDTH_LANDSCAPE - 10, lineY(1), {align: "right"});
   doc.text("Group" + titles.group, 10, lineY(2), {align: "left"});
-  doc.text("Head Judge _________________________", PAGE_WIDTH - 10, lineY(2), {align: "right"});
-  doc.text("Judge 1 _________________________", PAGE_WIDTH - 10, lineY(3), {align: "right"});
-  doc.text("Judge 2 _________________________", PAGE_WIDTH - 10, lineY(4), {align: "right"});
-  doc.text("Judge 3 _________________________", PAGE_WIDTH - 10, lineY(5), {align: "right"});
+  doc.text("Head Judge _________________________", PAGE_WIDTH_LANDSCAPE - 10, lineY(2), {align: "right"});
+  doc.text("Judge 1 _________________________", PAGE_WIDTH_LANDSCAPE - 10, lineY(3), {align: "right"});
+  doc.text("Judge 2 _________________________", PAGE_WIDTH_LANDSCAPE - 10, lineY(4), {align: "right"});
+  doc.text("Judge 3 _________________________", PAGE_WIDTH_LANDSCAPE - 10, lineY(5), {align: "right"});
 
   const space = " ";
   const data = [];

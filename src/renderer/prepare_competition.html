@@ -61,6 +61,10 @@
       <button type="button" class="btn btn-primary" id="detailsSaveButton">Save</button>
     </form>
     <hr>
+    TODO: Move these somewhere better (an entire custom page, or maybe some small buttons at the very top?)<br>
+    <button type="button" class="btn btn-primary" id="createRecorderSheetsButton">Create Recorder Sheets</button>
+    <button type="button" class="btn btn-primary" id="createProgrammeButton">Create Programme</button>
+    <hr>
     <h2>Competitors</h2>
     <div class="row">
       <input type="text" class="form-control col-9 w-75" id="competitorName" placeholder="Competitor Name"></input>
@@ -70,9 +74,6 @@
       <thead><tr><th>Name</th><th>Step</th><th>Club</th><th>Team</th><th>Group</th></th><th>Remove from competition</th></tr></thead>
       <tbody></tbody>
     </table>
-    <hr>
-    <button type="button" class="btn btn-primary" id="createRecorderSheetsButton">Create Recorder Sheets</button>
-
     <button type="button" class="btn btn-primary d-none" id="create-fake-competitors-button">Create set of fake competitors</button>
 
     <div class="modal fade" tabindex="-1" data-bs-backdrop="static" role="dialog" aria-hidden="true" id="addCompetitorModal">
@@ -96,7 +97,7 @@
               <div class="row">
                 <label for="competitorIdModal" class="form-label col-3 col-md-1 col-form-label">National ID</label>
                 <div class="col">
-                  <input type="text" class="form-control w-25" id="competitorIdModal" required>
+                  <input type="text" class="form-control w-50" id="competitorIdModal" required>
                   <div class="invalid-feedback">
                     A competitor must have a National ID
                   </div>

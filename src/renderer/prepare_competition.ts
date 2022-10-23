@@ -13,8 +13,6 @@
 // You should have received a copy of the GNU General Public License along with this program. If not,
 // see <https://www.gnu.org/licenses/>.
 
-console.log("Preparing competition");
-
 declare const api: typeof import("../common/api").default;
 
 import { db } from "./data/gymscoredb";
@@ -61,6 +59,7 @@ class Elements extends pageCommon.BaseElements {
   competitorDetailsForm: HTMLFormElement = null;
   groupSelectTemplate: HTMLSelectElement = null;
   createRecorderSheetsButton: HTMLButtonElement = null;
+  createProgrammeButton: HTMLButtonElement = null;
 }
 const elements = new Elements();
 
@@ -83,6 +82,7 @@ async function onLoaded() {
   document.getElementById("create-fake-competitors-button").addEventListener("click", populateFakeCompetitors);
   document.getElementById("addCompetitorModalYes").addEventListener("click", addCompetitor);
   elements.createRecorderSheetsButton.addEventListener("click", createRecorderSheets);
+  elements.createProgrammeButton.addEventListener("click", createProgramme);
 
   await setupCompetitorAutoComplete();
   await setupGymAutoComplete();
@@ -575,8 +575,11 @@ const getAllSteps = <GetAllStepsFunc>(() => {
 
 
 function createRecorderSheets() {
-  // Collate necessary data, send it to the main thread which can do pdfs
-  api.sendAsync("create-recorder-sheets", {competition: competition});
+  api.sendAsync("generate-pdfs", {type: "recorder-sheets", competition: competition});
+}
+
+function createProgramme() {
+  api.sendAsync("generate-pdfs", {type: "programme", competition: competition});
 }
 
 async function populateFakeCompetitors() {

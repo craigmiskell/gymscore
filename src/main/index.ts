@@ -24,8 +24,9 @@ import Blob from "cross-blob"; // Used by jsPDF to save
 globalThis.Blob = Blob;
 
 import { Competition } from "../renderer/data";
-import { generateRecorderSheets } from "./recorder-sheets";
-import { savePDF } from "./savePdf";
+import * as pdfs from "./pdfs";
+
+import { savePDF } from "./pdfs/savePdf";
 
 const createWindow = () => {
   const win = new BrowserWindow({
@@ -84,9 +85,15 @@ ipcMain.on("save-png", (event: IpcMainEvent, arg: any) => {
   });
 });
 
-ipcMain.on("create-recorder-sheets", (event: IpcMainEvent, arg: any) => {
+ipcMain.on("generate-pdfs", (event: IpcMainEvent, arg: any) => {
   const competition: Competition = arg.competition;
-  savePDF(competition, generateRecorderSheets(competition), "recorder-sheets");
+  switch(arg.type) {
+  case "recorder-sheets":
+    savePDF(competition, pdfs.generateRecorderSheets(competition), "recorder-sheets");
+    break;
+  case "programme":
+    savePDF(competition, pdfs.generateProgramme(competition), "programme");
+  }
 });
 
 console.log("Data storage may be in "+ app.getPath("userData"));
