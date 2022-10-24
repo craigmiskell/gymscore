@@ -114,7 +114,7 @@ async function displayCompetitorInRow(row: HTMLTableRowElement, competitor: Comp
   const gym :IGym = await db.gyms.where(":id").equals(competitor.gymId).first();
   const competitorIdString =  competitor.competitorId.toString();
   row.cells[0].textContent = competitor.competitorName;
-  row.cells[1].textContent = competitor.step + Division[competitor.division];
+  row.cells[1].textContent = competitor.step + " " + Division[competitor.division];
   row.cells[2].textContent = gym?.name;
   row.cells[3].textContent = competition.teams[competitor.teamIndex].name;
 
@@ -156,7 +156,7 @@ function createCompetitorRow(body: HTMLTableSectionElement, index: number): HTML
 }
 
 async function updateCompetitorsTable() {
-  const body = elements.competitors.tBodies[0];
+  const tableBody = elements.competitors.tBodies[0];
 
   if(competition == undefined) {
     return;
@@ -165,14 +165,14 @@ async function updateCompetitorsTable() {
   const competitors = competition.competitors;
 
   // If the table is too long, trim it; if it's short, we'll create more later
-  while (body.rows.length > competitors.length) {
-    body.deleteRow(-1);
+  while (tableBody.rows.length > competitors.length) {
+    tableBody.deleteRow(-1);
   }
 
   competitors.forEach((competitor, i) => {
-    let row = body.rows[i];
+    let row = tableBody.rows[i];
     if(row == undefined) {
-      row = createCompetitorRow(body, i);
+      row = createCompetitorRow(tableBody, i);
     }
     displayCompetitorInRow(row, competitor);
   });
