@@ -23,7 +23,7 @@ import Blob from "cross-blob"; // Used by jsPDF to save
 // And this is necessary for jsPDF to find the Blob object (using Blob from buffer is insufficient)
 globalThis.Blob = Blob;
 
-import { Competition } from "../renderer/data";
+import { Competition } from "../common/data";
 import * as pdfs from "./pdfs";
 
 import { savePDF } from "./pdfs/savePdf";

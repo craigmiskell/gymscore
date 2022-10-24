@@ -13,10 +13,9 @@
 // You should have received a copy of the GNU General Public License along with this program. If not,
 // see <https://www.gnu.org/licenses/>.
 
-import { Competition } from "../../renderer/data";
 import { jsPDF, CellConfig } from "jspdf";
-import { CompetitionCompetitorDetails } from "../../renderer/data/competition";
-import { getCompetitorsByGroup, getCompetitorsByStep } from "./common";
+import { Competition, CompetitionCompetitorDetails } from "../../common/data/competition";
+import { getCompetitorsByGroup, getCompetitorsByStep } from "../../common/competitors_by";
 
 const PAGE_WIDTH_LANDSCAPE=297;
 

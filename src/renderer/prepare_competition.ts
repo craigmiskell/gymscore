@@ -16,13 +16,12 @@
 declare const api: typeof import("../common/api").default;
 
 import { db } from "./data/gymscoredb";
-import { ICompetition, Competition, CompetitionState,
-  ICompetitor, Competitor, Division,
-  Gym, IGym} from "./data";
+import { ICompetitor, Competitor, Gym, IGym} from "./data";
+import { ICompetition, Competition, CompetitionState, Division} from "../common/data";
 import * as pageCommon from "./page_common";
 import { Autocomplete } from "./autocomplete";
 import { Modal } from "bootstrap";
-import { CompetitionCompetitorDetails, Team } from "./data/competition";
+import { CompetitionCompetitorDetails, Team } from "../common/data/competition";
 
 const COMPETITOR_ID_ATTR_NAME = "competitorId";
 const GYM_ID_ATTR_NAME = "gymId";

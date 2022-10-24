@@ -13,10 +13,11 @@
 // You should have received a copy of the GNU General Public License along with this program. If not,
 // see <https://www.gnu.org/licenses/>.
 
-import { Competition, Team, Division} from "../../renderer/data";
+import { Competition, Team} from "../../common/data";
+import { Division } from "../../common/data";
 import { jsPDF } from "jspdf";
-import { CompetitionCompetitorDetails } from "../../renderer/data/competition";
-import { getCompetitorsByGroup, getCompetitorsByStep } from "./common";
+import { CompetitionCompetitorDetails } from "../../common/data/competition";
+import { getCompetitorsByGroup, getCompetitorsByStep } from "../../common/competitors_by";
 
 const PAGE_WIDTH_PORTRAIT=210;
 

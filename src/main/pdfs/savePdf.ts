@@ -21,7 +21,7 @@ import fs from "fs";
 import os from "os";
 import path from "path";
 import {shell} from "electron";
-import { Competition } from "../../renderer/data";
+import { Competition } from "../../common/data";
 
 // The jsPDF "save" function either doesn't work (but swallows the error) or drops the
 // file somewhere I couldn't find.  Rather, we turn it into a byte array and write it
