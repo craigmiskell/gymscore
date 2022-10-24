@@ -41,7 +41,7 @@ navigator.storage.estimate().then(estimation =>{
 });
 
 import { db } from "./data/gymscoredb";
-import { ICompetition, CompetitionState } from "./data";
+import { ICompetition, CompetitionState } from "../common/data";
 import * as pageCommon from "./page_common";
 import { Modal } from "bootstrap";
 

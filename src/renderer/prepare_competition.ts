@@ -16,8 +16,8 @@
 declare const api: typeof import("../common/api").default;
 
 import { db } from "./data/gymscoredb";
-import { ICompetitor, Competitor, Gym, IGym} from "./data";
-import { ICompetition, Competition, CompetitionState, Division} from "../common/data";
+import { ICompetition, Competition, CompetitionState,
+  Division, ICompetitor, Competitor, Gym, IGym} from "../common/data";
 import * as pageCommon from "./page_common";
 import { Autocomplete } from "./autocomplete";
 import { Modal } from "bootstrap";

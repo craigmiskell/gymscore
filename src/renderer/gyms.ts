@@ -14,7 +14,7 @@
 // see <https://www.gnu.org/licenses/>.
 
 import { db } from "./data/gymscoredb";
-import { IGym} from "./data";
+import { IGym} from "../common/data";
 import * as pageCommon from "./page_common";
 
 const GYM_ID_ATTR_NAME = "gymId";

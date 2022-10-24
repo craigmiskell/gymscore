@@ -14,9 +14,9 @@
 // see <https://www.gnu.org/licenses/>.
 
 import Dexie from "dexie";
-import { IGym, Gym } from "./gym";
-import { ICompetitor, Competitor } from "./competitor";
-import { ICompetition, Competition } from "./competition";
+import { IGym, Gym } from "../../common/data";
+import { ICompetitor, Competitor } from "../../common/data/competitor";
+import { ICompetition, Competition } from "../../common/data/competition";
 
 // See https://dexie.org/docs/Typescript
 class GymScoreDB extends Dexie {

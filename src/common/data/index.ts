@@ -21,3 +21,11 @@ import type { ICompetition } from "./competition";
 export { Competition, ICompetition, CompetitionState, Team };
 
 export { Division } from "./division";
+
+import { Gym } from "./gym";
+import type {IGym}  from "./gym";
+export { Gym, IGym };
+
+import { Competitor } from "./competitor";
+import type { ICompetitor } from "./competitor";
+export { Competitor, ICompetitor };

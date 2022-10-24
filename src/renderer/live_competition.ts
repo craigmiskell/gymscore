@@ -16,8 +16,8 @@
 console.log("Preparing competition");
 
 import { db } from "./data/gymscoredb";
-import { ICompetition, CompetitionState, IGym, ICompetitor } from "./data";
-import { CompetitionCompetitorDetails, CompetitorScore } from "./data/competition";
+import { ICompetition, CompetitionState, IGym, ICompetitor } from "../common/data";
+import { CompetitionCompetitorDetails, CompetitorScore } from "../common/data/competition";
 import * as pageCommon from "./page_common";
 import { Modal } from "bootstrap";
 
