@@ -22,6 +22,7 @@ import * as pageCommon from "./page_common";
 import { Autocomplete } from "./autocomplete";
 import { Modal } from "bootstrap";
 import { CompetitionCompetitorDetails, Team } from "../common/data/competition";
+import { getCompetitorsByStep } from "../common/competitors_by";
 
 const COMPETITOR_ID_ATTR_NAME = "competitorId";
 const GYM_ID_ATTR_NAME = "gymId";
@@ -137,8 +138,8 @@ function createNewGroupSelect(index: number): HTMLSelectElement {
   return newGroupSelect;
 }
 
-function createCompetitorRow(body: HTMLTableSectionElement, index: number): HTMLTableRowElement {
-  const row = body.insertRow(-1);
+function createCompetitorRow(tableSection: HTMLTableSectionElement, index: number): HTMLTableRowElement {
+  const row = tableSection.insertRow(-1);
   for(let i=0; i < 6; i++) {
     row.insertCell();
   }
@@ -169,13 +170,18 @@ async function updateCompetitorsTable() {
     tableBody.deleteRow(-1);
   }
 
-  competitors.forEach((competitor, i) => {
-    let row = tableBody.rows[i];
-    if(row == undefined) {
-      row = createCompetitorRow(tableBody, i);
-    }
-    displayCompetitorInRow(row, competitor);
-  });
+  const stepCompetitors = getCompetitorsByStep(competitors);
+  let rowIndex=0;
+  for (const step of Object.keys(stepCompetitors).sort()) {
+    stepCompetitors[step].forEach(competitor => {
+      let row = tableBody.rows[rowIndex];
+      if(row == undefined) {
+        row = createCompetitorRow(tableBody, rowIndex);
+      }
+      displayCompetitorInRow(row, competitor);
+      rowIndex += 1;
+    });
+  }
 }
 
 function setupAutocomplete(

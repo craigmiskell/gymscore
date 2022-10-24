@@ -1,4 +1,3 @@
-* In competitors table while preparing, sort by Step so that grouping is more practical (or come up with a better UI entirely for sorting into groups)
 * Collapse Competition Details section when not editing; it takes up far too much space.
 * Make National ID not editable when adding an existing competitor.
 * "Finish" competition
