@@ -14,6 +14,7 @@
 // see <https://www.gnu.org/licenses/>.
 
 import { ICompetitor } from "./competitor";
+import { Division } from "./division";
 
 interface CompetitorScores {
   [key: string]: CompetitorScore
@@ -42,19 +43,21 @@ export class CompetitionCompetitorDetails {
   competitorId: number;
   competitorIdentifier: string;
   competitorName: string;
-  stepString: string;
+  step: number;
+  division: Division;
   gymId: number;
   gymName: string;
   teamIndex: number;
   groupNumber: number;
   scores: CompetitorScores;
 
-  constructor(competitor: ICompetitor, stepString: string, gymId: number,
+  constructor(competitor: ICompetitor, step: number, division: Division, gymId: number,
     gymName: string, teamIndex: number, groupNumber: number) {
     this.competitorId = competitor.id;
     this.competitorIdentifier = competitor.identifier,
     this.competitorName = competitor.name;
-    this.stepString = stepString;
+    this.step = step;
+    this.division = division;
     this.gymId = gymId;
     this.gymName = gymName;
     this.teamIndex = teamIndex;

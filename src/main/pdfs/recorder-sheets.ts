@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU General Public License along with this program. If not,
 // see <https://www.gnu.org/licenses/>.
 
-import { Competition, Step } from "../../renderer/data";
+import { Competition } from "../../renderer/data";
 import { jsPDF, CellConfig } from "jspdf";
 import { CompetitionCompetitorDetails } from "../../renderer/data/competition";
 import { getCompetitorsByGroup, getCompetitorsByStep } from "./common";
@@ -76,18 +76,17 @@ function addSheetsForApparatus(doc: jsPDF, titles: Titles,
 
   const stepCompetitors = getCompetitorsByStep(competitors);
 
-  // Sort them; conveniently the string-form is intuitively sortable by default.
   const sortedSteps = Array.from(Object.keys(stepCompetitors)).sort();
 
   for (const step of sortedSteps) {
-    addSheetsForStep(doc, titles, stepCompetitors[step], Step.fromString(step));
+    addSheetsForStep(doc, titles, stepCompetitors[step], step);
   }
 }
 
-function addSheetsForStep(doc: jsPDF, titles: Titles, competitors: CompetitionCompetitorDetails[], step: Step) {
+function addSheetsForStep(doc: jsPDF, titles: Titles, competitors: CompetitionCompetitorDetails[], step: string) {
   const groupCompetitors = getCompetitorsByGroup(competitors);
 
-  titles.step = step.humanString();
+  titles.step = step;
 
   for (const group of Object.keys(groupCompetitors).sort()) {
     titles.group = group;
@@ -108,7 +107,7 @@ function addSheetsForStepGroup(doc: jsPDF, titles: Titles, competitors: Competit
   doc.text(titles.competitionSlug, 10, lineY(0), {align: "left"});
   doc.text("WAG Step " + titles.step, 10, lineY(1), {align: "left"});
   doc.text("Apparatus: " + titles.apparatus, PAGE_WIDTH_LANDSCAPE - 10, lineY(1), {align: "right"});
-  doc.text("Group" + titles.group, 10, lineY(2), {align: "left"});
+  doc.text("Group " + titles.group, 10, lineY(2), {align: "left"});
   doc.text("Head Judge _________________________", PAGE_WIDTH_LANDSCAPE - 10, lineY(2), {align: "right"});
   doc.text("Judge 1 _________________________", PAGE_WIDTH_LANDSCAPE - 10, lineY(3), {align: "right"});
   doc.text("Judge 2 _________________________", PAGE_WIDTH_LANDSCAPE - 10, lineY(4), {align: "right"});

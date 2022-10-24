@@ -17,7 +17,7 @@ declare const api: typeof import("../common/api").default;
 
 import { db } from "./data/gymscoredb";
 import { ICompetition, Competition, CompetitionState,
-  ICompetitor, Competitor, Step, UnderOver,
+  ICompetitor, Competitor, Division,
   Gym, IGym} from "./data";
 import * as pageCommon from "./page_common";
 import { Autocomplete } from "./autocomplete";
@@ -53,6 +53,7 @@ class Elements extends pageCommon.BaseElements {
   competitorNameModal: HTMLInputElement = null;
   competitorIdModal: HTMLInputElement = null;
   competitorStepSelectModal: HTMLSelectElement = null;
+  competitorDivisionSelectModal: HTMLSelectElement = null;
   competitorGymModal: HTMLInputElement = null;
   competitorTeamModal: HTMLInputElement = null;
   addCompetitorButton: HTMLButtonElement = null;
@@ -95,8 +96,8 @@ async function onLoaded() {
 
 function populateStepSelectModal() {
   const select = elements.competitorStepSelectModal;
-  for (const step of getAllSteps()) {
-    select.add(new Option(step.humanString(), step.toString()));
+  for (let i=1; i <= 10; i++) {
+    select.add(new Option(i.toString(), i.toString()));
   }
 }
 
@@ -114,7 +115,7 @@ async function displayCompetitorInRow(row: HTMLTableRowElement, competitor: Comp
   const gym :IGym = await db.gyms.where(":id").equals(competitor.gymId).first();
   const competitorIdString =  competitor.competitorId.toString();
   row.cells[0].textContent = competitor.competitorName;
-  row.cells[1].textContent = Step.fromString(competitor.stepString).humanString();
+  row.cells[1].textContent = competitor.step + Division[competitor.division];
   row.cells[2].textContent = gym?.name;
   row.cells[3].textContent = competition.teams[competitor.teamIndex].name;
 
@@ -274,7 +275,7 @@ async function openAddCompetitorModal() {
   let competitor: ICompetitor;
   if(isNaN(competitorId)) {
     // Just a placeholder; we'll create a new one on save.  No ID, no gym
-    competitor = new Competitor("", elements.competitorName.value, Step.first(), -1);
+    competitor = new Competitor("", elements.competitorName.value, 1, Division.Under, -1);
     elements.competitorNameModal.disabled = false;
   } else {
     competitor = await db.competitors.where(":id").equals(competitorId).first();
@@ -285,7 +286,7 @@ async function openAddCompetitorModal() {
   // Populate modal fields
   elements.competitorNameModal.value = competitor.name;
   elements.competitorIdModal.value = competitor.identifier;
-  elements.competitorStepSelectModal.selectedIndex = getAllSteps().findIndex((s) => (s.equals(competitor.step)));
+  elements.competitorStepSelectModal.selectedIndex = competitor.step - 1;
   const gym = await gymForCompetitor(competitor);
   if(gym) {
     elements.competitorGymModal.value = gym.name;
@@ -365,7 +366,8 @@ async function addCompetitor() {
     competitorId = elements.competitorName.getAttribute(COMPETITOR_ID_ATTR_NAME);
     // Update competitor with current step + gym (for future)
     competitor = await db.competitors.where(":id").equals(parseInt(competitorId)).first();
-    competitor.step = Step.fromString(elements.competitorStepSelectModal.value);
+    competitor.step = parseInt(elements.competitorStepSelectModal.value);
+    competitor.division = parseInt(elements.competitorDivisionSelectModal.value);
     competitor.gymId = gymId;
     await db.competitors.put(competitor);
   } else {
@@ -373,7 +375,8 @@ async function addCompetitor() {
     competitor = new Competitor(
       elements.competitorIdModal.value,
       elements.competitorNameModal.value,
-      Step.fromString(elements.competitorStepSelectModal.value),
+      parseInt(elements.competitorStepSelectModal.value),
+      parseInt(elements.competitorDivisionSelectModal.value),
       gymId);
     competitorId = await db.competitors.put(competitor);
   }
@@ -382,7 +385,8 @@ async function addCompetitor() {
 
   competition.competitors.push(new CompetitionCompetitorDetails(
     competitor,
-    elements.competitorStepSelectModal.value,
+    parseInt(elements.competitorStepSelectModal.value),
+    parseInt(elements.competitorDivisionSelectModal.value),
     gymId,
     gym.name, // A convenience, because we need it in the main process and won't be able to look things up in the DB.
     teamId,
@@ -546,11 +550,6 @@ function setDetailsEditing(editing: boolean) {
   }
 }
 
-type GetAllStepsFunc = {
-  (): Step[];
-  steps: Step[];
-};
-
 type AutoCompleteData = {
   label: string,
   value: number,
@@ -559,20 +558,6 @@ type AutoCompleteData = {
 type AutoCompleteCallbackOnInputFunc = {
   (): void;
 }
-
-const getAllSteps = <GetAllStepsFunc>(() => {
-  if(getAllSteps.steps) {
-    return getAllSteps.steps;
-  }
-  getAllSteps.steps = [];
-  for(let i=1; i <= 10; i++) {
-    for (const uo of [UnderOver.Under, UnderOver.Over]) {
-      getAllSteps.steps.push(new Step(BigInt(i), uo));
-    }
-  }
-  return getAllSteps.steps;
-});
-
 
 function createRecorderSheets() {
   api.sendAsync("generate-pdfs", {type: "recorder-sheets", competition: competition});
@@ -599,7 +584,8 @@ async function populateFakeCompetitors() {
     db.competitors.put(new Competitor(
       `a${i}`,
       `${firstName} ${lastName}`,
-      new Step(BigInt(Math.floor(Math.random() * 9)+1), Math.random() < 0.5 ? UnderOver.Under : UnderOver.Over),
+      Math.floor(Math.random() * 9)+1,
+      Math.random() < 0.5 ? Division.Under : Division.Over,
       gym.id
     ));
   }

@@ -31,7 +31,7 @@ function createKeyedCompetitorsProxy() {
 }
 
 export function getCompetitorsByStep(competitors: CompetitionCompetitorDetails[]): KeyedCompetitors {
-  return keyedCompetitorsByFunc(competitors, (c) => c.stepString);
+  return keyedCompetitorsByFunc(competitors, (c) => c.step.toString());
 }
 
 export function getCompetitorsByGroup(competitors: CompetitionCompetitorDetails[]): KeyedCompetitors {

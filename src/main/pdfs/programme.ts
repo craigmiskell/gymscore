@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU General Public License along with this program. If not,
 // see <https://www.gnu.org/licenses/>.
 
-import { Competition, Step, Team, UnderOver} from "../../renderer/data";
+import { Competition, Team, Division} from "../../renderer/data";
 import { jsPDF } from "jspdf";
 import { CompetitionCompetitorDetails } from "../../renderer/data/competition";
 import { getCompetitorsByGroup, getCompetitorsByStep } from "./common";
@@ -35,7 +35,7 @@ export function generateProgramme(competition: Competition) {
   const sortedSteps = Array.from(Object.keys(stepCompetitors)).sort();
 
   for (const step of sortedSteps) {
-    addSheetForStep(doc, competition.teams, stepCompetitors[step], Step.fromString(step));
+    addSheetForStep(doc, competition.teams, stepCompetitors[step], step);
   }
   return doc;
 }
@@ -57,14 +57,14 @@ function addGroupTitles(doc: jsPDF, xOffset: number, y: number) {
   doc.line(xOffset, y + 2, xOffset + 90, y + 2);
 
 }
-function addSheetForStep(doc: jsPDF, teams: Team[], competitors: CompetitionCompetitorDetails[], step: Step) {
+function addSheetForStep(doc: jsPDF, teams: Team[], competitors: CompetitionCompetitorDetails[], step: string) {
   doc.addPage("a4", "portrait");
   doc.setFontSize(12);
 
   const margin = 5;
   let y = 15; // Allow a margin for the printer to be unable to print on
 
-  doc.text("WAG Step " + step.level, 10, y, {align: "left"});
+  doc.text("WAG Step " + step, 10, y, {align: "left"});
   y += 2;
   doc.line(margin, y, PAGE_WIDTH_PORTRAIT - margin, y);
   y += 10;
@@ -117,7 +117,7 @@ function addTableForGroup(
   for (const competitor of competitors) {
     doc.text(competitor.competitorName, columnOffsets.name + xOffset, y);
     doc.text(competitor.competitorIdentifier, columnOffsets.num + xOffset, y);
-    doc.text(UnderOver[Step.fromString(competitor.stepString).underOver], columnOffsets.div + xOffset, y);
+    doc.text(Division[competitor.division], columnOffsets.div + xOffset, y);
     doc.text(competitor.gymName, columnOffsets.club + xOffset, y);
     doc.text(teams[competitor.teamIndex].name, columnOffsets.team + xOffset, y);
     y += lineHeight;

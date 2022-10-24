@@ -13,15 +13,15 @@
 // You should have received a copy of the GNU General Public License along with this program. If not,
 // see <https://www.gnu.org/licenses/>.
 
-import { Step } from "./step";
+import { Division } from "./division";
 
 export interface ICompetitor {
   id?: number,
   identifier: string,
   name: string,
-  _stepString: string,
+  step: number,
+  division: Division,
   gymId: number,
-  step: Step,
 }
 
 export class Competitor implements ICompetitor {
@@ -30,29 +30,17 @@ export class Competitor implements ICompetitor {
   // as an opaque string)
   identifier: string;
   name: string;
-  _stepString: string;
   gymId: number;
+  step: number;
+  division: Division;
 
-  constructor(identifier: string, name: string, step: string | Step, gymId: number, id?:number) {
+  constructor(identifier: string, name: string, step: number, division: Division, gymId: number, id?:number) {
     this.identifier = identifier;
     this.name = name;
     this.gymId = gymId;
+    this.step = step;
+    this.division = division;
 
-    if (typeof step === "string") {
-      this._stepString = step;
-    }
-
-    if (step instanceof Step) {
-      this._stepString = step.toString();
-    }
     if (id) {this.id = id;}
-  }
-
-  set step(value: Step) {
-    this._stepString = value.toString();
-  }
-
-  get step() :Step {
-    return Step.fromString(this._stepString);
   }
 }

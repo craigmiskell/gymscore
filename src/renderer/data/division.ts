@@ -13,19 +13,7 @@
 // You should have received a copy of the GNU General Public License along with this program. If not,
 // see <https://www.gnu.org/licenses/>.
 
-// See https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-8.html#type-only-imports-and-exports
-// for the reason for 'import type' (interfaces are weird)
-
-import { Gym } from "./gym";
-import type {IGym}  from "./gym";
-export { Gym, IGym };
-
-export { Division } from "./division";
-
-import { Competitor } from "./competitor";
-import type { ICompetitor } from "./competitor";
-export { Competitor, ICompetitor };
-
-import { Competition, CompetitionState, Team} from "./competition";
-import type { ICompetition } from "./competition";
-export { Competition, ICompetition, CompetitionState, Team };
+export enum Division {
+  Under = 0,
+  Over,
+}
