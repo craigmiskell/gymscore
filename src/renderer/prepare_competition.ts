@@ -36,10 +36,12 @@ let competitorAutoComplete :Autocomplete = undefined;
 let teamAutoComplete :Autocomplete = undefined;
 
 class Elements extends pageCommon.BaseElements {
+  detailsEditable: HTMLDivElement = null;
+  detailsCollapsed: HTMLDivElement = null;
+  detailsCollapsedText: HTMLSpanElement = null;
+  detailsEditButton: HTMLButtonElement = null;
+  detailsForm: HTMLFormElement = null;
   // TODO: make these types more specific.
-  detailsSaveButton: HTMLElement = null;
-  detailsEditButton: HTMLElement = null;
-  detailsForm: HTMLElement = null;
   competitionName: HTMLElement = null;
   competitionDate: HTMLElement = null;
   competitionLocation: HTMLElement = null;
@@ -61,6 +63,7 @@ class Elements extends pageCommon.BaseElements {
   groupSelectTemplate: HTMLSelectElement = null;
   createRecorderSheetsButton: HTMLButtonElement = null;
   createProgrammeButton: HTMLButtonElement = null;
+
 }
 const elements = new Elements();
 
@@ -77,8 +80,7 @@ async function onLoaded() {
 
   await loadCompetition(parseInt(compId));
 
-  elements.detailsSaveButton.addEventListener("click", saveCompetitionDetails);
-  elements.detailsEditButton.addEventListener("click", startEditing);
+  elements.detailsEditButton.addEventListener("click", toggleEditingDetails);
   document.getElementById("addCompetitorButton").addEventListener("click", openAddCompetitorModal);
   document.getElementById("create-fake-competitors-button").addEventListener("click", populateFakeCompetitors);
   document.getElementById("addCompetitorModalYes").addEventListener("click", addCompetitor);
@@ -466,6 +468,10 @@ async function fetchTeamsForGymForAutoComplete(gymId: number) {
   });
 }
 
+function updateCollapsedText(competition: ICompetition) {
+  elements.detailsCollapsedText.innerText = `${competition.name} - ${competition.date} - ${competition.location}`;
+}
+
 async function loadCompetition(compId: number) {
   if(compId) {
     competition = await db.competitions.where(":id").equals(compId).first();
@@ -477,6 +483,7 @@ async function loadCompetition(compId: number) {
       (<HTMLInputElement>elements.enableBeam).checked = competition.beam;
       (<HTMLInputElement>elements.enableFloor).checked = competition.floor;
       (<HTMLInputElement>elements.enableVault).checked = competition.vault;
+      updateCollapsedText(competition);
     }
   } else {
     (<HTMLInputElement>elements.enableBar).checked =
@@ -502,14 +509,20 @@ async function saveCompetitionDetails() {
     populateCompetitionDisciplines(competition);
     db.competitions.put(competition);
   } else {
-    await createCompetition();
+    competition = await createCompetition();
   }
   setDetailsEditing(false);
+  updateCollapsedText(competition);
   return false;
 }
 
-function startEditing() {
-  setDetailsEditing(true);
+function toggleEditingDetails() {
+  if (elements.detailsEditable.classList.contains("collapse")) {
+    // Is collapsed, we're about to expand it
+    setDetailsEditing(true);
+  } else {
+    saveCompetitionDetails();
+  }
 }
 
 // Called by the 'save' button when there is no pre-existing competition
@@ -521,6 +534,7 @@ async function createCompetition() {
   );
   populateCompetitionDisciplines(competition);
   await db.competitions.add(competition);
+  return competition;
 }
 
 function populateCompetitionDisciplines(competition: ICompetition) {
@@ -532,11 +546,13 @@ function populateCompetitionDisciplines(competition: ICompetition) {
 
 function setDetailsEditing(editing: boolean) {
   const enabledWhenEditing = [
-    elements.detailsSaveButton, elements.competitionName, elements.competitionDate,
+    elements.competitionName, elements.competitionDate,
     elements.competitionLocation, elements.enableBar, elements.enableBeam, elements.enableFloor,
     elements.enableVault
   ];
-  const enabledWhenNotEditing = [elements.detailsEditButton];
+  const enabledWhenNotEditing: HTMLElement[] = [
+    // Currently none
+  ];
 
   const enabled = editing ? enabledWhenEditing : enabledWhenNotEditing;
   const disabled = editing ? enabledWhenNotEditing : enabledWhenEditing;
@@ -552,6 +568,13 @@ function setDetailsEditing(editing: boolean) {
 
   if(editing) {
     elements.detailsForm.classList.remove("was-validated");
+    elements.detailsEditable.classList.remove("collapse");
+    elements.detailsCollapsed.classList.add("collapse");
+    elements.detailsEditButton.innerText = "▼";
+  } else {
+    elements.detailsCollapsed.classList.remove("collapse");
+    elements.detailsEditable.classList.add("collapse");
+    elements.detailsEditButton.innerText = "►";
   }
 }
 
