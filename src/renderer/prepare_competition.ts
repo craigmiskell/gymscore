@@ -389,6 +389,11 @@ async function addCompetitor() {
       gymId);
     competitorId = await db.competitors.put(competitor);
   }
+  // Clear the name field before setData so the autocomplete dropdown doesn't reappear
+  elements.competitorName.value = "";
+  elements.competitorName.removeAttribute(COMPETITOR_ID_ATTR_NAME);
+  elements.addCompetitorButton.disabled = true;
+
   // Always update; for new competitor, or if the gym has changed on an existing competitor
   competitorAutoComplete.setData(await fetchCompetitorsForAutocomplete());
 
@@ -403,9 +408,7 @@ async function addCompetitor() {
   ));
   await db.competitions.update(competition.id, competition);
   updateCompetitorsTable();
-  elements.competitorName.value = "";
   elements.competitorTeamModal.value = "";
-  elements.addCompetitorButton.disabled = true;
 }
 
 async function groupSelectChanged(event: Event) {
