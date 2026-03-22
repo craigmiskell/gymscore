@@ -1,5 +1,8 @@
-* Make National ID not editable when adding an existing competitor.
-* "Finish" competition
+* After adding a new competitor, the auto-complete remains visible for the new competitor, and should not.
+* Team names end up repeated in autocomplete; probably actually several rows in the DB, which is incorrect behavior.
+* Somehow I have two "Paris" competitors in my test; implenent "Edit known competitors" page.
+* On a running competition page, show when group + apparatus has none, some, or all data; currently shows a pencil, but that's insufficient
+* "Finish" comptition button, to start generating results.
 * Team results:
    * One page per step
    * Team scores (best 3 from the team for each apparatus, added across apparatii)
@@ -14,6 +17,7 @@
   * Possibly some sort of combined view, so that if a competitor placed in more than one apparatus (or overall), they get a single row for each listing their placement + score + club/members.
   * Might be only an intermediate one used for doing other stuff.
 * Certificates
+* ON Prepareing Competition page, the button to open up the details (>) looks like a button to *start* the comp; confused me on returning to the app after years, so will be confusing for new users. Needs to be somehow magically better.
 * Think about another UI for the front page: set of "unfinished" competitions; click one to go to a Comp page that offers further links to preparing, printing sheets/programmes/etc, collecting results, and printing results + certificates.
 * Debug log viewer (from cookiemaster?)
 * Consider dexie-export-import module for externalizing/sharing the DB (and maybe stream-to-blob; see https://gauriatiq.medium.com/electron-app-database-with-dexie-js-indexeddb-and-web-worker-570d9a66a47a)
