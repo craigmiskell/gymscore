@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self' data:; img-src 'self' data:;">
+    <title>GymScore - Competitors</title>
+  </head>
+  <body>
+    <div class="row">
+      <span class="col-1">
+        <a href="index.html"><i class="bi bi-arrow-90deg-left"></i></a>
+      </span>
+      <span class="col-9 text-center"><h1>Competitors</h1></span>
+      <span class="col-2"></span>
+    </div>
+    <hr>
+    <div class="row mb-2">
+      <div class="col-auto">
+        <input type="search" class="form-control" id="competitorFilter" placeholder="Filter…">
+      </div>
+    </div>
+    <table class="table table-sm table-striped table-bordered w-auto" id="competitors">
+      <thead>
+        <tr>
+          <th>National ID</th>
+          <th>Name</th>
+          <th>Step</th>
+          <th>Division</th>
+          <th>Gym</th>
+          <th></th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <!-- Edit modal -->
+    <div class="modal fade" tabindex="-1" data-bs-backdrop="static" role="dialog" aria-hidden="true" id="editCompetitorModal">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h4 class="modal-title">Edit Competitor</h4>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form id="editCompetitorForm" class="needs-validation" novalidate>
+              <div class="row mb-2">
+                <label for="editNationalId" class="form-label col-3 col-form-label text-nowrap">National ID</label>
+                <div class="col">
+                  <input type="text" class="form-control" id="editNationalId" required>
+                  <div class="invalid-feedback">National ID is required</div>
+                </div>
+              </div>
+              <div class="row mb-2">
+                <label for="editName" class="form-label col-3 col-form-label">Name</label>
+                <div class="col">
+                  <input type="text" class="form-control" id="editName" required>
+                  <div class="invalid-feedback">Name is required</div>
+                </div>
+              </div>
+              <div class="row mb-2">
+                <label for="editStep" class="form-label col-3 col-form-label">Step</label>
+                <div class="col">
+                  <select class="form-select form-select-sm" id="editStep"></select>
+                </div>
+                <label for="editDivision" class="form-label col-3 col-form-label">Division</label>
+                <div class="col">
+                  <select class="form-select form-select-sm" id="editDivision">
+                    <option value="0">Under</option>
+                    <option value="1">Over</option>
+                  </select>
+                </div>
+              </div>
+              <div class="row mb-2">
+                <label for="editGym" class="form-label col-3 col-form-label">Gym</label>
+                <div class="col">
+                  <input type="text" class="form-control" id="editGym" required>
+                  <div class="invalid-feedback">Gym is required</div>
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-primary" id="editCompetitorSave">Save</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete confirmation modal -->
+    <div class="modal fade" tabindex="-1" data-bs-backdrop="static" role="dialog" aria-hidden="true" id="deleteConfirmationModal">
+      <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h4 class="modal-title">Delete competitor?</h4>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" data-bs-dismiss="modal" id="deleteConfirmationNo">No</button>
+            <button type="button" class="btn btn-default" id="deleteConfirmationYes">Yes</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
