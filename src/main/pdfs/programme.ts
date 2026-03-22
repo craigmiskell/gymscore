@@ -19,11 +19,11 @@ import { jsPDF } from "jspdf";
 import { CompetitionCompetitorDetails } from "../../common/data/competition";
 import { getCompetitorsByGroup, getCompetitorsByStep } from "../../common/competitors_by";
 
-const PAGE_WIDTH_PORTRAIT=210;
+const PAGE_WIDTH_LANDSCAPE=297;
 
 export function generateProgramme(competition: Competition) {
   const doc = new jsPDF({
-    orientation: "portrait",
+    orientation: "landscape",
   });
 
   // Delete the default first page, so we don't have to contort ourselves to detect
@@ -59,7 +59,7 @@ function addGroupTitles(doc: jsPDF, xOffset: number, y: number) {
 
 }
 function addSheetForStep(doc: jsPDF, teams: Team[], competitors: CompetitionCompetitorDetails[], step: string) {
-  doc.addPage("a4", "portrait");
+  doc.addPage("a4", "landscape");
   doc.setFontSize(12);
 
   const margin = 5;
@@ -67,13 +67,13 @@ function addSheetForStep(doc: jsPDF, teams: Team[], competitors: CompetitionComp
 
   doc.text("WAG Step " + step, 10, y, {align: "left"});
   y += 2;
-  doc.line(margin, y, PAGE_WIDTH_PORTRAIT - margin, y);
+  doc.line(margin, y, PAGE_WIDTH_LANDSCAPE - margin, y);
   y += 10;
 
   doc.setFontSize(10);
   const lineHeight = doc.getTextDimensions("x").h * doc.getLineHeightFactor();
   addGroupTitles(doc, 10, y);
-  addGroupTitles(doc, 105, y);
+  addGroupTitles(doc, 155, y);
 
   y += lineHeight * 1.5;
 
@@ -105,7 +105,7 @@ function addTableForGroup(
   doc.setFontSize(8); // Not as small as you might expect
   const origFont = doc.getFont();
   const lineHeight = doc.getTextDimensions("x").h * doc.getLineHeightFactor();
-  const xOffset = ((groupIndex % 2) == 1) ? 10 : 105;
+  const xOffset = ((groupIndex % 2) == 1) ? 10 : 155;
   let y = startY;
 
   const groupTitle = "Group " + groupIndex + ": (" + disciplines.join(",") + ")";
