@@ -14,6 +14,16 @@ After checking out the repo:
 
 ## Tasks
 
+### Running in dev
+
+```shell
+npm start
+```
+
+See package.json for job/script definitionss
+
+### Style
+
 To check style:
 
 ```shell
