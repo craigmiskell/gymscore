@@ -284,9 +284,11 @@ async function openAddCompetitorModal() {
     // Just a placeholder; we'll create a new one on save.  No ID, no gym
     competitor = new Competitor("", elements.competitorName.value, 1, Division.Under, -1);
     elements.competitorNameModal.disabled = false;
+    elements.competitorIdModal.disabled = false;
   } else {
     competitor = await db.competitors.where(":id").equals(competitorId).first();
     elements.competitorNameModal.disabled = true; //Cannot edit this here and now; autocomplete found it
+    elements.competitorIdModal.disabled = true;
     elements.competitorGymModal.setAttribute(GYM_ID_ATTR_NAME, competitor.gymId.toString());
   }
 
