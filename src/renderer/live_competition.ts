@@ -104,6 +104,51 @@ function getGroupsForCompetition(): Array<number>{
 function asciiCapitalizeFirstLetter(input: string) {
   return input.charAt(0).toUpperCase() + input.slice(1);
 }
+function getGroupRecordedCount(groupId: number, apparatus: string): { recorded: number; total: number } {
+  const groupCompetitors = competition.competitors.filter(c => c.groupNumber === groupId);
+  const recorded = groupCompetitors.filter(c => c.scores[apparatus] !== undefined).length;
+  return { recorded, total: groupCompetitors.length };
+}
+
+function statusDotColor(recorded: number, total: number): string {
+  if (recorded === 0) {
+    return "var(--bs-secondary)";
+  }
+  if (recorded === total) {
+    return "var(--bs-success)";
+  }
+  return "var(--bs-warning)";
+}
+
+function updateCellStatus(link: HTMLAnchorElement) {
+  const groupId = parseInt(link.getAttribute(GROUP_ID_ATTR_NAME));
+  const apparatus = link.getAttribute(APPARATUS_ATTR_NAME);
+  const { recorded, total } = getGroupRecordedCount(groupId, apparatus);
+
+  const existing = link.querySelector(".cell-status");
+  if (existing) {
+    existing.remove();
+  }
+
+  const container = document.createElement("div");
+  container.classList.add("cell-status", "d-flex", "align-items-center", "gap-1", "justify-content-center");
+  container.style.marginTop = "2px";
+
+  const dot = document.createElement("i");
+  dot.classList.add("bi", "bi-circle-fill");
+  dot.style.fontSize = "0.5em";
+  dot.style.color = statusDotColor(recorded, total);
+
+  const count = document.createElement("span");
+  count.style.fontSize = "0.8em";
+  count.style.opacity = "0.95";
+  count.textContent = `${recorded}/${total}`;
+
+  container.appendChild(dot);
+  container.appendChild(count);
+  link.appendChild(container);
+}
+
 function populateCompetitionResultsTable() {
   const table = elements.compResultsTable;
   const headerRow = elements.compResultsTableHeaderRow;
@@ -132,6 +177,7 @@ function populateCompetitionResultsTable() {
       const icon = document.createElement("i");
       icon.classList.add("bi", "bi-pencil");
       modalLink.appendChild(icon);
+      updateCellStatus(modalLink);
       aCell.appendChild(modalLink);
     }
   }
@@ -391,6 +437,15 @@ async function saveScores(event: Event) {
     );
   }
   await db.competitions.update(competition.id, competition);
+
+  const savedGroupId = elements.groupApparatusResultsModal.getAttribute(GROUP_ID_ATTR_NAME);
+  const savedApparatus = elements.groupApparatusResultsModal.getAttribute(APPARATUS_ATTR_NAME);
+  const savedLink = <HTMLAnchorElement>document.querySelector(
+    `a[${GROUP_ID_ATTR_NAME}="${savedGroupId}"][${APPARATUS_ATTR_NAME}="${savedApparatus}"]`
+  );
+  if (savedLink) {
+    updateCellStatus(savedLink);
+  }
 
   modal.hide();
 }

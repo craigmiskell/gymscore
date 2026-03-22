@@ -1,5 +1,4 @@
 * Team names end up repeated in autocomplete; probably actually several rows in the DB, which is incorrect behavior.
-* On a running competition page, show when group + apparatus has none, some, or all data; currently shows a pencil, but that's insufficient
 * "Finish" comptition button, to start generating results.
 * Team results:
    * One page per step
