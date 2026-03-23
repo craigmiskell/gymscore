@@ -62,6 +62,11 @@ async function onLoaded() {
   elements.pauseCompetitionLink.addEventListener("click", pauseCompetiton);
   elements.finishCompetitionButton.addEventListener("click", finishCompetition);
   elements.groupApparatusResultsModalDismiss.addEventListener("click", dismissResultsModal);
+  elements.groupApparatusResultsModal.addEventListener("keydown", (event: KeyboardEvent) => {
+    if (event.key === "Escape") {
+      dismissResultsModal(event);
+    }
+  });
   populateCompetitionResultsTable();
   elements.saveScores.addEventListener("click", saveScores);
 }
