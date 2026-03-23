@@ -13,7 +13,15 @@
 // You should have received a copy of the GNU General Public License along with this program. If not,
 // see <https://www.gnu.org/licenses/>.
 
-export { generateProgramme } from "./programme";
-export { generateRecorderSheets } from "./recorder-sheets";
-export { generateResults } from "./results";
-export { generatePlaces } from "./places";
+import { jsPDF } from "jspdf";
+import { Competition } from "../../common/data/competition";
+
+// TODO: implement Places PDF generation
+export function generatePlaces(_competition: Competition): jsPDF {
+  const doc = new jsPDF({ orientation: "landscape" });
+  doc.deletePage(1);
+  doc.addPage("a4", "landscape");
+  doc.setFontSize(14);
+  doc.text("Places — not yet implemented", 10, 20);
+  return doc;
+}

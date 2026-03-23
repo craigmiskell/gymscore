@@ -101,6 +101,13 @@ ipcMain.on("generate-pdfs", (event: IpcMainEvent, arg: any) => {
     break;
   case "programme":
     savePDF(competition, pdfs.generateProgramme(competition), "programme");
+    break;
+  case "results":
+    savePDF(competition, pdfs.generateResults(competition), "results");
+    break;
+  case "places":
+    savePDF(competition, pdfs.generatePlaces(competition), "places");
+    break;
   }
 });
 

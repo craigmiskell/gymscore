@@ -17,6 +17,7 @@ console.log("Preparing competition");
 
 import { db } from "./data/gymscoredb";
 import { ICompetition, CompetitionState, IGym, ICompetitor } from "../common/data";
+import { generateCompetitionPDFs } from "./competition_pdfs";
 import { CompetitionCompetitorDetails, CompetitorScore } from "../common/data/competition";
 import * as pageCommon from "./page_common";
 import { Modal } from "bootstrap";
@@ -104,15 +105,16 @@ function allResultsRecorded(): boolean {
   return true;
 }
 
-function finishCompetition(event: Event) {
+async function finishCompetition(event: Event) {
   event.preventDefault();
   if (!allResultsRecorded()) {
     if (!confirm("Not all results have been recorded. Do you still want to finish the competition?")) {
       return;
     }
   }
-  // TODO: mark competition as complete and navigate away
-  console.log("Finish competition");
+  competition.state = CompetitionState.Completed;
+  await db.competitions.put(competition);
+  generateCompetitionPDFs(competition);
 }
 
 async function loadCompetition(compId: number) {

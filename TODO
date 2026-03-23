@@ -1,9 +1,4 @@
 * Should it be possible to delete a set of scores for a competitor?  Setting all entries to emtpy does nothing, even when saving (returns to the prior values)
-* Team results:
-   * One page per step
-   * Team scores (best 3 from the team for each apparatus, added across apparatii)
-   * Individuals (final score for each apparatus)
-      * Section for each Division (Under/Over)
 * Places:
   * One page per step
   * Teams

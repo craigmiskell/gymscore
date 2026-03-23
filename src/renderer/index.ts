@@ -13,8 +13,6 @@
 // You should have received a copy of the GNU General Public License along with this program. If not,
 // see <https://www.gnu.org/licenses/>.
 
-// declare const api: typeof import("../common/api").default;
-
 // import "bootstrap";
 //Alternatively, more selective:
 //import { Tooltip, Toast, Popover } from 'bootstrap';
@@ -43,6 +41,7 @@ navigator.storage.estimate().then(estimation =>{
 import { db } from "./data/gymscoredb";
 import { ICompetition, CompetitionState } from "../common/data";
 import * as pageCommon from "./page_common";
+import { generateCompetitionPDFs } from "./competition_pdfs";
 import { Modal } from "bootstrap";
 
 type CompetitionRowDisplayFunc = (row: HTMLTableRowElement, competition: ICompetition) => void;
@@ -141,7 +140,10 @@ function displayLiveCompetition(row: HTMLTableRowElement, competition: ICompetit
 }
 
 function displayCompletedCompetition(row: HTMLTableRowElement, competition: ICompetition) {
-  // TODO: add page to view the results, re-open, etc.
+  displayCompetitionLink(
+    row,
+    getJSLink(competition, generateCompetitionPDFs, "Generate result PDFs", "file-earmark-pdf")
+  );
   displayCompetitionLink(row, getJSLink(competition, promptDeleteCompetition, "Delete", "trash"));
 }
 

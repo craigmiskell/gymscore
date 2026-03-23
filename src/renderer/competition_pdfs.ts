@@ -13,7 +13,11 @@
 // You should have received a copy of the GNU General Public License along with this program. If not,
 // see <https://www.gnu.org/licenses/>.
 
-export { generateProgramme } from "./programme";
-export { generateRecorderSheets } from "./recorder-sheets";
-export { generateResults } from "./results";
-export { generatePlaces } from "./places";
+declare const api: typeof import("../common/api").default;
+
+import { ICompetition } from "../common/data";
+
+export function generateCompetitionPDFs(competition: ICompetition) {
+  api.sendAsync("generate-pdfs", { type: "results", competition });
+  api.sendAsync("generate-pdfs", { type: "places", competition });
+}
