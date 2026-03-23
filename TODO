@@ -1,5 +1,8 @@
 * "Finish" competition button, to start generating results.
 * When recording results, put focus in the first field (first competitor, D Score)
+* Do not let the competition start until all competitors are assigned to a group.
+* Should it be possible to delete a set of scores for a competitor?  Setting all entries to emtpy does nothing, even when saving (returns to the prior values)
+* When adding a competitor, should entering the Team field show the autocomplete, so it can be clicked rather than typing (if preferred).  Same for Gym for a new competitor?
 * Team results:
    * One page per step
    * Team scores (best 3 from the team for each apparatus, added across apparatii)
