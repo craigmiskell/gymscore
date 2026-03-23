@@ -14,14 +14,225 @@
 // see <https://www.gnu.org/licenses/>.
 
 import { jsPDF } from "jspdf";
-import { Competition } from "../../common/data/competition";
+import { Competition, CompetitionCompetitorDetails } from "../../common/data/competition";
+import { Division } from "../../common/data/division";
+import { getCompetitorsByStep } from "../../common/competitors_by";
+import {
+  PAGE_WIDTH, PAGE_HEIGHT, MARGIN, BOTTOM_MARGIN, ROW_HEIGHT, HEADING_FONT_SIZE, BODY_FONT_SIZE,
+  enabledApparatuses, formatScore, capitalise, ordinal, teamApparatusScore, addStepTitlePage,
+} from "./common";
 
-// TODO: implement Places PDF generation
-export function generatePlaces(_competition: Competition): jsPDF {
+// Team section column x-positions
+const TEAM_PLACE_COL = MARGIN;
+const TEAM_PLACE_WIDTH = 20;
+const TEAM_NAME_COL = TEAM_PLACE_COL + TEAM_PLACE_WIDTH;
+const TEAM_NAME_WIDTH = 70;
+const TEAM_SCORE_COL = TEAM_NAME_COL + TEAM_NAME_WIDTH;
+const TEAM_SCORE_WIDTH = 30;
+const TEAM_MEMBERS_COL = TEAM_SCORE_COL + TEAM_SCORE_WIDTH;
+
+// Division (Overs/Unders) section column x-positions
+const DIV_APPARATUS_COL = MARGIN;
+const DIV_APPARATUS_WIDTH = 40;
+const DIV_PLACE_COL = DIV_APPARATUS_COL + DIV_APPARATUS_WIDTH;
+const DIV_PLACE_WIDTH = 20;
+const DIV_NAME_COL = DIV_PLACE_COL + DIV_PLACE_WIDTH;
+const DIV_NAME_WIDTH = 70;
+const DIV_SCORE_COL = DIV_NAME_COL + DIV_NAME_WIDTH;
+const DIV_SCORE_WIDTH = 30;
+const DIV_CLUB_COL = DIV_SCORE_COL + DIV_SCORE_WIDTH;
+
+interface PageState {
+  doc: jsPDF;
+  competition: Competition;
+  step: string;
+  y: number;
+}
+
+export function generatePlaces(competition: Competition): jsPDF {
   const doc = new jsPDF({ orientation: "landscape" });
   doc.deletePage(1);
-  doc.addPage("a4", "landscape");
-  doc.setFontSize(14);
-  doc.text("Places — not yet implemented", 10, 20);
+
+  const apparatuses = enabledApparatuses(competition);
+  const stepCompetitors = getCompetitorsByStep(competition.competitors);
+  const sortedSteps = Object.keys(stepCompetitors).sort((a, b) => parseInt(a) - parseInt(b));
+
+  for (const step of sortedSteps) {
+    addStepPlaces(doc, competition, apparatuses, stepCompetitors[step], step);
+  }
+
   return doc;
+}
+
+function checkPageBreak(state: PageState, neededHeight: number) {
+  if (state.y + neededHeight > PAGE_HEIGHT - BOTTOM_MARGIN) {
+    state.doc.addPage("a4", "landscape");
+    state.doc.setFont("helvetica", "normal");
+    state.doc.setFontSize(8);
+    state.doc.text(`${state.competition.name} \u2014 WAG Step ${state.step} (continued)`, MARGIN, MARGIN + 4);
+    state.y = MARGIN + 10;
+  }
+}
+
+function addStepPlaces(
+  doc: jsPDF,
+  competition: Competition,
+  apparatuses: string[],
+  competitors: CompetitionCompetitorDetails[],
+  step: string
+) {
+  const state: PageState = { doc, competition, step, y: addStepTitlePage(doc, competition, step) };
+
+  addTeamPlaces(state, competition, apparatuses, competitors);
+
+  const overs = competitors.filter((c) => c.division === Division.Over);
+  const unders = competitors.filter((c) => c.division === Division.Under);
+
+  if (overs.length > 0) {
+    state.y += 8;
+    addDivisionPlaces(state, "Overs", apparatuses, overs);
+  }
+  if (unders.length > 0) {
+    state.y += 8;
+    addDivisionPlaces(state, "Unders", apparatuses, unders);
+  }
+}
+
+function addTeamPlaces(
+  state: PageState,
+  competition: Competition,
+  apparatuses: string[],
+  competitors: CompetitionCompetitorDetails[]
+) {
+  const doc = state.doc;
+
+  const teamIndices = Array.from(new Set(competitors.map((c) => c.teamIndex)));
+  const teamTotals = teamIndices
+    .map((teamIndex) => {
+      const total = apparatuses.reduce((sum, ap) => {
+        const score = teamApparatusScore(competitors, teamIndex, ap);
+        return score !== null ? sum + score : sum;
+      }, 0);
+      const hasScore = apparatuses.some((ap) => teamApparatusScore(competitors, teamIndex, ap) !== null);
+      return { teamIndex, total, hasScore };
+    })
+    .filter((t) => t.hasScore)
+    .sort((a, b) => b.total - a.total)
+    .slice(0, 3);
+
+  if (teamTotals.length === 0) { return; }
+
+  checkPageBreak(state, ROW_HEIGHT * (2 + teamTotals.length));
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(HEADING_FONT_SIZE);
+  doc.text("Teams", MARGIN, state.y);
+  state.y += ROW_HEIGHT;
+
+  doc.text("Place", TEAM_PLACE_COL, state.y);
+  doc.text("Team", TEAM_NAME_COL, state.y);
+  doc.text("Score", TEAM_SCORE_COL, state.y);
+  doc.text("Competitors", TEAM_MEMBERS_COL, state.y);
+  doc.setFont("helvetica", "normal");
+  state.y += 1;
+  doc.line(MARGIN, state.y, PAGE_WIDTH - MARGIN, state.y);
+  state.y += ROW_HEIGHT;
+
+  let place = 1;
+  for (let i = 0; i < teamTotals.length; i++) {
+    const { teamIndex, total } = teamTotals[i];
+    const team = competition.teams[teamIndex];
+    if (!team) { continue; }
+
+    const isTie = i > 0 && total === teamTotals[i - 1].total;
+    if (!isTie) { place = i + 1; }
+
+    const members = competitors
+      .filter((c) => c.teamIndex === teamIndex)
+      .map((c) => c.competitorName)
+      .join(", ");
+
+    checkPageBreak(state, ROW_HEIGHT);
+    doc.setFontSize(BODY_FONT_SIZE);
+    doc.text(ordinal(place) + (isTie ? "=" : ""), TEAM_PLACE_COL, state.y);
+    doc.text(team.name, TEAM_NAME_COL, state.y);
+    doc.text(formatScore(total), TEAM_SCORE_COL, state.y);
+    doc.text(members, TEAM_MEMBERS_COL, state.y);
+    state.y += ROW_HEIGHT;
+  }
+}
+
+interface PlaceEntry {
+  competitor: CompetitionCompetitorDetails;
+  place: number;
+  tied: boolean;
+}
+
+function computeTop3WithPlaces(
+  competitors: CompetitionCompetitorDetails[],
+  apparatus: string
+): PlaceEntry[] {
+  const sorted = [...competitors]
+    .filter((c) => c.scores[apparatus] !== undefined)
+    .sort((a, b) => b.scores[apparatus].finalScore - a.scores[apparatus].finalScore)
+    .slice(0, 3);
+
+  const entries: PlaceEntry[] = [];
+  let place = 1;
+  for (let i = 0; i < sorted.length; i++) {
+    const isTie = i > 0 && sorted[i].scores[apparatus].finalScore === sorted[i - 1].scores[apparatus].finalScore;
+    if (!isTie) { place = i + 1; }
+    entries.push({ competitor: sorted[i], place, tied: false });
+  }
+  // Mark ties: any place shared by more than one entry
+  for (const entry of entries) {
+    if (entries.filter((e) => e.place === entry.place).length > 1) {
+      entry.tied = true;
+    }
+  }
+  return entries;
+}
+
+function addDivisionPlaces(
+  state: PageState,
+  divisionTitle: string,
+  apparatuses: string[],
+  competitors: CompetitionCompetitorDetails[]
+) {
+  const doc = state.doc;
+
+  checkPageBreak(state, ROW_HEIGHT * 3);
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(HEADING_FONT_SIZE);
+  doc.text(divisionTitle, MARGIN, state.y);
+  state.y += ROW_HEIGHT;
+
+  doc.text("Apparatus", DIV_APPARATUS_COL, state.y);
+  doc.text("Place", DIV_PLACE_COL, state.y);
+  doc.text("Name", DIV_NAME_COL, state.y);
+  doc.text("Score", DIV_SCORE_COL, state.y);
+  doc.text("Club", DIV_CLUB_COL, state.y);
+  doc.setFont("helvetica", "normal");
+  state.y += 1;
+  doc.line(MARGIN, state.y, PAGE_WIDTH - MARGIN, state.y);
+  state.y += ROW_HEIGHT;
+
+  for (const apparatus of apparatuses) {
+    const entries = computeTop3WithPlaces(competitors, apparatus);
+    if (entries.length === 0) { continue; }
+
+    checkPageBreak(state, ROW_HEIGHT * entries.length);
+
+    for (let i = 0; i < entries.length; i++) {
+      const { competitor, place, tied } = entries[i];
+      doc.setFontSize(BODY_FONT_SIZE);
+      doc.text(i === 0 ? capitalise(apparatus) : "", DIV_APPARATUS_COL, state.y);
+      doc.text(ordinal(place) + (tied ? "=" : ""), DIV_PLACE_COL, state.y);
+      doc.text(competitor.competitorName, DIV_NAME_COL, state.y);
+      doc.text(formatScore(competitor.scores[apparatus].finalScore), DIV_SCORE_COL, state.y);
+      doc.text(competitor.gymName, DIV_CLUB_COL, state.y);
+      state.y += ROW_HEIGHT;
+    }
+  }
 }

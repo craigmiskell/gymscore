@@ -1,9 +1,4 @@
 * Should it be possible to delete a set of scores for a competitor?  Setting all entries to emtpy does nothing, even when saving (returns to the prior values)
-* Places:
-  * One page per step
-  * Teams
-  * Each apparatus
-  * Cols: Div, App, Place, Name/Club name, Score, Club/teammembers
 * MPlaces
   * Possibly some sort of combined view, so that if a competitor placed in more than one apparatus (or overall), they get a single row for each listing their placement + score + club/members.
   * Might be only an intermediate one used for doing other stuff.

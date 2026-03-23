@@ -17,15 +17,11 @@ import { jsPDF } from "jspdf";
 import { Competition, CompetitionCompetitorDetails } from "../../common/data/competition";
 import { Division } from "../../common/data/division";
 import { getCompetitorsByStep } from "../../common/competitors_by";
+import {
+  PAGE_WIDTH, PAGE_HEIGHT, MARGIN, CONTENT_WIDTH, BOTTOM_MARGIN, ROW_HEIGHT, HEADING_FONT_SIZE, BODY_FONT_SIZE,
+  enabledApparatuses, formatScore, capitalise, ordinal, teamApparatusScore, addStepTitlePage,
+} from "./common";
 
-const PAGE_WIDTH = 297;   // landscape A4
-const PAGE_HEIGHT = 210;  // landscape A4
-const MARGIN = 10;
-const CONTENT_WIDTH = PAGE_WIDTH - 2 * MARGIN;
-const BOTTOM_MARGIN = 15;
-const ROW_HEIGHT = 6;
-const HEADING_FONT_SIZE = 10;
-const BODY_FONT_SIZE = 9;
 const PLACING_FONT_SIZE = 7;
 
 export function generateResults(competition: Competition): jsPDF {
@@ -43,35 +39,8 @@ export function generateResults(competition: Competition): jsPDF {
   return doc;
 }
 
-function enabledApparatuses(competition: Competition): string[] {
-  const result: string[] = [];
-  if (competition.vault) { result.push("vault"); }
-  if (competition.bar) { result.push("bar"); }
-  if (competition.beam) { result.push("beam"); }
-  if (competition.floor) { result.push("floor"); }
-  return result;
-}
-
-function formatScore(score: number): string {
-  return (Math.floor(score) / 1000).toFixed(3);
-}
-
 function formatDScore(score: number): string {
   return parseFloat((Math.floor(score) / 1000).toFixed(3)).toString();
-}
-
-function capitalise(s: string): string {
-  return s.charAt(0).toUpperCase() + s.slice(1);
-}
-
-function ordinal(n: number): string {
-  const mod100 = n % 100;
-  const mod10 = n % 10;
-  if (mod100 >= 11 && mod100 <= 13) { return `${n}th`; }
-  if (mod10 === 1) { return `${n}st`; }
-  if (mod10 === 2) { return `${n}nd`; }
-  if (mod10 === 3) { return `${n}rd`; }
-  return `${n}th`;
 }
 
 // Returns a map from competitorId to 1-based rank for the given apparatus across all competitors at this step.
@@ -88,20 +57,6 @@ function computePlacings(competitors: CompetitionCompetitorDetails[], apparatus:
     result.set(withScore[i].competitorId, isTie ? result.get(withScore[i - 1].competitorId) : i + 1);
   }
   return result;
-}
-
-// Sum of the top 3 (or fewer) competitor scores for a team at a given apparatus.
-function teamApparatusScore(
-  competitors: CompetitionCompetitorDetails[],
-  teamIndex: number,
-  apparatus: string
-): number | null {
-  const top3 = competitors
-    .filter((c) => c.teamIndex === teamIndex && c.scores[apparatus] !== undefined)
-    .sort((a, b) => b.scores[apparatus].finalScore - a.scores[apparatus].finalScore)
-    .slice(0, 3);
-  if (top3.length === 0) { return null; }
-  return top3.reduce((sum, c) => sum + c.scores[apparatus].finalScore, 0);
 }
 
 interface PageState {
@@ -132,23 +87,7 @@ function addStepResults(
   competitors: CompetitionCompetitorDetails[],
   step: string
 ) {
-  const state: PageState = { doc, competition, step, y: 0 };
-
-  // First page for this step: full title header
-  doc.addPage("a4", "landscape");
-  let y = MARGIN + 5;
-
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(16);
-  doc.text(competition.name, PAGE_WIDTH / 2, y, { align: "center" });
-  y += 8;
-  doc.setFontSize(13);
-  doc.text("WAG Step " + step, PAGE_WIDTH / 2, y, { align: "center" });
-  doc.setFont("helvetica", "normal");
-  y += 3;
-  doc.line(MARGIN, y, PAGE_WIDTH - MARGIN, y);
-  y += 7;
-  state.y = y;
+  const state: PageState = { doc, competition, step, y: addStepTitlePage(doc, competition, step) };
 
   // Team table
   const teamIndices = Array.from(new Set(competitors.map((c) => c.teamIndex))).sort((a, b) => a - b);
