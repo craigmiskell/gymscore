@@ -17,6 +17,21 @@
     <i class="bi bi-check"></i>&nbsp;Past
     <hr>
     <table class="table table-sm table-striped w-auto" id="pastCompetitions"></table>
+    <div class="modal fade" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" role="dialog" aria-hidden="true" id="ungroupedCompetitorsModal">
+      <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h4 class="modal-title">Cannot start competition</h4>
+          </div>
+          <div class="modal-body">
+            <p>All competitors must be assigned to a group before starting the competition.</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+          </div>
+        </div>
+      </div>
+    </div>
     <div class="modal fade" tabindex="-1" data-bs-backdrop="static" role="dialog" aria-hidden="true" id="deleteConfirmationModal">
       <div class="modal-dialog modal-sm">
         <div class="modal-content">

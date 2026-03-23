@@ -101,8 +101,12 @@ function doDeleteCompetition(competitionId: number) {
   row.remove();
 }
 
-// TODO: validate all competitors are in groups (non-0); alert/prevent if not
 async function startCompetition(competition: ICompetition) {
+  const ungrouped = competition.competitors.filter((c) => c.groupNumber === 0);
+  if (ungrouped.length > 0) {
+    Modal.getOrCreateInstance(document.getElementById("ungroupedCompetitorsModal")).show();
+    return;
+  }
   competition.state = CompetitionState.Live;
   await db.competitions.put(competition);
   window.location.href = `live_competition.html?compId=${competition.id}`;

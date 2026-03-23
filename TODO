@@ -1,4 +1,3 @@
-* Do not let the competition start until all competitors are assigned to a group.
 * Should it be possible to delete a set of scores for a competitor?  Setting all entries to emtpy does nothing, even when saving (returns to the prior values)
 * When adding a competitor, should entering the Team field show the autocomplete, so it can be clicked rather than typing (if preferred).  Same for Gym for a new competitor?
 * Team results:
