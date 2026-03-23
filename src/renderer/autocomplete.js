@@ -2,6 +2,7 @@
 // License (from README): MIT
 
 // Added locally so it works in a webpack/typescript/electron build.
+// and modified from there
 import { Dropdown } from "bootstrap";
 
 const DEFAULTS = {
@@ -86,7 +87,7 @@ export class Autocomplete {
     if (this.createItems() > 0)
       this.dropdown.show();
     else
-      this.field.click();
+      this.dropdown.hide();
   }
 
   createItem(lookup, item) {

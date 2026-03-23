@@ -1,9 +1,11 @@
-* Should it be possible to delete a set of scores for a competitor?  Setting all entries to emtpy does nothing, even when saving (returns to the prior values)
-* MPlaces
+* MPlaces result page
   * Possibly some sort of combined view, so that if a competitor placed in more than one apparatus (or overall), they get a single row for each listing their placement + score + club/members.
   * Might be only an intermediate one used for doing other stuff.
 * Do not allow adding the same competitor more than once to a competition.
   * To handle name conflicts, add national ID to the auto-complete suggestion.
+* Live filter and sort on name, step, club, team for added competitors when preparing.
+* In "Edit Gyms", also allow editing name.  Should we even be able to delete it?  I think the Gym is realized into the competition so it only affects autocomplete, but double check that.
+* Should it be possible to delete a set of scores for a competitor?  Setting all entries to emtpy does nothing, even when saving (returns to the prior values)
 * Certificates - for competitors; part of results?
 * Consider dexie-export-import module for externalizing/sharing the DB (and maybe stream-to-blob; see https://gauriatiq.medium.com/electron-app-database-with-dexie-js-indexeddb-and-web-worker-570d9a66a47a)
 * Team names end up repeated in autocomplete; probably actually several rows in the DB, which is incorrect behavior.  Diagnose/debug if it is reproducible

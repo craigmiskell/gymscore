@@ -90,61 +90,56 @@
     <button type="button" class="btn btn-primary d-none" id="create-fake-competitors-button">Create set of fake competitors</button>
 
     <div class="modal fade" tabindex="-1" data-bs-backdrop="static" role="dialog" aria-hidden="true" id="addCompetitorModal">
-      <div class="modal-dialog modal-lg">
+      <div class="modal-dialog modal-xl">
         <div class="modal-content">
           <div class="modal-header">
             <h4 class="modal-title">Adding competitor</h4>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cancel"></button>
           </div>
-          <div class="modal-footer">
+          <div class="modal-body">
             <form id="competitorDetailsForm" class="needs-validation" novalidate>
-              <div class="row">
-                <label for="competitorNameModal" class="form-label col-3 col-md-1 col-form-label">Name</label>
+              <div class="row mb-2">
+                <label for="competitorNameModal" class="col-2 col-form-label">Name</label>
                 <div class="col">
                   <input type="text" class="form-control" id="competitorNameModal" placeholder="Competitor Name" required>
-                  <div class="invalid-feedback">
-                    A competitor must have a name
-                  </div>
+                  <div class="invalid-feedback">A competitor must have a name</div>
                 </div>
               </div>
-              <div class="row">
-                <label for="competitorIdModal" class="form-label col-3 col-md-1 col-form-label text-nowrap">National ID</label>
-                <div class="col">
-                  <input type="text" class="form-control w-50" id="competitorIdModal" required>
-                  <div class="invalid-feedback">
-                    A competitor must have a National ID
-                  </div>
+              <div class="row mb-2">
+                <label for="competitorIdModal" class="col-2 col-form-label">National ID</label>
+                <div class="col-3">
+                  <input type="text" class="form-control" id="competitorIdModal" required>
+                  <div class="invalid-feedback">A competitor must have a National ID</div>
                 </div>
-                <label for="competitorStepSelectModal" class="form-label col-1 col-md-1 col-form-label">Step</label>
-                <div class="col">
-                  <select class="form-select form-select-sm col-2" id="competitorStepSelectModal">
+                <label for="competitorStepSelectModal" class="col-1 col-form-label text-end">Step</label>
+                <div class="col-1">
+                  <select class="form-select form-select-sm" id="competitorStepSelectModal">
                     <!-- Populated in code -->
                   </select>
                 </div>
-                <label for="competitorDivisionSelectModal" class="form-label col-1 col-md-1 col-form-label">Step</label>
-                <div class="col">
-                  <select class="form-select form-select-sm col-2" id="competitorDivisionSelectModal">
+                <label for="competitorDivisionSelectModal" class="col-1 col-form-label text-end">Division</label>
+                <div class="col-2">
+                  <select class="form-select form-select-sm" id="competitorDivisionSelectModal">
                     <option value="0">Under</option>
                     <option value="1">Over</option>
                   </select>
                 </div>
               </div>
-              <div class="row">
-                <label for="competitorGymModal" class="form-label col-1 col-md-1 col-form-label">Gym</label>
+              <div class="row mb-2">
+                <label for="competitorGymModal" class="col-2 col-form-label">Gym</label>
                 <div class="col">
-                  <input type="text" class="form-control col-5" id="competitorGymModal" placeholder="Gym Name" required></input>
+                  <input type="text" class="form-control" id="competitorGymModal" placeholder="Gym Name" required>
+                  <div class="invalid-feedback">A competitor must compete for a gym</div>
                 </div>
-                <div class="invalid-feedback">
-                  A competitor must compete for a gym
-                </div>
-                <label for="competitorTeamModal" class="form-label col-1 col-md-1 col-form-label">Team</label>
+                <label for="competitorTeamModal" class="col-1 col-form-label text-end">Team</label>
                 <div class="col">
-                  <input type="text" class="form-control col-5" id="competitorTeamModal" placeholder="Team Name" required></input>
-                </div>
-                <div class="invalid-feedback">
-                  A competitor must be in a team
+                  <input type="text" class="form-control" id="competitorTeamModal" placeholder="Team Name" required>
+                  <div class="invalid-feedback">A competitor must be in a team</div>
                 </div>
               </div>
+            </form>
+          </div>
+          <div class="modal-footer">
             <button type="button" class="btn btn-primary" id="addCompetitorModalYes">Add to competition</button>
           </div>
         </div>

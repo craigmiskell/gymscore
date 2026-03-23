@@ -90,8 +90,17 @@ async function onLoaded() {
   elements.enableBeam.addEventListener("change", autoSave);
   elements.enableFloor.addEventListener("change", autoSave);
   document.getElementById("addCompetitorButton").addEventListener("click", openAddCompetitorModal);
+  elements.addCompetitorModal.addEventListener("hidden.bs.modal", () => {
+    elements.competitorName.focus();
+  });
   document.getElementById("create-fake-competitors-button").addEventListener("click", populateFakeCompetitors);
   document.getElementById("addCompetitorModalYes").addEventListener("click", addCompetitor);
+  elements.competitorTeamModal.addEventListener("keydown", (e: KeyboardEvent) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      void addCompetitor();
+    }
+  });
   elements.createRecorderSheetsButton.addEventListener("click", createRecorderSheets);
   elements.createProgrammeButton.addEventListener("click", createProgramme);
 
@@ -102,6 +111,9 @@ async function onLoaded() {
   populateStepSelectModal();
 
   if (competition == undefined) {
+    elements.detailsEditable.addEventListener("shown.bs.collapse", () => {
+      (<HTMLInputElement>elements.competitionName).focus();
+    }, { once: true });
     Collapse.getOrCreateInstance(elements.detailsEditable, { toggle: false }).show();
   } else {
     setFormFieldsEnabled(false);
@@ -204,6 +216,7 @@ function setupAutocomplete(
   attribute: string,
   callbackOnInput?: AutoCompleteCallbackOnInputFunc,
   showOnFocus?: boolean,
+  callbackOnSelect?: () => void,
 ) {
 
   return new Autocomplete(
@@ -216,6 +229,9 @@ function setupAutocomplete(
       onSelectItem: (selected: {label: string, value: string}) => {
         console.log("Found by autocomplete:", selected.label, selected.value);
         field.setAttribute(attribute, selected.value);
+        if (typeof callbackOnSelect !== "undefined") {
+          callbackOnSelect();
+        }
       },
       onInput:() => {
         // If the user types, clear the selection
@@ -242,6 +258,7 @@ async function setupCompetitorAutoComplete() {
       onSelectItem: (selected: {label: string, value: string}) => {
         console.log("Competitor found by autocomplete:", selected.label, selected.value);
         competitorNameField.setAttribute(COMPETITOR_ID_ATTR_NAME, selected.value);
+        void openAddCompetitorModal();
       },
       onInput:() => {
         // If the user types, clear the selection
@@ -250,6 +267,23 @@ async function setupCompetitorAutoComplete() {
       }
     }
   );
+
+  competitorNameField.addEventListener("keydown", (e: KeyboardEvent) => {
+    if (e.key !== "Enter" || competitorNameField.value === "") {
+      return;
+    }
+    e.preventDefault();
+
+    if (!competitorNameField.hasAttribute(COMPETITOR_ID_ATTR_NAME)) {
+      const dropdownMenu = competitorNameField.nextSibling as HTMLElement;
+      const items = dropdownMenu.querySelectorAll(".dropdown-item");
+      if (items.length === 1) {
+        (items[0] as HTMLElement).click();
+      }
+    }
+
+    void openAddCompetitorModal();
+  });
 }
 
 //TODO: convert to 'setupAutocomplete'
@@ -268,6 +302,7 @@ async function setupGymAutoComplete() {
         console.log("Gym found by autocomplete:", selected.label, gymId);
         gymField.setAttribute(GYM_ID_ATTR_NAME, gymId);
         teamAutoComplete.setData(await fetchTeamsForGymForAutoComplete(parseInt(gymId)));
+        elements.competitorTeamModal.focus();
       },
       onInput:() => {
         // If the user types, clear the selection
@@ -286,6 +321,7 @@ async function setupTeamAutoComplete() {
     TEAM_INDEX_ATTR_NAME,
     undefined,
     true,
+    () => { elements.competitorTeamModal.focus(); },
   );
 }
 
@@ -327,6 +363,18 @@ async function openAddCompetitorModal() {
   }
 
   elements.competitorDetailsForm.classList.remove("was-validated");
+
+  elements.addCompetitorModal.addEventListener("shown.bs.modal", () => {
+    const fields: HTMLInputElement[] = [
+      elements.competitorNameModal,
+      elements.competitorIdModal,
+      elements.competitorGymModal,
+      elements.competitorTeamModal,
+    ];
+    const firstEmpty = fields.find((f) => !f.disabled && f.value === "");
+    firstEmpty?.focus();
+  }, { once: true });
+
   modal.show();
 }
 
@@ -356,9 +404,9 @@ async function teamIndexWhenAddingCompetitor(gym: IGym) : Promise<number> {
     return parseInt(teamField.getAttribute(TEAM_INDEX_ATTR_NAME));
   }
 
-  const existingTeamIndex = competition.teams.findIndex((team) => {
-    (team.name.toLowerCase() == teamField.value.toLowerCase()) && (team.gymId == gym.id);
-  });
+  const existingTeamIndex = competition.teams.findIndex((team) =>
+    team.name.toLowerCase() == teamField.value.toLowerCase() && team.gymId == gym.id
+  );
 
   if(existingTeamIndex != -1) {
     console.log(`Team named "${teamField.value}" already exists for gym ${gym.name}; not creating a new ones`);
@@ -502,6 +550,8 @@ async function loadCompetition(compId: number) {
   if(compId) {
     competition = await db.competitions.where(":id").equals(compId).first();
     if(competition) {
+      competition.teams = competition.teams ?? [];
+      competition.competitors = competition.competitors ?? [];
       (<HTMLInputElement>elements.competitionName).value = competition.name;
       (<HTMLInputElement>elements.competitionDate).value = competition.date;
       (<HTMLInputElement>elements.competitionLocation).value = competition.location;
