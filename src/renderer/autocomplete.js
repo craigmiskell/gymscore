@@ -35,8 +35,12 @@ export class Autocomplete {
 
     field.addEventListener('click', (e) => {
       if (this.createItems() === 0) {
-        e.stopPropagation();
-        this.dropdown.hide();
+        if (this.options.showOnFocus && e.isTrusted && this.field.value === "") {
+          this.showAll();
+        } else {
+          e.stopPropagation();
+          this.dropdown.hide();
+        }
       }
     });
 
@@ -56,11 +60,26 @@ export class Autocomplete {
         return;
       }
     });
+
+    if (this.options.showOnFocus) {
+      field.addEventListener('focus', (e) => {
+        if (e.isTrusted && this.field.value === "") {
+          this.showAll();
+        }
+      });
+    }
   }
 
   setData(data) {
     this.options.data = data;
     this.renderIfNeeded();
+  }
+
+  showAll() {
+    const saved = this.options.threshold;
+    this.options.threshold = 0;
+    this.renderIfNeeded();
+    this.options.threshold = saved;
   }
 
   renderIfNeeded() {

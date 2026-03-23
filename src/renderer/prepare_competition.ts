@@ -203,6 +203,7 @@ function setupAutocomplete(
   field: HTMLInputElement,
   attribute: string,
   callbackOnInput?: AutoCompleteCallbackOnInputFunc,
+  showOnFocus?: boolean,
 ) {
 
   return new Autocomplete(
@@ -211,6 +212,7 @@ function setupAutocomplete(
       data: data,
       threshold: 1,
       maximumItems: 8,
+      showOnFocus: showOnFocus ?? false,
       onSelectItem: (selected: {label: string, value: string}) => {
         console.log("Found by autocomplete:", selected.label, selected.value);
         field.setAttribute(attribute, selected.value);
@@ -271,7 +273,8 @@ async function setupGymAutoComplete() {
         // If the user types, clear the selection
         gymField.removeAttribute(GYM_ID_ATTR_NAME);
         teamAutoComplete.setData([]);
-      }
+      },
+      showOnFocus: true,
     }
   );
 }
@@ -280,7 +283,9 @@ async function setupTeamAutoComplete() {
   teamAutoComplete = setupAutocomplete(
     [], // Can't do anything until we have a gym, in the competitor modal
     elements.competitorTeamModal,
-    TEAM_INDEX_ATTR_NAME
+    TEAM_INDEX_ATTR_NAME,
+    undefined,
+    true,
   );
 }
 
@@ -308,12 +313,16 @@ async function openAddCompetitorModal() {
   elements.competitorNameModal.value = competitor.name;
   elements.competitorIdModal.value = competitor.identifier;
   elements.competitorStepSelectModal.selectedIndex = competitor.step - 1;
+  elements.competitorTeamModal.value = "";
+  elements.competitorTeamModal.removeAttribute(TEAM_INDEX_ATTR_NAME);
+
   const gym = await gymForCompetitor(competitor);
   if(gym) {
     elements.competitorGymModal.value = gym.name;
     teamAutoComplete.setData(await fetchTeamsForGymForAutoComplete(gym.id));
   } else {
     elements.competitorGymModal.value = "";
+    elements.competitorGymModal.removeAttribute(GYM_ID_ATTR_NAME);
     teamAutoComplete.setData([]);
   }
 
