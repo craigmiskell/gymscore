@@ -16,11 +16,19 @@ After checking out the repo:
 
 ### Running in dev
 
+With hot reload:
+
+```shell
+npm run dev
+```
+
+Clean build, no hot reload (not recommended, just kept for history)
+
 ```shell
 npm start
 ```
 
-See package.json for job/script definitionss
+See package.json for job/script definitions
 
 ### Style
 
