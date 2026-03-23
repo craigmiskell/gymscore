@@ -41,6 +41,7 @@ class Elements extends pageCommon.BaseElements {
   groupApparatusResultsModalTable: HTMLTableElement = null;
   groupApparatusResultsModalDismiss: HTMLButtonElement = null;
   pauseCompetitionLink: HTMLLinkElement = null;
+  finishCompetitionButton: HTMLButtonElement = null;
   saveScores: HTMLButtonElement = null;
 }
 const elements = new Elements();
@@ -58,8 +59,9 @@ async function onLoaded() {
 
   await loadCompetition(parseInt(compId));
 
-  elements.pauseCompetitionLink.addEventListener("click",pauseCompetiton);
-  elements.groupApparatusResultsModalDismiss.addEventListener("click",dismissResultsModal);
+  elements.pauseCompetitionLink.addEventListener("click", pauseCompetiton);
+  elements.finishCompetitionButton.addEventListener("click", finishCompetition);
+  elements.groupApparatusResultsModalDismiss.addEventListener("click", dismissResultsModal);
   populateCompetitionResultsTable();
   elements.saveScores.addEventListener("click", saveScores);
 }
@@ -80,6 +82,32 @@ function dismissResultsModal(event: Event) {
 async function pauseCompetiton() {
   competition.state = CompetitionState.Preparing;
   await db.competitions.put(competition);
+}
+
+function allResultsRecorded(): boolean {
+  for (const apparatus of ["bar", "beam", "floor", "vault"]) {
+    if (!competition[apparatus as keyof typeof competition]) {
+      continue;
+    }
+    for (const group of getGroupsForCompetition()) {
+      const { recorded, total } = getGroupRecordedCount(group, apparatus);
+      if (recorded < total) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+function finishCompetition(event: Event) {
+  event.preventDefault();
+  if (!allResultsRecorded()) {
+    if (!confirm("Not all results have been recorded. Do you still want to finish the competition?")) {
+      return;
+    }
+  }
+  // TODO: mark competition as complete and navigate away
+  console.log("Finish competition");
 }
 
 async function loadCompetition(compId: number) {

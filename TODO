@@ -1,4 +1,3 @@
-* "Finish" competition button, to start generating results.
 * When recording results, put focus in the first field (first competitor, D Score)
 * Do not let the competition start until all competitors are assigned to a group.
 * Should it be possible to delete a set of scores for a competitor?  Setting all entries to emtpy does nothing, even when saving (returns to the prior values)
