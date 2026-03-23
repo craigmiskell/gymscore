@@ -28,6 +28,14 @@ import * as pdfs from "./pdfs";
 
 import { savePDF } from "./pdfs/savePdf";
 
+if (isDev) {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  require("electron-reload")(path.join(__dirname, ".."), {
+    electron: process.execPath,
+    hardResetMethod: "exit",
+  });
+}
+
 const createWindow = () => {
   const win = new BrowserWindow({
     show: false,

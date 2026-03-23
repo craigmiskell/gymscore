@@ -103,6 +103,9 @@ const mainConfig = merge(commonConfig, {
   output: {
     path: path.resolve(__dirname, "dist/main"),
   },
+  externals: {
+    "electron-reload": "commonjs electron-reload",
+  },
 });
 
 const preloadConfig = merge(commonConfig, {
