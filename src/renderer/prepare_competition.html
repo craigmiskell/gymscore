@@ -9,60 +9,69 @@
     <h1 class="text-center">Preparing Competition</h1>
     <a href="index.html"><i class="bi bi-arrow-90deg-left"></i></a>
     <hr>
-    <button type="button" class="btn btn-primary" id="detailsEditButton">►</button>
-    <div id="detailsCollapsed">
-      <span id="detailsCollapsedText" class="fw-bold fst-italic"></span>
-    </div>
-    <div id="detailsEditable">
-      <h4>Details</h4>
-      <form id="detailsForm" class="needs-validation" novalidate>
-          <div class="row">
-          <label for="competitionName" class="form-label col-2 col-md-1 col-form-label">Name</label>
-          <div class="col">
-            <input type="text" class="form-control" id="competitionName" placeholder="Competition title/name" required>
-            <div class="invalid-feedback">
-              A competition name is required
-            </div>
+    <div class="accordion mb-3" id="competitionDetailsAccordion">
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed" type="button"
+                  aria-expanded="false" aria-controls="detailsEditable"
+                  id="detailsEditButton">
+            Competition Details: <span id="detailsCollapsedText" class="fw-bold fst-italic ms-1"></span>
+          </button>
+        </h2>
+        <div id="detailsEditable" class="accordion-collapse collapse">
+          <div class="accordion-body">
+            <form id="detailsForm" class="needs-validation" novalidate>
+              <div class="row">
+                <label for="competitionName" class="form-label col-2 col-md-1 col-form-label">Name</label>
+                <div class="col">
+                  <input type="text" class="form-control" id="competitionName"
+                         placeholder="Competition title/name" required>
+                  <div class="invalid-feedback">
+                    A competition name is required
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <label for="competitionDate" class="form-label col-2 col-md-1 col-form-label">Date</label>
+                <div class="col">
+                  <input type="date" class="form-control w-25" id="competitionDate" placeholder="DD/MM/YYYY" required>
+                  <div class="invalid-feedback">
+                    A competition date is required
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <label for="competitionLocation" class="form-label col-2 col-md-1 col-form-label">Location</label>
+                <div class="col">
+                  <input type="text" class="form-control w-75" id="competitionLocation" placeholder="Location" required>
+                  <div class="invalid-feedback">
+                    A location is required
+                  </div>
+                </div>
+              </div>
+              <div class="row"><h5>Disciplines</h5></div>
+              <div class="row">
+                <div class="col-3">
+                  <label for="enableVault" class="form-label">Vault</label>
+                  <input type="checkbox" class="form-check-input" id="enableVault">
+                </div>
+                <div class="col-3">
+                  <label for="enableBar" class="form-label">Uneven Bars</label>
+                  <input type="checkbox" class="form-check-input" id="enableBar">
+                </div>
+                <div class="col-3">
+                  <label for="enableBeam" class="form-label">Balance Beam</label>
+                  <input type="checkbox" class="form-check-input" id="enableBeam">
+                </div>
+                <div class="col-3">
+                  <label for="enableFloor" class="form-label">Floor</label>
+                  <input type="checkbox" class="form-check-input" id="enableFloor">
+                </div>
+              </div>
+            </form>
           </div>
-          </div>
-          <div class="row">
-          <label for="competitionDate" class="form-label col-2 col-md-1 col-form-label">Date</label>
-          <div class="col">
-            <input type="date" class="form-control w-25" id="competitionDate" placeholder="DD/MM/YYYY" required>
-            <div class="invalid-feedback">
-              A competition date is required
-            </div>
-          </div>
-          </div>
-          <div class="row">
-          <label for="competitionLocation" class="form-label col-2 col-md-1 col-form-label">Location</label>
-          <div class="col">
-            <input type="text" class="form-control w-75" id="competitionLocation" placeholder="Location" required>
-            <div class="invalid-feedback">
-              A location is required
-            </div>
-          </div>
-          </div>
-          <div class="row"><h5>Disciplines</h5></div>
-          <div class="row">
-          <div class="col-3">
-            <label for="enableVault" class="form-label">Vault</label>
-            <input type="checkbox" class="form-check-input" id="enableVault">
-          </div>
-          <div class="col-3">
-            <label for="enableBar" class="form-label">Uneven Bars</label>
-            <input type="checkbox" class="form-check-input" id="enableBar">
-          </div>
-          <div class="col-3">
-            <label for="enableBeam" class="form-label">Balance Beam</label>
-            <input type="checkbox" class="form-check-input" id="enableBeam">
-          </div>
-          <div class="col-3">
-            <label for="enableFloor" class="form-label">Floor</label>
-            <input type="checkbox" class="form-check-input" id="enableFloor">
-          </div>
-          </div>
-      </form>
+        </div>
+      </div>
     </div>
     <hr>
     TODO: Move these somewhere better (an entire custom page, or maybe some small buttons at the very top?)<br>

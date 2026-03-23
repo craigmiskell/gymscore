@@ -20,7 +20,7 @@ import { ICompetition, Competition, CompetitionState,
   Division, ICompetitor, Competitor, Gym, IGym} from "../common/data";
 import * as pageCommon from "./page_common";
 import { Autocomplete } from "./autocomplete";
-import { Modal } from "bootstrap";
+import { Collapse, Modal } from "bootstrap";
 import { CompetitionCompetitorDetails, Team } from "../common/data/competition";
 import { getCompetitorsByStep } from "../common/competitors_by";
 
@@ -37,7 +37,6 @@ let teamAutoComplete :Autocomplete = undefined;
 
 class Elements extends pageCommon.BaseElements {
   detailsEditable: HTMLDivElement = null;
-  detailsCollapsed: HTMLDivElement = null;
   detailsCollapsedText: HTMLSpanElement = null;
   detailsEditButton: HTMLButtonElement = null;
   detailsForm: HTMLFormElement = null;
@@ -80,7 +79,16 @@ async function onLoaded() {
 
   await loadCompetition(parseInt(compId));
 
-  elements.detailsEditButton.addEventListener("click", toggleEditingDetails);
+  elements.detailsEditButton.addEventListener("click", onDetailsButtonClick);
+  elements.detailsEditable.addEventListener("show.bs.collapse", onDetailsExpanding);
+  elements.detailsEditable.addEventListener("hidden.bs.collapse", onDetailsHidden);
+  elements.competitionName.addEventListener("input", autoSave);
+  elements.competitionDate.addEventListener("input", autoSave);
+  elements.competitionLocation.addEventListener("input", autoSave);
+  elements.enableVault.addEventListener("change", autoSave);
+  elements.enableBar.addEventListener("change", autoSave);
+  elements.enableBeam.addEventListener("change", autoSave);
+  elements.enableFloor.addEventListener("change", autoSave);
   document.getElementById("addCompetitorButton").addEventListener("click", openAddCompetitorModal);
   document.getElementById("create-fake-competitors-button").addEventListener("click", populateFakeCompetitors);
   document.getElementById("addCompetitorModalYes").addEventListener("click", addCompetitor);
@@ -93,7 +101,11 @@ async function onLoaded() {
   updateCompetitorsTable();
   populateStepSelectModal();
 
-  setDetailsEditing(competition == undefined);
+  if (competition == undefined) {
+    Collapse.getOrCreateInstance(elements.detailsEditable, { toggle: false }).show();
+  } else {
+    setFormFieldsEnabled(false);
+  }
 }
 
 function populateStepSelectModal() {
@@ -499,15 +511,8 @@ async function loadCompetition(compId: number) {
 }
 
 async function saveCompetitionDetails() {
-  const form = <HTMLFormElement>elements.detailsForm;
-
-  if (!form.checkValidity()) {
-    form.classList.add("was-validated");
-    return;
-  }
-
-  if(competition) {
-    competition.name =(<HTMLInputElement>elements.competitionName).value;
+  if (competition) {
+    competition.name = (<HTMLInputElement>elements.competitionName).value;
     competition.date = (<HTMLInputElement>elements.competitionDate).value;
     competition.location = (<HTMLInputElement>elements.competitionLocation).value;
     competition.state = CompetitionState.Preparing;
@@ -516,18 +521,7 @@ async function saveCompetitionDetails() {
   } else {
     competition = await createCompetition();
   }
-  setDetailsEditing(false);
   updateCollapsedText(competition);
-  return false;
-}
-
-function toggleEditingDetails() {
-  if (elements.detailsEditable.classList.contains("collapse")) {
-    // Is collapsed, we're about to expand it
-    setDetailsEditing(true);
-  } else {
-    saveCompetitionDetails();
-  }
 }
 
 // Called by the 'save' button when there is no pre-existing competition
@@ -549,38 +543,47 @@ function populateCompetitionDisciplines(competition: ICompetition) {
   competition.floor = (<HTMLInputElement>elements.enableFloor).checked;
 }
 
-function setDetailsEditing(editing: boolean) {
-  const enabledWhenEditing = [
+function setFormFieldsEnabled(enabled: boolean) {
+  const fields = [
     elements.competitionName, elements.competitionDate,
-    elements.competitionLocation, elements.enableBar, elements.enableBeam, elements.enableFloor,
-    elements.enableVault
+    elements.competitionLocation, elements.enableBar, elements.enableBeam,
+    elements.enableFloor, elements.enableVault
   ];
-  const enabledWhenNotEditing: HTMLElement[] = [
-    // Currently none
-  ];
-
-  const enabled = editing ? enabledWhenEditing : enabledWhenNotEditing;
-  const disabled = editing ? enabledWhenNotEditing : enabledWhenEditing;
-
-  for (const i of enabled) {
-    i.classList.remove("disabled");
-    (<HTMLInputElement>i).disabled = false;
+  for (const field of fields) {
+    field.classList.toggle("disabled", !enabled);
+    (<HTMLInputElement>field).disabled = !enabled;
   }
-  for (const i of disabled) {
-    i.classList.add("disabled");
-    (<HTMLInputElement>i).disabled = true;
-  }
+}
 
-  if(editing) {
-    elements.detailsForm.classList.remove("was-validated");
-    elements.detailsEditable.classList.remove("collapse");
-    elements.detailsCollapsed.classList.add("collapse");
-    elements.detailsEditButton.innerText = "▼";
+function onDetailsButtonClick() {
+  const collapse = Collapse.getOrCreateInstance(elements.detailsEditable, { toggle: false });
+  if (elements.detailsEditable.classList.contains("show")) {
+    collapse.hide();
   } else {
-    elements.detailsCollapsed.classList.remove("collapse");
-    elements.detailsEditable.classList.add("collapse");
-    elements.detailsEditButton.innerText = "►";
+    collapse.show();
   }
+}
+
+let autoSaveTimer: ReturnType<typeof setTimeout> = null;
+
+function autoSave() {
+  if (!(<HTMLFormElement>elements.detailsForm).checkValidity()) {
+    return;
+  }
+  clearTimeout(autoSaveTimer);
+  autoSaveTimer = setTimeout(() => { void saveCompetitionDetails(); }, 300);
+}
+
+function onDetailsExpanding() {
+  elements.detailsForm.classList.remove("was-validated");
+  setFormFieldsEnabled(true);
+  elements.detailsEditButton.classList.remove("collapsed");
+  elements.detailsEditButton.setAttribute("aria-expanded", "true");
+}
+
+function onDetailsHidden() {
+  elements.detailsEditButton.classList.add("collapsed");
+  elements.detailsEditButton.setAttribute("aria-expanded", "false");
 }
 
 type AutoCompleteData = {
