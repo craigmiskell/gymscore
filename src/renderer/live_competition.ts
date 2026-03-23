@@ -231,6 +231,14 @@ function editGroupApparatusResults(event: Event) {
   modalElement.removeAttribute(HAS_CHANGES_ATTR_NAME);
   elements.groupApparatusResultsModalForm.classList.remove("was-validated");
 
+  modalElement.addEventListener("shown.bs.modal", () => {
+    const body = elements.groupApparatusResultsModalTable.tBodies[0];
+    const firstEmptyRow = Array.from(body.rows).find(row => fieldForCol(row, D_SCORE_COLUMN).value === "");
+    if (firstEmptyRow) {
+      fieldForCol(firstEmptyRow, D_SCORE_COLUMN).focus();
+    }
+  }, { once: true });
+
   modal.show();
 }
 
