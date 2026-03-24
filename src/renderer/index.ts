@@ -42,7 +42,7 @@ import { db } from "./data/gymscoredb";
 import { ICompetition, CompetitionState } from "../common/data";
 import * as pageCommon from "./page_common";
 import { generateCompetitionPDFs } from "./competition_pdfs";
-import { Modal } from "bootstrap";
+import { Collapse, Modal } from "bootstrap";
 import { exportDB, importInto } from "dexie-export-import";
 
 declare const api: typeof import("../common/api").default;
@@ -90,6 +90,9 @@ async function onLoaded() {
   document.getElementById("importConfirmationModalYes").addEventListener(
     "click", doImportDatabase
   );
+
+  setupAccordion("recordsAccordionButton", "recordsCollapse");
+  setupAccordion("databaseAccordionButton", "databaseCollapse");
 
   displayCompetitionTable("preparingCompetitions", CompetitionState.Preparing, displayPreparingCompetition);
   displayCompetitionTable("liveCompetitions", CompetitionState.Live, displayLiveCompetition);
@@ -195,6 +198,27 @@ function fillInLink(link: HTMLAnchorElement, text: string, iconName: string) {
   icon.classList.add("bi", `bi-${iconName}`);
   link.appendChild(icon);
   link.appendChild(new Text(` ${text}`));
+}
+
+function setupAccordion(buttonId: string, collapseId: string) {
+  const button = document.getElementById(buttonId);
+  const collapseEl = document.getElementById(collapseId);
+  button.addEventListener("click", () => {
+    const instance = Collapse.getOrCreateInstance(collapseEl, { toggle: false });
+    if (collapseEl.classList.contains("show")) {
+      instance.hide();
+    } else {
+      instance.show();
+    }
+  });
+  collapseEl.addEventListener("show.bs.collapse", () => {
+    button.classList.remove("collapsed");
+    button.setAttribute("aria-expanded", "true");
+  });
+  collapseEl.addEventListener("hidden.bs.collapse", () => {
+    button.classList.add("collapsed");
+    button.setAttribute("aria-expanded", "false");
+  });
 }
 
 async function clearDB() {

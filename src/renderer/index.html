@@ -70,23 +70,49 @@
       </div>
     </div>
     <hr>
-    <ul class="d-flex flex-column gap-2 list-unstyled">
-      <li><a href="competitors.html"><button type="button" class="btn btn-primary">Edit known competitors</button></a></li>
-      <li><a href="gyms.html"><button type="button" class="btn btn-primary" id="editGyms">Edit Gyms</button></a>
-      </li>
-      <li class="d-flex gap-2">
-        <button type="button" class="btn btn-secondary" id="export-database-button">
-          <i class="bi bi-box-arrow-up"></i> Export database
-        </button>
-        <button type="button" class="btn btn-danger" id="import-database-button">
-          <i class="bi bi-box-arrow-in-down"></i> Import database
-        </button>
-      </li>
-      <li><a id="delete-database-button" href="" ><i class="bi b-trash">Delete database</i></a>
-        <ul>
-          <li>TODO: lots of prompts (e.g. type random generated phrase to confirm)</li>
-        </ul>
-      </li>
-    </ul>
+    <div class="accordion" id="managementAccordion">
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed" type="button"
+                  aria-expanded="false" aria-controls="recordsCollapse"
+                  id="recordsAccordionButton">
+            Records
+          </button>
+        </h2>
+        <div id="recordsCollapse" class="accordion-collapse collapse">
+          <div class="accordion-body d-flex flex-column gap-2">
+            <div><a href="competitors.html"><button type="button" class="btn btn-primary">Edit known competitors</button></a></div>
+            <div><a href="gyms.html"><button type="button" class="btn btn-primary">Edit Gyms</button></a></div>
+          </div>
+        </div>
+      </div>
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed" type="button"
+                  aria-expanded="false" aria-controls="databaseCollapse"
+                  id="databaseAccordionButton">
+            Database Management
+          </button>
+        </h2>
+        <div id="databaseCollapse" class="accordion-collapse collapse">
+          <div class="accordion-body d-flex flex-column gap-2">
+            <div class="d-flex gap-2">
+              <button type="button" class="btn btn-secondary" id="export-database-button">
+                <i class="bi bi-box-arrow-up"></i> Export database
+              </button>
+              <button type="button" class="btn btn-danger" id="import-database-button">
+                <i class="bi bi-box-arrow-in-down"></i> Import database
+              </button>
+            </div>
+            <div>
+              <a id="delete-database-button" href=""><i class="bi b-trash">Delete database</i></a>
+              <ul>
+                <li>TODO: lots of prompts (e.g. type random generated phrase to confirm)</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </body>
 </html>
