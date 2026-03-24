@@ -29,5 +29,14 @@ export default {
     } else {
       console.log("*** RENDERER IS NOT PERMITTED TO LISTEN ON  "+channel+"***");
     }
+  },
+  invoke: (channel: string, data?: any): Promise<any> => {
+    const validChannels = ["export-db", "import-db"];
+    if (validChannels.includes(channel)) {
+      return ipcRenderer.invoke(channel, data);
+    } else {
+      console.log("*** INVALID CHANNEL FOR INVOKE FROM RENDERER "+channel+"***");
+      return Promise.reject(new Error("Invalid channel"));
+    }
   }
 };

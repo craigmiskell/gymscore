@@ -43,6 +43,9 @@ import { ICompetition, CompetitionState } from "../common/data";
 import * as pageCommon from "./page_common";
 import { generateCompetitionPDFs } from "./competition_pdfs";
 import { Modal } from "bootstrap";
+import { exportDB, importInto } from "dexie-export-import";
+
+declare const api: typeof import("../common/api").default;
 
 type CompetitionRowDisplayFunc = (row: HTMLTableRowElement, competition: ICompetition) => void;
 type CompetitionCallback = (competition: ICompetition) => void;
@@ -74,6 +77,18 @@ async function onLoaded() {
 
   document.getElementById("delete-database-button").addEventListener(
     "click", clearDB
+  );
+
+  document.getElementById("export-database-button").addEventListener(
+    "click", exportDatabase
+  );
+
+  document.getElementById("import-database-button").addEventListener(
+    "click", promptImportDatabase
+  );
+
+  document.getElementById("importConfirmationModalYes").addEventListener(
+    "click", doImportDatabase
   );
 
   displayCompetitionTable("preparingCompetitions", CompetitionState.Preparing, displayPreparingCompetition);
@@ -185,6 +200,39 @@ function fillInLink(link: HTMLAnchorElement, text: string, iconName: string) {
 async function clearDB() {
   await db.delete();
   await db.open();
+}
+
+async function exportDatabase() {
+  const blob = await exportDB(db);
+  // The JSON string is serialized (Structured Clone) and copied across the process boundary into main.
+  // For large databases this could cause a brief UI freeze and a peak of ~3x the export size in memory.
+  // Alternatives if that becomes a problem:
+  //   - Use blob.arrayBuffer() + ipcRenderer.postMessage(..., [buffer]) to transfer (not copy) the buffer
+  //     out of the renderer heap, eliminating one JS allocation — the cross-process copy still occurs.
+  //   - Run exportDB() in a Web Worker to keep the serialization off the main thread (best effort/reward).
+  //   - Stream chunks via repeated IPC sends to a WriteStream in main, keeping memory bounded.
+  const text = await blob.text();
+  const result = await api.invoke("export-db", text);
+  if (result && !result.success && !result.canceled) {
+    alert("Export failed.");
+  }
+}
+
+function promptImportDatabase() {
+  Modal.getOrCreateInstance(document.getElementById("importConfirmationModal")).show();
+}
+
+async function doImportDatabase() {
+  Modal.getOrCreateInstance(document.getElementById("importConfirmationModal")).hide();
+  const result = await api.invoke("import-db");
+  if (!result || result.canceled || !result.success) {
+    return;
+  }
+  const blob = new Blob([result.data], { type: "application/json" });
+  await db.delete();
+  await db.open();
+  await importInto(db, blob, { clearTablesBeforeImport: true });
+  window.location.reload();
 }
 
 // Leave this as an example for how to draw to a canvas and then save to disk

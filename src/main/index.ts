@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU General Public License along with this program. If not,
 // see <https://www.gnu.org/licenses/>.
 
-import {IpcMainEvent, app, BrowserWindow, ipcMain, shell} from "electron";
+import {IpcMainEvent, app, BrowserWindow, ipcMain, shell, dialog} from "electron";
 import path from "path";
 import isDev from "electron-is-dev";
 import fs from "fs";
@@ -109,6 +109,37 @@ ipcMain.on("generate-pdfs", (event: IpcMainEvent, arg: any) => {
     savePDF(competition, pdfs.generatePlaces(competition), "places");
     break;
   }
+});
+
+// Receives the full exported JSON string from the renderer. Renderer and main are separate OS processes
+// so data is always copied (never passed by reference), regardless of size. See exportDatabase() in
+// renderer/index.ts for alternatives if the size ever becomes problematic.
+ipcMain.handle("export-db", async (event, jsonData: string) => {
+  const win = BrowserWindow.fromWebContents(event.sender);
+  const { filePath, canceled } = await dialog.showSaveDialog(win, {
+    title: "Export GymScore Database",
+    defaultPath: "gymscore-backup.json",
+    filters: [{ name: "GymScore Backup", extensions: ["json"] }],
+  });
+  if (canceled || !filePath) {
+    return { success: false, canceled: true };
+  }
+  fs.writeFileSync(filePath, jsonData, "utf-8");
+  return { success: true };
+});
+
+ipcMain.handle("import-db", async (event) => {
+  const win = BrowserWindow.fromWebContents(event.sender);
+  const { filePaths, canceled } = await dialog.showOpenDialog(win, {
+    title: "Import GymScore Database",
+    filters: [{ name: "GymScore Backup", extensions: ["json"] }],
+    properties: ["openFile"],
+  });
+  if (canceled || filePaths.length === 0) {
+    return { success: false, canceled: true };
+  }
+  const data = fs.readFileSync(filePaths[0], "utf-8");
+  return { success: true, data };
 });
 
 console.log("Data storage may be in "+ app.getPath("userData"));
