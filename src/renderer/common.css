@@ -17,5 +17,16 @@
 .competitors-table {
   max-height: 500px;
   overflow: auto;
-  display:inline-block;
+  display: inline-block;
+}
+
+.competitors-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background-color: white;
+}
+
+.competitors-table thead tr:nth-child(2) th {
+  top: var(--filter-row-top, 38px);
 }

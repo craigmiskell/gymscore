@@ -22,7 +22,6 @@ import * as pageCommon from "./page_common";
 import { Autocomplete } from "./autocomplete";
 import { Collapse, Modal } from "bootstrap";
 import { CompetitionCompetitorDetails, Team } from "../common/data/competition";
-import { getCompetitorsByStep } from "../common/competitors_by";
 
 const COMPETITOR_ID_ATTR_NAME = "competitorId";
 const GYM_ID_ATTR_NAME = "gymId";
@@ -34,6 +33,10 @@ let competition: ICompetition = undefined;
 let gymAutoComplete :Autocomplete = undefined;
 let competitorAutoComplete :Autocomplete = undefined;
 let teamAutoComplete :Autocomplete = undefined;
+
+type SortColumn = "name" | "step" | "club" | "team";
+let sortColumn: SortColumn | null = null;
+let sortDirection: "asc" | "desc" = "asc";
 
 class Elements extends pageCommon.BaseElements {
   detailsEditable: HTMLDivElement = null;
@@ -62,6 +65,10 @@ class Elements extends pageCommon.BaseElements {
   groupSelectTemplate: HTMLSelectElement = null;
   createRecorderSheetsButton: HTMLButtonElement = null;
   createProgrammeButton: HTMLButtonElement = null;
+  filterName: HTMLInputElement = null;
+  filterStep: HTMLInputElement = null;
+  filterClub: HTMLInputElement = null;
+  filterTeam: HTMLInputElement = null;
 
 }
 const elements = new Elements();
@@ -107,6 +114,8 @@ async function onLoaded() {
   await setupCompetitorAutoComplete();
   await setupGymAutoComplete();
   await setupTeamAutoComplete();
+  setupSortHeaders();
+  setupFilterInputs();
   updateCompetitorsTable();
   populateStepSelectModal();
 
@@ -137,13 +146,12 @@ async function removeCompetitor(event: Event) {
   updateCompetitorsTable();
 }
 
-async function displayCompetitorInRow(row: HTMLTableRowElement, competitor: CompetitionCompetitorDetails) {
-  const gym :IGym = await db.gyms.where(":id").equals(competitor.gymId).first();
-  const competitorIdString =  competitor.competitorId.toString();
+function displayCompetitorInRow(row: HTMLTableRowElement, competitor: CompetitionCompetitorDetails) {
+  const competitorIdString = competitor.competitorId.toString();
   row.cells[0].textContent = competitor.competitorName;
   row.cells[1].textContent = competitor.step + " " + Division[competitor.division];
-  row.cells[2].textContent = gym?.name;
-  row.cells[3].textContent = competition.teams[competitor.teamIndex].name;
+  row.cells[2].textContent = competitor.gymName;
+  row.cells[3].textContent = competition.teams[competitor.teamIndex]?.name ?? "";
 
   const groupSelect = <HTMLSelectElement>row.cells[4].firstChild;
   groupSelect.setAttribute(COMPETITOR_ID_ATTR_NAME, competitorIdString);
@@ -182,32 +190,112 @@ function createCompetitorRow(tableSection: HTMLTableSectionElement, index: numbe
   return row;
 }
 
-async function updateCompetitorsTable() {
+function updateCompetitorsTable() {
   const tableBody = elements.competitors.tBodies[0];
 
-  if(competition == undefined) {
+  if (competition == undefined) {
     return;
   }
 
-  const competitors = competition.competitors;
+  const nameFilter = elements.filterName.value.toLowerCase();
+  const stepFilter = elements.filterStep.value.toLowerCase();
+  const clubFilter = elements.filterClub.value.toLowerCase();
+  const teamFilter = elements.filterTeam.value.toLowerCase();
 
-  // If the table is too long, trim it; if it's short, we'll create more later
-  while (tableBody.rows.length > competitors.length) {
+  const filtered = [...competition.competitors]
+    .sort((a, b) => {
+      const gymA = a.gymName ?? "";
+      const gymB = b.gymName ?? "";
+      const teamA = competition.teams[a.teamIndex]?.name ?? "";
+      const teamB = competition.teams[b.teamIndex]?.name ?? "";
+      const defaultOrder =
+        gymA.localeCompare(gymB) ||
+        teamA.localeCompare(teamB) ||
+        (a.step - b.step) ||
+        a.competitorName.localeCompare(b.competitorName);
+
+      if (sortColumn === null) {
+        return defaultOrder;
+      }
+
+      let primary: number;
+      switch (sortColumn) {
+      case "name": primary = a.competitorName.localeCompare(b.competitorName); break;
+      case "step": primary = (a.step - b.step) || Division[a.division].localeCompare(Division[b.division]); break;
+      case "club": primary = gymA.localeCompare(gymB); break;
+      case "team": primary = teamA.localeCompare(teamB); break;
+      }
+      return (primary !== 0 ? (sortDirection === "asc" ? primary : -primary) : defaultOrder);
+    })
+    .filter((competitor) => {
+      const stepStr = `${competitor.step} ${Division[competitor.division]}`.toLowerCase();
+      const teamName = (competition.teams[competitor.teamIndex]?.name ?? "").toLowerCase();
+      return (
+        competitor.competitorName.toLowerCase().includes(nameFilter) &&
+        stepStr.includes(stepFilter) &&
+        (competitor.gymName ?? "").toLowerCase().includes(clubFilter) &&
+        teamName.includes(teamFilter)
+      );
+    });
+
+  while (tableBody.rows.length > filtered.length) {
     tableBody.deleteRow(-1);
   }
 
-  const stepCompetitors = getCompetitorsByStep(competitors);
-  let rowIndex=0;
-  for (const step of Object.keys(stepCompetitors).sort()) {
-    stepCompetitors[step].forEach(competitor => {
-      let row = tableBody.rows[rowIndex];
-      if(row == undefined) {
-        row = createCompetitorRow(tableBody, rowIndex);
-      }
-      displayCompetitorInRow(row, competitor);
-      rowIndex += 1;
-    });
+  filtered.forEach((competitor, rowIndex) => {
+    let row = tableBody.rows[rowIndex];
+    if (row == undefined) {
+      row = createCompetitorRow(tableBody, rowIndex);
+    }
+    displayCompetitorInRow(row, competitor);
+  });
+}
+
+function updateSortIndicators() {
+  document.querySelectorAll<HTMLTableCellElement>("#competitors thead th[data-col]").forEach((th) => {
+    const col = th.dataset.col as SortColumn;
+    const icon = th.querySelector("i")!;
+    if (sortColumn === null) {
+      // Default compound sort (Club/Team/Step/Name) — show muted up arrow on all four
+      icon.className = "bi bi-arrow-up text-muted";
+    } else if (col === sortColumn) {
+      icon.className = `bi ${sortDirection === "asc" ? "bi-arrow-up" : "bi-arrow-down"}`;
+    } else {
+      icon.className = "bi bi-arrow-down-up text-muted";
+    }
+  });
+}
+
+function onSortHeaderClick(col: SortColumn) {
+  if (sortColumn === col) {
+    if (sortDirection === "asc") {
+      sortDirection = "desc";
+    } else {
+      sortColumn = null;
+      sortDirection = "asc";
+    }
+  } else {
+    sortColumn = col;
+    sortDirection = "asc";
   }
+  updateSortIndicators();
+  updateCompetitorsTable();
+}
+
+function setupSortHeaders() {
+  document.querySelectorAll<HTMLTableCellElement>("#competitors thead th[data-col]").forEach((th) => {
+    th.addEventListener("click", () => onSortHeaderClick(th.dataset.col as SortColumn));
+  });
+  // Measure first header row height so the filter row sticks immediately below it
+  const firstRow = elements.competitors.tHead.rows[0] as HTMLTableRowElement;
+  elements.competitors.style.setProperty("--filter-row-top", `${firstRow.offsetHeight}px`);
+  updateSortIndicators();
+}
+
+function setupFilterInputs() {
+  [elements.filterName, elements.filterStep, elements.filterClub, elements.filterTeam].forEach((input) => {
+    input.addEventListener("input", updateCompetitorsTable);
+  });
 }
 
 function setupAutocomplete(

@@ -3,7 +3,6 @@
   * Might be only an intermediate one used for doing other stuff.
 * Do not allow adding the same competitor more than once to a competition.
   * To handle name conflicts, add national ID to the auto-complete suggestion.
-* Live filter and sort on name, step, club, team for added competitors when preparing.
 * In "Edit Gyms", also allow editing name.  Should we even be able to delete it?  I think the Gym is realized into the competition so it only affects autocomplete, but double check that.
 * Should it be possible to delete a set of scores for a competitor?  Setting all entries to emtpy does nothing, even when saving (returns to the prior values)
 * Certificates - for competitors; part of results?
