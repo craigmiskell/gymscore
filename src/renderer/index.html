@@ -18,6 +18,51 @@
     <hr>
     <table class="table table-sm table-striped w-auto" id="pastCompetitions"></table>
     <hr class="border-secondary opacity-50 mt-1 hr-thick">
+    <div class="accordion" id="managementAccordion">
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed" type="button"
+                  aria-expanded="false" aria-controls="recordsCollapse"
+                  id="recordsAccordionButton">
+            Records
+          </button>
+        </h2>
+        <div id="recordsCollapse" class="accordion-collapse collapse">
+          <div class="accordion-body d-flex flex-column gap-2">
+            <div><a href="competitors.html"><button type="button" class="btn btn-primary">Edit known competitors</button></a></div>
+            <div><a href="gyms.html"><button type="button" class="btn btn-primary">Edit Gyms</button></a></div>
+          </div>
+        </div>
+      </div>
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed" type="button"
+                  aria-expanded="false" aria-controls="databaseCollapse"
+                  id="databaseAccordionButton">
+            Database Management
+          </button>
+        </h2>
+        <div id="databaseCollapse" class="accordion-collapse collapse">
+          <div class="accordion-body d-flex flex-column gap-2">
+            <div>
+              <button type="button" class="btn btn-secondary" id="export-database-button">
+                <i class="bi bi-box-arrow-up"></i> Export database
+              </button>
+            </div>
+            <div>
+              <button type="button" class="btn btn-danger" id="import-database-button">
+                <i class="bi bi-box-arrow-in-down"></i> Import database
+              </button>
+            </div>
+            <div>
+              <button type="button" class="btn btn-danger" id="delete-database-button">
+                <i class="bi bi-trash"></i> Delete database
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
     <div class="modal fade" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" role="dialog" aria-hidden="true" id="ungroupedCompetitorsModal">
       <div class="modal-dialog modal-sm">
         <div class="modal-content">
@@ -66,51 +111,6 @@
           <div class="modal-footer">
             <button type="button" class="btn btn-primary" data-bs-dismiss="modal" id="deleteConfirmationModalNo">No</button>
             <button type="button" class="btn btn-default" id="deleteConfirmationModalYes">Yes</button>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="accordion" id="managementAccordion">
-      <div class="accordion-item">
-        <h2 class="accordion-header">
-          <button class="accordion-button collapsed" type="button"
-                  aria-expanded="false" aria-controls="recordsCollapse"
-                  id="recordsAccordionButton">
-            Records
-          </button>
-        </h2>
-        <div id="recordsCollapse" class="accordion-collapse collapse">
-          <div class="accordion-body d-flex flex-column gap-2">
-            <div><a href="competitors.html"><button type="button" class="btn btn-primary">Edit known competitors</button></a></div>
-            <div><a href="gyms.html"><button type="button" class="btn btn-primary">Edit Gyms</button></a></div>
-          </div>
-        </div>
-      </div>
-      <div class="accordion-item">
-        <h2 class="accordion-header">
-          <button class="accordion-button collapsed" type="button"
-                  aria-expanded="false" aria-controls="databaseCollapse"
-                  id="databaseAccordionButton">
-            Database Management
-          </button>
-        </h2>
-        <div id="databaseCollapse" class="accordion-collapse collapse">
-          <div class="accordion-body d-flex flex-column gap-2">
-            <div>
-              <button type="button" class="btn btn-secondary" id="export-database-button">
-                <i class="bi bi-box-arrow-up"></i> Export database
-              </button>
-            </div>
-            <div>
-              <button type="button" class="btn btn-danger" id="import-database-button">
-                <i class="bi bi-box-arrow-in-down"></i> Import database
-              </button>
-            </div>
-            <div>
-              <button type="button" class="btn btn-danger" id="delete-database-button">
-                <i class="bi bi-trash"></i> Delete database
-              </button>
-            </div>
           </div>
         </div>
       </div>
