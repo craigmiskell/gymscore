@@ -75,21 +75,31 @@ async function onLoaded() {
     }
   );
 
-  document.getElementById("delete-database-button").addEventListener(
-    "click", clearDB
-  );
+  document.getElementById("delete-database-button").addEventListener("click", () => {
+    showDangerModal({
+      operation: "Delete database",
+      warningPrefix: "This will ",
+      warningSuffix: "",
+      showImportBullet: false,
+      confirmText: "Yes, delete everything",
+      onConfirm: async() => { await clearDB(); window.location.reload(); },
+    });
+  });
 
   document.getElementById("export-database-button").addEventListener(
     "click", exportDatabase
   );
 
-  document.getElementById("import-database-button").addEventListener(
-    "click", promptImportDatabase
-  );
-
-  document.getElementById("importConfirmationModalYes").addEventListener(
-    "click", doImportDatabase
-  );
+  document.getElementById("import-database-button").addEventListener("click", () => {
+    showDangerModal({
+      operation: "Import database",
+      warningPrefix: "Importing will ",
+      warningSuffix: " and replace it with the contents of the selected file",
+      showImportBullet: true,
+      confirmText: "Yes, wipe and import",
+      onConfirm: doImportDatabase,
+    });
+  });
 
   setupAccordion("recordsAccordionButton", "recordsCollapse");
   setupAccordion("databaseAccordionButton", "databaseCollapse");
@@ -242,12 +252,32 @@ async function exportDatabase() {
   }
 }
 
-function promptImportDatabase() {
-  Modal.getOrCreateInstance(document.getElementById("importConfirmationModal")).show();
+interface DangerModalConfig {
+  operation: string;
+  warningPrefix: string;
+  warningSuffix: string;
+  showImportBullet: boolean;
+  confirmText: string;
+  onConfirm: () => void;
+}
+
+function showDangerModal(config: DangerModalConfig) {
+  document.getElementById("dangerModalOperation").textContent = config.operation;
+  document.getElementById("dangerModalWarningPrefix").textContent = config.warningPrefix;
+  document.getElementById("dangerModalWarningSuffix").textContent = config.warningSuffix;
+  document.getElementById("dangerModalImportBullet").classList.toggle("d-none", !config.showImportBullet);
+  const oldBtn = document.getElementById("dangerConfirmationModalYes");
+  oldBtn.textContent = config.confirmText;
+  const newBtn = oldBtn.cloneNode(true) as HTMLElement;
+  oldBtn.replaceWith(newBtn);
+  newBtn.addEventListener("click", () => {
+    Modal.getOrCreateInstance(document.getElementById("dangerConfirmationModal")).hide();
+    config.onConfirm();
+  });
+  Modal.getOrCreateInstance(document.getElementById("dangerConfirmationModal")).show();
 }
 
 async function doImportDatabase() {
-  Modal.getOrCreateInstance(document.getElementById("importConfirmationModal")).hide();
   const result = await api.invoke("import-db");
   if (!result || result.canceled || !result.success) {
     return;
