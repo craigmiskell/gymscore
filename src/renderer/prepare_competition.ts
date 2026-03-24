@@ -71,6 +71,7 @@ class Elements extends pageCommon.BaseElements {
   filterTeam: HTMLInputElement = null;
   duplicateCompetitorError: HTMLDivElement = null;
   competitorAlreadyAddedWarning: HTMLDivElement = null;
+  nationalIdDuplicateWarning: HTMLDivElement = null;
 
 }
 const elements = new Elements();
@@ -104,6 +105,14 @@ async function onLoaded() {
   });
   document.getElementById("create-fake-competitors-button").addEventListener("click", populateFakeCompetitors);
   document.getElementById("addCompetitorModalYes").addEventListener("click", addCompetitor);
+  elements.competitorIdModal.addEventListener("input", () => {
+    clearTimeout(nationalIdCheckTimer);
+    nationalIdCheckTimer = setTimeout(() => { void checkNationalIdDuplicate(); }, 300);
+  });
+  elements.competitorIdModal.addEventListener("blur", () => {
+    clearTimeout(nationalIdCheckTimer);
+    void checkNationalIdDuplicate();
+  });
   elements.competitorTeamModal.addEventListener("keydown", (e: KeyboardEvent) => {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -460,6 +469,8 @@ async function openAddCompetitorModal() {
 
   elements.competitorDetailsForm.classList.remove("was-validated");
   elements.duplicateCompetitorError.classList.add("d-none");
+  nationalIdIsDuplicate = false;
+  elements.nationalIdDuplicateWarning.classList.add("d-none");
 
   elements.addCompetitorModal.addEventListener("shown.bs.modal", () => {
     const fields: HTMLInputElement[] = [
@@ -534,6 +545,9 @@ async function addCompetitor() {
   );
   if (isDuplicate) {
     elements.duplicateCompetitorError.classList.remove("d-none");
+    return;
+  }
+  if (nationalIdIsDuplicate) {
     return;
   }
 
@@ -728,6 +742,21 @@ function onDetailsButtonClick() {
   } else {
     collapse.show();
   }
+}
+
+let nationalIdIsDuplicate = false;
+let nationalIdCheckTimer: ReturnType<typeof setTimeout> = null;
+
+async function checkNationalIdDuplicate() {
+  const identifier = elements.competitorIdModal.value.trim();
+  if (!identifier) {
+    nationalIdIsDuplicate = false;
+    elements.nationalIdDuplicateWarning.classList.add("d-none");
+    return;
+  }
+  const existing = await db.competitors.where("identifier").equalsIgnoreCase(identifier).first();
+  nationalIdIsDuplicate = existing != null;
+  elements.nationalIdDuplicateWarning.classList.toggle("d-none", !nationalIdIsDuplicate);
 }
 
 let autoSaveTimer: ReturnType<typeof setTimeout> = null;
