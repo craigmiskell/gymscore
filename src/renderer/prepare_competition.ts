@@ -35,8 +35,7 @@ let competitorAutoComplete :Autocomplete = undefined;
 let teamAutoComplete :Autocomplete = undefined;
 
 type SortColumn = "name" | "nationalId" | "step" | "club" | "team";
-let sortColumn: SortColumn | null = null;
-let sortDirection: "asc" | "desc" = "asc";
+const tableSorter = new pageCommon.TableSorter<SortColumn>();
 
 class Elements extends pageCommon.BaseElements {
   detailsEditable: HTMLDivElement = null;
@@ -126,8 +125,16 @@ async function onLoaded() {
   await setupCompetitorAutoComplete();
   await setupGymAutoComplete();
   await setupTeamAutoComplete();
-  setupSortHeaders();
-  setupFilterInputs();
+  tableSorter.setup(elements.competitors, updateCompetitorsTable);
+  pageCommon.setupFilterInputs(
+    [elements.filterName, elements.filterNationalId, elements.filterStep, elements.filterClub, elements.filterTeam],
+    updateCompetitorsTable
+  );
+  // Bootstrap's form-control sets width: 100%, which causes the table layout algorithm to size
+  // this column by its header text ("National ID") rather than its content. CSS overrides on the
+  // th are ignored for the same reason. Setting directly on the input here is the reliable fix.
+  elements.filterNationalId.style.width = "13ch";
+  elements.filterNationalId.style.minWidth = "0";
   updateCompetitorsTable();
   populateStepSelectModal();
 
@@ -228,19 +235,19 @@ function updateCompetitorsTable() {
         (a.step - b.step) ||
         a.competitorName.localeCompare(b.competitorName);
 
-      if (sortColumn === null) {
+      if (tableSorter.column === null) {
         return defaultOrder;
       }
 
       let primary: number;
-      switch (sortColumn) {
+      switch (tableSorter.column) {
       case "name": primary = a.competitorName.localeCompare(b.competitorName); break;
       case "nationalId": primary = (a.competitorIdentifier ?? "").localeCompare(b.competitorIdentifier ?? ""); break;
       case "step": primary = (a.step - b.step) || Division[a.division].localeCompare(Division[b.division]); break;
       case "club": primary = gymA.localeCompare(gymB); break;
       case "team": primary = teamA.localeCompare(teamB); break;
       }
-      return (primary !== 0 ? (sortDirection === "asc" ? primary : -primary) : defaultOrder);
+      return (primary !== 0 ? (tableSorter.direction === "asc" ? primary : -primary) : defaultOrder);
     })
     .filter((competitor) => {
       const stepStr = `${competitor.step} ${Division[competitor.division]}`.toLowerCase();
@@ -267,63 +274,6 @@ function updateCompetitorsTable() {
   });
 }
 
-function updateSortIndicators() {
-  document.querySelectorAll<HTMLTableCellElement>("#competitors thead th[data-col]").forEach((th) => {
-    const col = th.dataset.col as SortColumn;
-    const icon = th.querySelector("i")!;
-    if (sortColumn === null) {
-      // Default compound sort (Club/Team/Step/Name) — show muted up arrow on all four
-      icon.className = "bi bi-arrow-up text-muted";
-    } else if (col === sortColumn) {
-      icon.className = `bi ${sortDirection === "asc" ? "bi-arrow-up" : "bi-arrow-down"}`;
-    } else {
-      icon.className = "bi bi-arrow-down-up text-muted";
-    }
-  });
-}
-
-function onSortHeaderClick(col: SortColumn) {
-  if (sortColumn === col) {
-    if (sortDirection === "asc") {
-      sortDirection = "desc";
-    } else {
-      sortColumn = null;
-      sortDirection = "asc";
-    }
-  } else {
-    sortColumn = col;
-    sortDirection = "asc";
-  }
-  updateSortIndicators();
-  updateCompetitorsTable();
-}
-
-function setupSortHeaders() {
-  document.querySelectorAll<HTMLTableCellElement>("#competitors thead th[data-col]").forEach((th) => {
-    th.addEventListener("click", () => onSortHeaderClick(th.dataset.col as SortColumn));
-  });
-  // Measure first header row height so the filter row sticks immediately below it
-  const firstRow = elements.competitors.tHead.rows[0] as HTMLTableRowElement;
-  elements.competitors.style.setProperty("--filter-row-top", `${firstRow.offsetHeight}px`);
-  updateSortIndicators();
-}
-
-function setupFilterInputs() {
-  [
-    elements.filterName,
-    elements.filterNationalId,
-    elements.filterStep,
-    elements.filterClub,
-    elements.filterTeam
-  ].forEach((input) => {
-    input.addEventListener("input", updateCompetitorsTable);
-  });
-  // Bootstrap's form-control sets width: 100%, which causes the table layout algorithm to size
-  // this column by its header text ("National ID") rather than its content. CSS overrides on the
-  // th are ignored for the same reason. Setting directly on the input here is the reliable fix.
-  elements.filterNationalId.style.width = "13ch";
-  elements.filterNationalId.style.minWidth = "0";
-}
 
 function setupAutocomplete(
   data: AutoCompleteData,

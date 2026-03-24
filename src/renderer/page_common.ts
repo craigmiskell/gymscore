@@ -50,6 +50,61 @@ export function findElements<T extends BaseElements>(els: T) {
   }
 }
 
+export class TableSorter<T extends string = string> {
+  private sortColumn: T | null = null;
+  private sortDirection: "asc" | "desc" = "asc";
+  private table: HTMLTableElement = null;
+
+  setup(table: HTMLTableElement, onSortChange: () => void) {
+    this.table = table;
+    table.querySelectorAll<HTMLTableCellElement>("thead th[data-col]").forEach((th) => {
+      th.addEventListener("click", () => this.onHeaderClick(th.dataset.col as T, onSortChange));
+    });
+    const firstRow = table.tHead.rows[0] as HTMLTableRowElement;
+    table.style.setProperty("--filter-row-top", `${firstRow.offsetHeight}px`);
+    this.updateSortIndicators();
+  }
+
+  private onHeaderClick(col: T, onSortChange: () => void) {
+    if (this.sortColumn === col) {
+      if (this.sortDirection === "asc") {
+        this.sortDirection = "desc";
+      } else {
+        this.sortColumn = null;
+        this.sortDirection = "asc";
+      }
+    } else {
+      this.sortColumn = col;
+      this.sortDirection = "asc";
+    }
+    this.updateSortIndicators();
+    onSortChange();
+  }
+
+  updateSortIndicators() {
+    this.table.querySelectorAll<HTMLTableCellElement>("thead th[data-col]").forEach((th) => {
+      const col = th.dataset.col;
+      const icon = th.querySelector("i");
+      if (this.sortColumn === null) {
+        icon.className = "bi bi-arrow-up text-muted";
+      } else if (col === this.sortColumn) {
+        icon.className = `bi ${this.sortDirection === "asc" ? "bi-arrow-up" : "bi-arrow-down"}`;
+      } else {
+        icon.className = "bi bi-arrow-down-up text-muted";
+      }
+    });
+  }
+
+  get column(): T | null { return this.sortColumn; }
+  get direction(): "asc" | "desc" { return this.sortDirection; }
+}
+
+export function setupFilterInputs(inputs: HTMLInputElement[], onFilter: () => void) {
+  inputs.forEach((input) => {
+    input.addEventListener("input", onFilter);
+  });
+}
+
 // TODO: verify whether this can be hit
 window.addEventListener("error", (error) => {
   alert("Caught unexpected exception " + error);

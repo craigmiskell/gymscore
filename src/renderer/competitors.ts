@@ -21,9 +21,15 @@ import { Modal } from "bootstrap";
 
 const COMPETITOR_ID_ATTR = "competitorId";
 
+type SortColumn = "nationalId" | "name" | "step" | "gym";
+const tableSorter = new pageCommon.TableSorter<SortColumn>();
+
 class Elements extends pageCommon.BaseElements {
   competitors: HTMLTableElement = null;
-  competitorFilter: HTMLInputElement = null;
+  filterNationalId: HTMLInputElement = null;
+  filterName: HTMLInputElement = null;
+  filterStep: HTMLInputElement = null;
+  filterGym: HTMLInputElement = null;
   editCompetitorModal: HTMLElement = null;
   editCompetitorForm: HTMLFormElement = null;
   editNationalId: HTMLInputElement = null;
@@ -74,9 +80,15 @@ async function onLoaded() {
     await saveEdit();
   });
 
-  elements.competitorFilter.addEventListener("input", async () => {
-    await updateCompetitorsTable();
-  });
+  tableSorter.setup(elements.competitors, () => { void updateCompetitorsTable(); });
+  pageCommon.setupFilterInputs(
+    [elements.filterName, elements.filterNationalId, elements.filterStep, elements.filterGym],
+    () => { void updateCompetitorsTable(); }
+  );
+  elements.filterNationalId.style.width = "13ch";
+  elements.filterNationalId.style.minWidth = "0";
+  elements.filterStep.style.width = "13ch";
+  elements.filterStep.style.minWidth = "0";
 
   await updateCompetitorsTable();
 }
@@ -92,24 +104,41 @@ async function loadCompetitorDisplays(): Promise<CompetitorDisplay[]> {
   }));
 }
 
-function matchesFilter(display: CompetitorDisplay, filter: string): boolean {
-  if (!filter) {
-    return true;
-  }
-  const lower = filter.toLowerCase();
-  return (
-    display.competitor.identifier.toLowerCase().includes(lower) ||
-    display.competitor.name.toLowerCase().includes(lower) ||
-    display.competitor.step.toString().includes(lower) ||
-    Division[display.competitor.division].toLowerCase().includes(lower) ||
-    display.gymName.toLowerCase().includes(lower)
-  );
-}
-
 async function updateCompetitorsTable() {
-  const filter = elements.competitorFilter.value;
+  const nationalIdFilter = elements.filterNationalId.value.toLowerCase();
+  const nameFilter = elements.filterName.value.toLowerCase();
+  const stepFilter = elements.filterStep.value.toLowerCase();
+  const gymFilter = elements.filterGym.value.toLowerCase();
+
   const allDisplays = await loadCompetitorDisplays();
-  const filtered = allDisplays.filter(d => matchesFilter(d, filter));
+
+  const filtered = allDisplays
+    .sort((a, b) => {
+      const defaultOrder = a.competitor.name.localeCompare(b.competitor.name);
+      if (tableSorter.column === null) {
+        return defaultOrder;
+      }
+      let primary: number;
+      switch (tableSorter.column) {
+      case "nationalId": primary = a.competitor.identifier.localeCompare(b.competitor.identifier); break;
+      case "name": primary = a.competitor.name.localeCompare(b.competitor.name); break;
+      case "step":
+        primary = (a.competitor.step - b.competitor.step) ||
+          Division[a.competitor.division].localeCompare(Division[b.competitor.division]);
+        break;
+      case "gym": primary = (a.gymName ?? "").localeCompare(b.gymName ?? ""); break;
+      }
+      return primary !== 0 ? (tableSorter.direction === "asc" ? primary : -primary) : defaultOrder;
+    })
+    .filter((d) => {
+      const stepStr = `${d.competitor.step} ${Division[d.competitor.division]}`.toLowerCase();
+      return (
+        d.competitor.identifier.toLowerCase().includes(nationalIdFilter) &&
+        d.competitor.name.toLowerCase().includes(nameFilter) &&
+        stepStr.includes(stepFilter) &&
+        (d.gymName ?? "").toLowerCase().includes(gymFilter)
+      );
+    });
 
   const body = elements.competitors.tBodies[0];
   while (body.rows.length > filtered.length) {
@@ -127,7 +156,7 @@ async function updateCompetitorsTable() {
 
 function createCompetitorRow(body: HTMLTableSectionElement): HTMLTableRowElement {
   const row = body.insertRow(-1);
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < 4; i++) {
     row.insertCell();
   }
 
@@ -163,11 +192,10 @@ function createCompetitorRow(body: HTMLTableSectionElement): HTMLTableRowElement
 function displayCompetitorInRow(row: HTMLTableRowElement, display: CompetitorDisplay) {
   const c = display.competitor;
   row.setAttribute(COMPETITOR_ID_ATTR, c.id.toString());
-  row.cells[0].textContent = c.identifier;
-  row.cells[1].textContent = c.name;
-  row.cells[2].textContent = c.step.toString();
-  row.cells[3].textContent = Division[c.division];
-  row.cells[4].textContent = display.gymName;
+  row.cells[0].textContent = c.name;
+  row.cells[1].textContent = c.identifier;
+  row.cells[2].textContent = `${c.step} ${Division[c.division]}`;
+  row.cells[3].textContent = display.gymName;
 }
 
 async function openEditModal(competitorId: number) {
