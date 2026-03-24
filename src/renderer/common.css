@@ -27,6 +27,10 @@
   background-color: white;
 }
 
+.competitors-table thead th[data-col] {
+  cursor: pointer;
+}
+
 .competitors-table thead tr:nth-child(2) th {
   top: var(--filter-row-top, 38px);
 }

@@ -63,7 +63,7 @@ const commonConfig = {
 
 const rendererConfig = merge(commonConfig, {
   entry: ["./src/renderer/index.ts"],
-  target: "electron18.2-renderer",
+  target: "electron-renderer",
   output: {
     path: path.resolve(__dirname, "dist/renderer"),
   },
@@ -79,7 +79,7 @@ const pageConfigs = ["prepare_competition", "live_competition", "gyms", "competi
   (pageName) => {
     return merge(commonConfig, {
       entry: [`./src/renderer/${pageName}.ts`],
-      target: "electron18.2-renderer",
+      target: "electron-renderer",
       output: {
         path: path.resolve(__dirname, "dist/renderer"),
         filename: `${pageName}.js`,
@@ -99,7 +99,7 @@ const pageConfigs = ["prepare_competition", "live_competition", "gyms", "competi
 
 const mainConfig = merge(commonConfig, {
   entry: ["./src/main/index.ts"],
-  target: "electron18.2-main",
+  target: "electron-main",
   output: {
     path: path.resolve(__dirname, "dist/main"),
   },
@@ -110,7 +110,7 @@ const mainConfig = merge(commonConfig, {
 
 const preloadConfig = merge(commonConfig, {
   entry: "./src/main/preload.ts",
-  target: "electron18.2-preload",
+  target: "electron-preload",
   output: {
     path: path.resolve(__dirname, "dist/main"),
     filename: "preload.js",
