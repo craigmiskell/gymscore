@@ -34,7 +34,7 @@ let gymAutoComplete :Autocomplete = undefined;
 let competitorAutoComplete :Autocomplete = undefined;
 let teamAutoComplete :Autocomplete = undefined;
 
-type SortColumn = "name" | "nationalId" | "step" | "club" | "team";
+type SortColumn = "name" | "nationalId" | "step" | "gym" | "team";
 const tableSorter = new pageCommon.TableSorter<SortColumn>();
 
 class Elements extends pageCommon.BaseElements {
@@ -67,7 +67,7 @@ class Elements extends pageCommon.BaseElements {
   filterName: HTMLInputElement = null;
   filterNationalId: HTMLInputElement = null;
   filterStep: HTMLInputElement = null;
-  filterClub: HTMLInputElement = null;
+  filterGym: HTMLInputElement = null;
   filterTeam: HTMLInputElement = null;
   duplicateCompetitorError: HTMLDivElement = null;
   competitorAlreadyAddedWarning: HTMLDivElement = null;
@@ -127,7 +127,7 @@ async function onLoaded() {
   await setupTeamAutoComplete();
   tableSorter.setup(elements.competitors, updateCompetitorsTable);
   pageCommon.setupFilterInputs(
-    [elements.filterName, elements.filterNationalId, elements.filterStep, elements.filterClub, elements.filterTeam],
+    [elements.filterName, elements.filterNationalId, elements.filterStep, elements.filterGym, elements.filterTeam],
     updateCompetitorsTable
   );
   // Bootstrap's form-control sets width: 100%, which causes the table layout algorithm to size
@@ -135,6 +135,8 @@ async function onLoaded() {
   // th are ignored for the same reason. Setting directly on the input here is the reliable fix.
   elements.filterNationalId.style.width = "13ch";
   elements.filterNationalId.style.minWidth = "0";
+  elements.filterStep.style.width = "13ch";
+  elements.filterStep.style.minWidth = "0";
   updateCompetitorsTable();
   populateStepSelectModal();
 
@@ -220,7 +222,7 @@ function updateCompetitorsTable() {
   const nameFilter = elements.filterName.value.toLowerCase();
   const nationalIdFilter = elements.filterNationalId.value.toLowerCase();
   const stepFilter = elements.filterStep.value.toLowerCase();
-  const clubFilter = elements.filterClub.value.toLowerCase();
+  const gymFilter = elements.filterGym.value.toLowerCase();
   const teamFilter = elements.filterTeam.value.toLowerCase();
 
   const filtered = [...competition.competitors]
@@ -244,7 +246,7 @@ function updateCompetitorsTable() {
       case "name": primary = a.competitorName.localeCompare(b.competitorName); break;
       case "nationalId": primary = (a.competitorIdentifier ?? "").localeCompare(b.competitorIdentifier ?? ""); break;
       case "step": primary = (a.step - b.step) || Division[a.division].localeCompare(Division[b.division]); break;
-      case "club": primary = gymA.localeCompare(gymB); break;
+      case "gym": primary = gymA.localeCompare(gymB); break;
       case "team": primary = teamA.localeCompare(teamB); break;
       }
       return (primary !== 0 ? (tableSorter.direction === "asc" ? primary : -primary) : defaultOrder);
@@ -256,7 +258,7 @@ function updateCompetitorsTable() {
         competitor.competitorName.toLowerCase().includes(nameFilter) &&
         (competitor.competitorIdentifier ?? "").toLowerCase().includes(nationalIdFilter) &&
         stepStr.includes(stepFilter) &&
-        (competitor.gymName ?? "").toLowerCase().includes(clubFilter) &&
+        (competitor.gymName ?? "").toLowerCase().includes(gymFilter) &&
         teamName.includes(teamFilter)
       );
     });
