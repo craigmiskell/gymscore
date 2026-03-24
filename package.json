@@ -1,6 +1,6 @@
 {
   "name": "gymscore",
-  "version": "0.0.7",
+  "version": "0.1.0",
   "description": "Gymnastics Competition Scores and Results",
   "main": "dist/main/main.js",
   "private": true,

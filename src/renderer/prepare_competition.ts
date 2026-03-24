@@ -34,7 +34,7 @@ let gymAutoComplete :Autocomplete = undefined;
 let competitorAutoComplete :Autocomplete = undefined;
 let teamAutoComplete :Autocomplete = undefined;
 
-type SortColumn = "name" | "step" | "club" | "team";
+type SortColumn = "name" | "nationalId" | "step" | "club" | "team";
 let sortColumn: SortColumn | null = null;
 let sortDirection: "asc" | "desc" = "asc";
 
@@ -66,6 +66,7 @@ class Elements extends pageCommon.BaseElements {
   createRecorderSheetsButton: HTMLButtonElement = null;
   createProgrammeButton: HTMLButtonElement = null;
   filterName: HTMLInputElement = null;
+  filterNationalId: HTMLInputElement = null;
   filterStep: HTMLInputElement = null;
   filterClub: HTMLInputElement = null;
   filterTeam: HTMLInputElement = null;
@@ -160,15 +161,16 @@ async function removeCompetitor(event: Event) {
 function displayCompetitorInRow(row: HTMLTableRowElement, competitor: CompetitionCompetitorDetails) {
   const competitorIdString = competitor.competitorId.toString();
   row.cells[0].textContent = competitor.competitorName;
-  row.cells[1].textContent = competitor.step + " " + Division[competitor.division];
-  row.cells[2].textContent = competitor.gymName;
-  row.cells[3].textContent = competition.teams[competitor.teamIndex]?.name ?? "";
+  row.cells[1].textContent = competitor.competitorIdentifier;
+  row.cells[2].textContent = competitor.step + " " + Division[competitor.division];
+  row.cells[3].textContent = competitor.gymName;
+  row.cells[4].textContent = competition.teams[competitor.teamIndex]?.name ?? "";
 
-  const groupSelect = <HTMLSelectElement>row.cells[4].firstChild;
+  const groupSelect = <HTMLSelectElement>row.cells[5].firstChild;
   groupSelect.setAttribute(COMPETITOR_ID_ATTR_NAME, competitorIdString);
   groupSelect.value = (competitor.groupNumber || 0).toString();
 
-  row.cells[5].children[0].setAttribute(COMPETITOR_ID_ATTR_NAME, competitorIdString);
+  row.cells[6].children[0].setAttribute(COMPETITOR_ID_ATTR_NAME, competitorIdString);
 }
 
 function createNewGroupSelect(index: number): HTMLSelectElement {
@@ -185,19 +187,19 @@ function createNewGroupSelect(index: number): HTMLSelectElement {
 
 function createCompetitorRow(tableSection: HTMLTableSectionElement, index: number): HTMLTableRowElement {
   const row = tableSection.insertRow(-1);
-  for(let i=0; i < 6; i++) {
+  for(let i=0; i < 7; i++) {
     row.insertCell();
   }
   const link = document.createElement("a");
   link.href = "";
   link.addEventListener("click", removeCompetitor);
 
-  row.cells[4].append(createNewGroupSelect(index));
+  row.cells[5].append(createNewGroupSelect(index));
 
   const icon = document.createElement("i");
   icon.classList.add("bi", "bi-trash");
   link.appendChild(icon);
-  row.cells[5].appendChild(link);
+  row.cells[6].appendChild(link);
   return row;
 }
 
@@ -209,6 +211,7 @@ function updateCompetitorsTable() {
   }
 
   const nameFilter = elements.filterName.value.toLowerCase();
+  const nationalIdFilter = elements.filterNationalId.value.toLowerCase();
   const stepFilter = elements.filterStep.value.toLowerCase();
   const clubFilter = elements.filterClub.value.toLowerCase();
   const teamFilter = elements.filterTeam.value.toLowerCase();
@@ -232,6 +235,7 @@ function updateCompetitorsTable() {
       let primary: number;
       switch (sortColumn) {
       case "name": primary = a.competitorName.localeCompare(b.competitorName); break;
+      case "nationalId": primary = (a.competitorIdentifier ?? "").localeCompare(b.competitorIdentifier ?? ""); break;
       case "step": primary = (a.step - b.step) || Division[a.division].localeCompare(Division[b.division]); break;
       case "club": primary = gymA.localeCompare(gymB); break;
       case "team": primary = teamA.localeCompare(teamB); break;
@@ -243,6 +247,7 @@ function updateCompetitorsTable() {
       const teamName = (competition.teams[competitor.teamIndex]?.name ?? "").toLowerCase();
       return (
         competitor.competitorName.toLowerCase().includes(nameFilter) &&
+        (competitor.competitorIdentifier ?? "").toLowerCase().includes(nationalIdFilter) &&
         stepStr.includes(stepFilter) &&
         (competitor.gymName ?? "").toLowerCase().includes(clubFilter) &&
         teamName.includes(teamFilter)
@@ -304,9 +309,20 @@ function setupSortHeaders() {
 }
 
 function setupFilterInputs() {
-  [elements.filterName, elements.filterStep, elements.filterClub, elements.filterTeam].forEach((input) => {
+  [
+    elements.filterName,
+    elements.filterNationalId,
+    elements.filterStep,
+    elements.filterClub,
+    elements.filterTeam
+  ].forEach((input) => {
     input.addEventListener("input", updateCompetitorsTable);
   });
+  // Bootstrap's form-control sets width: 100%, which causes the table layout algorithm to size
+  // this column by its header text ("National ID") rather than its content. CSS overrides on the
+  // th are ignored for the same reason. Setting directly on the input here is the reliable fix.
+  elements.filterNationalId.style.width = "13ch";
+  elements.filterNationalId.style.minWidth = "0";
 }
 
 function setupAutocomplete(
