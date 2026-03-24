@@ -18,8 +18,35 @@
     </div>
     <hr>
     <table class="table table-sm table-striped table-bordered w-auto" id="gyms">
-      <thead><tr><th>Name</th><th>Delete</th></tr></thead>
+      <thead><tr><th>Name</th><th>Edit</th></tr></thead>
       <tbody></tbody>
     </table>
+
+    <!-- Edit modal -->
+    <div class="modal fade" tabindex="-1" data-bs-backdrop="static" role="dialog" aria-hidden="true" id="editGymModal">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h4 class="modal-title">Edit Gym</h4>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form id="editGymForm" class="needs-validation" novalidate>
+              <div class="row mb-2">
+                <label for="editGymName" class="form-label col-3 col-form-label text-nowrap">Name</label>
+                <div class="col">
+                  <input type="text" class="form-control" id="editGymName" required>
+                  <div class="invalid-feedback">Name is required</div>
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-primary" id="editGymSave">Save</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </body>
 </html>

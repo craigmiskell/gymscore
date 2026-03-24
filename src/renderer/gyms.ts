@@ -16,11 +16,16 @@
 import { db } from "./data/gymscoredb";
 import { IGym} from "../common/data";
 import * as pageCommon from "./page_common";
+import { Modal } from "bootstrap";
 
 const GYM_ID_ATTR_NAME = "gymId";
 
 class Elements extends pageCommon.BaseElements {
   gyms: HTMLTableElement = null;
+  editGymModal: HTMLElement = null;
+  editGymForm: HTMLFormElement = null;
+  editGymName: HTMLInputElement = null;
+  editGymSave: HTMLButtonElement = null;
 }
 const elements = new Elements();
 
@@ -32,25 +37,34 @@ pageCommon.setup();
 
 async function onLoaded() {
   pageCommon.findElements(elements);
+
+  elements.editGymSave.addEventListener("click", async () => {
+    await saveEdit();
+  });
+
   updateGymsTable();
 }
 
 async function displayGymInRow(row: HTMLTableRowElement, gym: IGym) {
+  row.setAttribute(GYM_ID_ATTR_NAME, gym.id.toString());
   row.cells[0].textContent = gym.name;
-  row.cells[1].children[0].setAttribute(GYM_ID_ATTR_NAME, gym.id.toString());
 }
 
 function createGymRow(body: HTMLTableSectionElement): HTMLTableRowElement {
   const row = body.insertRow(-1);
-  for(let i=0; i < 2; i++) {
+  for (let i = 0; i < 2; i++) {
     row.insertCell();
   }
   const link = document.createElement("a");
   link.href = "";
-  link.addEventListener("click", removeGym);
+  link.addEventListener("click", (event) => {
+    event.preventDefault();
+    const row = <HTMLTableRowElement>(<HTMLElement>event.currentTarget).closest("tr");
+    openEditModal(parseInt(row.getAttribute(GYM_ID_ATTR_NAME)));
+  });
 
   const icon = document.createElement("i");
-  icon.classList.add("bi", "bi-trash");
+  icon.classList.add("bi", "bi-pencil-square");
   link.appendChild(icon);
   row.cells[1].appendChild(link);
   return row;
@@ -68,19 +82,40 @@ async function updateGymsTable() {
 
   gyms.forEach((gym, i) => {
     let row = body.rows[i];
-    if(row == undefined) {
+    if (row == undefined) {
       row = createGymRow(body);
     }
     displayGymInRow(row, gym);
   });
 }
 
-async function removeGym(event: Event) {
-  //TODO: prevent deleting a gym with competitors
-  // Do this *first* so we get a chance to catch errors and not immediately reload the page
-  event.preventDefault();
+async function openEditModal(gymId: number) {
+  const gym = await db.gyms.get(gymId);
+  if (!gym) {
+    return;
+  }
 
-  const gymId = parseInt((<HTMLAnchorElement>event.currentTarget).getAttribute(GYM_ID_ATTR_NAME));
-  await db.gyms.delete(gymId);
-  updateGymsTable();
+  elements.editGymModal.setAttribute(GYM_ID_ATTR_NAME, gymId.toString());
+  elements.editGymName.value = gym.name;
+  elements.editGymForm.classList.remove("was-validated");
+
+  Modal.getOrCreateInstance(elements.editGymModal).show();
+}
+
+async function saveEdit() {
+  elements.editGymForm.classList.add("was-validated");
+  if (!elements.editGymForm.checkValidity()) {
+    return;
+  }
+
+  const gymId = parseInt(elements.editGymModal.getAttribute(GYM_ID_ATTR_NAME));
+  const existing = await db.gyms.get(gymId);
+  if (!existing) {
+    return;
+  }
+
+  existing.name = elements.editGymName.value;
+  await db.gyms.put(existing);
+  Modal.getOrCreateInstance(elements.editGymModal).hide();
+  await updateGymsTable();
 }
