@@ -2,11 +2,12 @@
   * Possibly some sort of combined view, so that if a competitor placed in more than one apparatus (or overall), they get a single row for each listing their placement + score + club/members.
   * Might be only an intermediate one used for doing other stuff.
 * In "Edit Gyms", only allow editing name, not deleting; that would affect realized competitions which refer to Gyms by ID.
-* Should it be possible to delete a set of scores for a competitor?  Setting all entries to emtpy does nothing, even when saving (returns to the prior values)
-* Certificates - for competitors; part of results?
-* Team names end up repeated in autocomplete; probably actually several rows in the DB, which is incorrect behavior.  Diagnose/debug if it is reproducible
-* Think about another UI for the front page: set of "unfinished" competitions; click one to go to a Comp page that offers further links to preparing, printing sheets/programmes/etc, collecting results, and printing results + certificates.
-* Debug log viewer (from cookiemaster?)
-* Consider a DAO layer to handle relationships between DB rows (and singleton for any given row, and save, etc).  You know, ORM stuff but as cheap as I can make it.
+* Make it possible to delete a set of scores for a competitor in an event; setting all entries to emtpy does nothing, even when saving (returns to the prior values)
+* Certificates - for competitors; part of results.
+* Unit tests
+* General cleanup refactor, with unit tests to validate.
+* Debug logs + viewer/exporter, so users can provide logs and tell me what happened.
+  * Must *persist*.  JSON format ideally.
 * Collate all production licenses and put them in an 'about' page/window.  Show "NOTICE" files from any Apache 2.0; check other license types for any other requirements
 * Check if we have actually ended up  using jquery; remove if not.
+* Think about another UI for the front page: set of "unfinished" competitions; click one to go to a Comp page that offers further links to preparing, printing sheets/programmes/etc, collecting results, and printing results + certificates.
