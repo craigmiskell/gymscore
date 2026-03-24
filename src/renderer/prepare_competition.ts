@@ -70,6 +70,7 @@ class Elements extends pageCommon.BaseElements {
   filterClub: HTMLInputElement = null;
   filterTeam: HTMLInputElement = null;
   duplicateCompetitorError: HTMLDivElement = null;
+  competitorAlreadyAddedWarning: HTMLDivElement = null;
 
 }
 const elements = new Elements();
@@ -347,12 +348,18 @@ async function setupCompetitorAutoComplete() {
       onSelectItem: (selected: {label: string, value: string}) => {
         console.log("Competitor found by autocomplete:", selected.label, selected.value);
         competitorNameField.setAttribute(COMPETITOR_ID_ATTR_NAME, selected.value);
+        const alreadyAdded = competition?.competitors.some((c) => c.competitorId === parseInt(selected.value));
+        if (alreadyAdded) {
+          elements.competitorAlreadyAddedWarning.classList.remove("d-none");
+          return;
+        }
         void openAddCompetitorModal();
       },
       onInput:() => {
         // If the user types, clear the selection
         competitorNameField.removeAttribute(COMPETITOR_ID_ATTR_NAME);
         elements.addCompetitorButton.disabled = (competitorNameField.value == "");
+        elements.competitorAlreadyAddedWarning.classList.add("d-none");
       }
     }
   );
