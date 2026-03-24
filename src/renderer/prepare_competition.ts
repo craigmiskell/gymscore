@@ -69,6 +69,7 @@ class Elements extends pageCommon.BaseElements {
   filterStep: HTMLInputElement = null;
   filterClub: HTMLInputElement = null;
   filterTeam: HTMLInputElement = null;
+  duplicateCompetitorError: HTMLDivElement = null;
 
 }
 const elements = new Elements();
@@ -451,6 +452,7 @@ async function openAddCompetitorModal() {
   }
 
   elements.competitorDetailsForm.classList.remove("was-validated");
+  elements.duplicateCompetitorError.classList.add("d-none");
 
   elements.addCompetitorModal.addEventListener("shown.bs.modal", () => {
     const fields: HTMLInputElement[] = [
@@ -515,6 +517,16 @@ async function addCompetitor() {
   const form = elements.competitorDetailsForm;
   if (!form.checkValidity()) {
     form.classList.add("was-validated");
+    return;
+  }
+
+  const nameToAdd = elements.competitorNameModal.value;
+  const identifierToAdd = elements.competitorIdModal.value;
+  const isDuplicate = competition.competitors.some((c) =>
+    c.competitorName === nameToAdd && c.competitorIdentifier === identifierToAdd
+  );
+  if (isDuplicate) {
+    elements.duplicateCompetitorError.classList.remove("d-none");
     return;
   }
 
@@ -598,7 +610,7 @@ async function fetchCompetitorsForAutocomplete() {
   return await Promise.all(competitors.map(async (c: ICompetitor) => {
     const gym = await gymForCompetitor(c);
     return {
-      label: `${c.name} - ${gym?.name}`,
+      label: `${c.name} (${c.identifier}) - ${gym?.name}`,
       value: c.id
     };
   }));
