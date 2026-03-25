@@ -551,6 +551,7 @@ async function addCompetitor() {
   elements.competitorName.value = "";
   elements.competitorName.removeAttribute(COMPETITOR_ID_ATTR_NAME);
   elements.addCompetitorButton.disabled = true;
+  elements.competitorAlreadyAddedWarning.classList.add("d-none");
 
   // Always update; for new competitor, or if the gym has changed on an existing competitor
   competitorAutoComplete.setData(await fetchCompetitorsForAutocomplete());
