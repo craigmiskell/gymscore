@@ -27,6 +27,8 @@ const COMPETITOR_ID_ATTR_NAME = "competitorId";
 const GYM_ID_ATTR_NAME = "gymId";
 const TEAM_INDEX_ATTR_NAME = "teamId";
 
+const selectedCompetitorIds = new Set<number>();
+
 pageCommon.setup();
 
 let competition: ICompetition = undefined;
@@ -75,6 +77,9 @@ class Elements extends pageCommon.BaseElements {
   duplicateCompetitorError: HTMLDivElement = null;
   competitorAlreadyAddedWarning: HTMLDivElement = null;
   nationalIdDuplicateWarning: HTMLDivElement = null;
+  selectAllCheckbox: HTMLInputElement = null;
+  groupAssignToolbar: HTMLDivElement = null;
+  groupAssignCount: HTMLSpanElement = null;
 
 }
 const elements = new Elements();
@@ -129,6 +134,8 @@ async function onLoaded() {
   await setupGymAutoComplete();
   await setupTeamAutoComplete();
   tableSorter.setup(elements.competitors, updateCompetitorsTable);
+  elements.selectAllCheckbox.addEventListener("change", selectAllChanged);
+  setupGroupAssignToolbar();
   pageCommon.setupFilterInputs(
     [elements.filterName, elements.filterNationalId, elements.filterStep, elements.filterGym, elements.filterTeam],
     updateCompetitorsTable
@@ -165,25 +172,39 @@ async function removeCompetitor(event: Event) {
   event.preventDefault();
 
   const competitorId = parseInt((<HTMLAnchorElement>event.currentTarget).getAttribute(COMPETITOR_ID_ATTR_NAME));
+  selectedCompetitorIds.delete(competitorId);
   competition.removeCompetitorById(competitorId);
   await db.competitions.update(competition.id, competition);
+  updateGroupAssignToolbar();
   updateCompetitorsTable();
 }
 
 function displayCompetitorInRow(row: HTMLTableRowElement, competitor: CompetitionCompetitorDetails) {
   const competitorIdString = competitor.competitorId.toString();
-  row.cells[0].textContent = competitor.competitorName;
-  row.cells[1].textContent = competitor.competitorIdentifier;
-  row.cells[2].textContent = competitor.step + " " + Division[competitor.division];
-  row.cells[3].textContent = competitor.gymName;
-  row.cells[4].textContent = competition.teams[competitor.teamIndex]?.name ?? "";
 
-  const groupSelect = <HTMLSelectElement>row.cells[5].firstChild;
+  const checkbox = <HTMLInputElement>row.cells[0].firstChild;
+  checkbox.setAttribute(COMPETITOR_ID_ATTR_NAME, competitorIdString);
+  checkbox.checked = selectedCompetitorIds.has(competitor.competitorId);
+
+  row.cells[1].textContent = competitor.competitorName;
+  row.cells[2].textContent = competitor.competitorIdentifier;
+  row.cells[3].textContent = competitor.step + " " + Division[competitor.division];
+  row.cells[4].textContent = competitor.gymName;
+  row.cells[5].textContent = competition.teams[competitor.teamIndex]?.name ?? "";
+
+  const groupSelect = <HTMLSelectElement>row.cells[6].firstChild;
   groupSelect.setAttribute(COMPETITOR_ID_ATTR_NAME, competitorIdString);
-  groupSelect.value = (competitor.groupNumber || 0).toString();
+  const groupNumber = competitor.groupNumber || 0;
+  groupSelect.value = groupNumber.toString();
 
-  row.cells[6].children[0].setAttribute(COMPETITOR_ID_ATTR_NAME, competitorIdString);
+  if (groupNumber > 0) {
+    row.dataset.group = groupNumber.toString();
+  } else {
+    delete row.dataset.group;
+  }
+
   row.cells[7].children[0].setAttribute(COMPETITOR_ID_ATTR_NAME, competitorIdString);
+  row.cells[8].children[0].setAttribute(COMPETITOR_ID_ATTR_NAME, competitorIdString);
 }
 
 function createNewGroupSelect(index: number): HTMLSelectElement {
@@ -200,11 +221,17 @@ function createNewGroupSelect(index: number): HTMLSelectElement {
 
 function createCompetitorRow(tableSection: HTMLTableSectionElement, index: number): HTMLTableRowElement {
   const row = tableSection.insertRow(-1);
-  for(let i=0; i < 8; i++) {
+  for(let i=0; i < 9; i++) {
     row.insertCell();
   }
 
-  row.cells[5].append(createNewGroupSelect(index));
+  const checkbox = document.createElement("input");
+  checkbox.type = "checkbox";
+  checkbox.classList.add("form-check-input");
+  checkbox.addEventListener("change", competitorCheckboxChanged);
+  row.cells[0].appendChild(checkbox);
+
+  row.cells[6].append(createNewGroupSelect(index));
 
   const editLink = document.createElement("a");
   editLink.href = "";
@@ -212,7 +239,7 @@ function createCompetitorRow(tableSection: HTMLTableSectionElement, index: numbe
   const editIcon = document.createElement("i");
   editIcon.classList.add("bi", "bi-pencil");
   editLink.appendChild(editIcon);
-  row.cells[6].appendChild(editLink);
+  row.cells[7].appendChild(editLink);
 
   const removeLink = document.createElement("a");
   removeLink.href = "";
@@ -220,7 +247,7 @@ function createCompetitorRow(tableSection: HTMLTableSectionElement, index: numbe
   const removeIcon = document.createElement("i");
   removeIcon.classList.add("bi", "bi-trash");
   removeLink.appendChild(removeIcon);
-  row.cells[7].appendChild(removeLink);
+  row.cells[8].appendChild(removeLink);
 
   return row;
 }
@@ -287,6 +314,7 @@ function updateCompetitorsTable() {
     }
     displayCompetitorInRow(row, competitor);
   });
+  updateSelectAllCheckbox();
 }
 
 
@@ -712,6 +740,104 @@ async function groupSelectChanged(event: Event) {
   const competitor: CompetitionCompetitorDetails = competition.getCompetitorById(competitorId);
   competitor.groupNumber = parseInt(select.value);
   await db.competitions.update(competition.id, competition);
+
+  const row = select.closest("tr") as HTMLTableRowElement;
+  if (competitor.groupNumber > 0) {
+    row.dataset.group = competitor.groupNumber.toString();
+  } else {
+    delete row.dataset.group;
+  }
+}
+
+function competitorCheckboxChanged(event: Event) {
+  const checkbox = event.target as HTMLInputElement;
+  const competitorId = parseInt(checkbox.getAttribute(COMPETITOR_ID_ATTR_NAME));
+  if (checkbox.checked) {
+    selectedCompetitorIds.add(competitorId);
+  } else {
+    selectedCompetitorIds.delete(competitorId);
+  }
+  updateGroupAssignToolbar();
+  updateSelectAllCheckbox();
+}
+
+function selectAllChanged(event: Event) {
+  const selectAll = event.target as HTMLInputElement;
+  const tableBody = elements.competitors.tBodies[0];
+  for (const row of tableBody.rows) {
+    const checkbox = row.cells[0].firstChild as HTMLInputElement;
+    const competitorId = parseInt(checkbox.getAttribute(COMPETITOR_ID_ATTR_NAME));
+    if (selectAll.checked) {
+      selectedCompetitorIds.add(competitorId);
+    } else {
+      selectedCompetitorIds.delete(competitorId);
+    }
+    checkbox.checked = selectAll.checked;
+  }
+  updateGroupAssignToolbar();
+}
+
+function updateGroupAssignToolbar() {
+  const count = selectedCompetitorIds.size;
+  const hasSelection = count > 0;
+
+  elements.groupAssignCount.textContent = hasSelection
+    ? `${count} competitor${count !== 1 ? "s" : ""} selected — Assign to group:`
+    : "Select competitors to assign a group";
+  elements.groupAssignToolbar.classList.toggle("opacity-50", !hasSelection);
+
+  elements.groupAssignToolbar.querySelectorAll<HTMLButtonElement>(".group-assign-btn").forEach((btn) => {
+    btn.disabled = !hasSelection;
+  });
+}
+
+function updateSelectAllCheckbox() {
+  const tableBody = elements.competitors.tBodies[0];
+  const visibleRows = [...tableBody.rows];
+  const allChecked = visibleRows.length > 0 && visibleRows.every((row) => {
+    const checkbox = row.cells[0].firstChild as HTMLInputElement;
+    return checkbox.checked;
+  });
+  elements.selectAllCheckbox.checked = allChecked;
+  elements.selectAllCheckbox.indeterminate = !allChecked && selectedCompetitorIds.size > 0;
+}
+
+async function assignGroupToSelected(groupNumber: number) {
+  for (const competitorId of selectedCompetitorIds) {
+    const competitor = competition.getCompetitorById(competitorId);
+    if (competitor) {
+      competitor.groupNumber = groupNumber;
+    }
+  }
+  await db.competitions.update(competition.id, competition);
+  updateCompetitorsTable();
+}
+
+function setupGroupAssignToolbar() {
+  const container = document.getElementById("groupAssignButtons");
+  for (let i = 1; i <= 9; i++) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.classList.add("btn", "btn-sm", "group-assign-btn");
+    btn.dataset.group = i.toString();
+    btn.textContent = i.toString();
+    container.appendChild(btn);
+  }
+  const noneBtn = document.createElement("button");
+  noneBtn.type = "button";
+  noneBtn.classList.add("btn", "btn-sm", "group-assign-btn");
+  noneBtn.dataset.group = "0";
+  noneBtn.textContent = "None";
+  container.appendChild(noneBtn);
+
+  container.addEventListener("click", (e: Event) => {
+    const btn = (e.target as HTMLElement).closest(".group-assign-btn") as HTMLElement;
+    if (btn) {
+      void assignGroupToSelected(parseInt(btn.dataset.group));
+    }
+  });
+
+  updateGroupAssignToolbar();
 }
 
 async function gymById(id: number) : Promise<IGym> {

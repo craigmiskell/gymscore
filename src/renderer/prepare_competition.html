@@ -83,9 +83,14 @@
       <button type="button" class="btn btn-primary col-2" id="addCompetitorButton" disabled>Add to Competition</button>
     </div>
     <div id="competitorAlreadyAddedWarning" class="text-danger small d-none">This competitor is already in the competition.</div>
+    <div id="groupAssignToolbar" class="mb-2 d-flex align-items-center gap-2">
+      <span id="groupAssignCount"></span>
+      <div id="groupAssignButtons" class="btn-group btn-group-sm"></div>
+    </div>
     <table class="table table-sm table-striped table-bordered w-auto competitors-table" id="competitors">
       <thead>
         <tr>
+          <th class="group-checkbox-col"><input type="checkbox" class="form-check-input" id="selectAllCheckbox"></th>
           <th data-col="name"><span>Name</span> <i class="bi bi-arrow-down-up text-muted"></i></th>
           <th data-col="nationalId"><span>National ID</span> <i class="bi bi-arrow-down-up text-muted"></i></th>
           <th data-col="step"><span>Step</span> <i class="bi bi-arrow-down-up text-muted"></i></th>
@@ -96,6 +101,7 @@
           <th>Remove from competition</th>
         </tr>
         <tr>
+          <th class="group-checkbox-col"></th>
           <th><input type="text" class="form-control form-control-sm" id="filterName" placeholder="Filter..."></th>
           <th><input type="text" class="form-control form-control-sm" id="filterNationalId" placeholder="Filter..."></th>
           <th><input type="text" class="form-control form-control-sm" id="filterStep" placeholder="Filter..."></th>

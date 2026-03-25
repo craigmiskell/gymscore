@@ -46,6 +46,42 @@
   cursor: pointer;
 }
 
+.competitors-table th.group-checkbox-col {
+  width: 1px;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.competitors-table tbody td:first-child {
+  text-align: center;
+  vertical-align: middle;
+}
+
+/* Row color coding by group number */
+.competitors-table tbody tr[data-group="1"] td { background-color: rgba(13, 110, 253, 0.12) !important; }
+.competitors-table tbody tr[data-group="2"] td { background-color: rgba(25, 135, 84, 0.12) !important; }
+.competitors-table tbody tr[data-group="3"] td { background-color: rgba(229, 160, 4, 0.18) !important; }
+.competitors-table tbody tr[data-group="4"] td { background-color: rgba(220, 53, 69, 0.12) !important; }
+.competitors-table tbody tr[data-group="5"] td { background-color: rgba(111, 66, 193, 0.12) !important; }
+.competitors-table tbody tr[data-group="6"] td { background-color: rgba(253, 126, 20, 0.15) !important; }
+.competitors-table tbody tr[data-group="7"] td { background-color: rgba(32, 201, 151, 0.15) !important; }
+.competitors-table tbody tr[data-group="8"] td { background-color: rgba(214, 51, 132, 0.12) !important; }
+.competitors-table tbody tr[data-group="9"] td { background-color: rgba(108, 117, 125, 0.15) !important; }
+
+/* Group assign buttons — colored to match their row color */
+.group-assign-btn[data-group="1"] { background-color: #0d6efd !important; border-color: #0d6efd !important; color: white !important; }
+.group-assign-btn[data-group="2"] { background-color: #198754 !important; border-color: #198754 !important; color: white !important; }
+.group-assign-btn[data-group="3"] { background-color: #e5a004 !important; border-color: #e5a004 !important; color: white !important; }
+.group-assign-btn[data-group="4"] { background-color: #dc3545 !important; border-color: #dc3545 !important; color: white !important; }
+.group-assign-btn[data-group="5"] { background-color: #6f42c1 !important; border-color: #6f42c1 !important; color: white !important; }
+.group-assign-btn[data-group="6"] { background-color: #fd7e14 !important; border-color: #fd7e14 !important; color: white !important; }
+.group-assign-btn[data-group="7"] { background-color: #20c997 !important; border-color: #20c997 !important; color: white !important; }
+.group-assign-btn[data-group="8"] { background-color: #d63384 !important; border-color: #d63384 !important; color: white !important; }
+.group-assign-btn[data-group="9"] { background-color: #6c757d !important; border-color: #6c757d !important; color: white !important; }
+.group-assign-btn[data-group="0"] { background-color: #495057 !important; border-color: #495057 !important; color: white !important; }
+.group-assign-btn { filter: none; }
+.group-assign-btn:hover { filter: brightness(0.85); }
+
 .competitors-table thead tr:nth-child(2) th {
   top: var(--filter-row-top, 38px);
 }
