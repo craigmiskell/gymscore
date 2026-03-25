@@ -19,15 +19,26 @@
 }
 
 .competitors-table {
-  max-height: 500px;
+  flex: 1;
+  min-height: 0;
   overflow: auto;
-  display: inline-block;
+  display: block;
 }
 
 .competitors-table thead th {
   position: sticky;
   top: 0;
   z-index: 2;
+  background-color: white;
+}
+
+.competitors-table thead th::before {
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
   background-color: white;
 }
 
