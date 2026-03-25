@@ -80,13 +80,15 @@ function addSheetForStep(doc: jsPDF, teams: Team[], competitors: CompetitionComp
   const disciplines = ["Vault", "Bars", "Beam", "Floor"];
   const groupCompetitors = getCompetitorsByGroup(competitors);
   const groupHeights = [0, 0];
+  const sortedGroups = Object.keys(groupCompetitors).sort();
 
-  for (const group of Object.keys(groupCompetitors).sort()) {
-    const groupIndex = parseInt(group);
-    const h = addTableForGroup(doc, disciplines, teams, groupCompetitors[group], groupIndex, y);
-    groupHeights[(groupIndex % 2)] = h; //Store the most recent left+right heights
+  for (let i = 0; i < sortedGroups.length; i++) {
+    const groupIndex = parseInt(sortedGroups[i]);
+    const column = i % 2; // 0 = left column, 1 = right column
+    const h = addTableForGroup(doc, disciplines, teams, groupCompetitors[sortedGroups[i]], groupIndex, column, y);
+    groupHeights[column] = h;
 
-    if ((groupIndex % 2) == 0) {
+    if (column == 1) {
       // Just did the right hand side; find the max height of the current 'row' and move down that far
       y += Math.max(groupHeights[0], groupHeights[1]);
     }
@@ -100,12 +102,13 @@ function addTableForGroup(
   teams: Team[],
   competitors: CompetitionCompetitorDetails[],
   groupIndex: number,
+  column: number,
   startY: number): number {
 
   doc.setFontSize(8); // Not as small as you might expect
   const origFont = doc.getFont();
   const lineHeight = doc.getTextDimensions("x").h * doc.getLineHeightFactor();
-  const xOffset = ((groupIndex % 2) == 1) ? 10 : 155;
+  const xOffset = (column == 0) ? 10 : 155;
   let y = startY;
 
   const groupTitle = "Group " + groupIndex + ": (" + disciplines.join(",") + ")";
