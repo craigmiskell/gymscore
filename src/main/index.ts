@@ -17,6 +17,8 @@ import {IpcMainEvent, app, BrowserWindow, ipcMain, shell, dialog} from "electron
 import path from "path";
 import isDev from "electron-is-dev";
 import fs from "fs";
+import zlib from "zlib";
+import strftime from "strftime";
 import mktemp from "mktemp";
 import os from "os";
 import Blob from "cross-blob"; // Used by jsPDF to save
@@ -118,13 +120,13 @@ ipcMain.handle("export-db", async (event, jsonData: string) => {
   const win = BrowserWindow.fromWebContents(event.sender);
   const { filePath, canceled } = await dialog.showSaveDialog(win, {
     title: "Export GymScore Database",
-    defaultPath: "gymscore-backup.json",
-    filters: [{ name: "GymScore Backup", extensions: ["json"] }],
+    defaultPath: `gymscore-backup-${strftime("%Y-%m-%d")}.json.gz`,
+    filters: [{ name: "GymScore Backup (gzip)", extensions: ["gz"] }],
   });
   if (canceled || !filePath) {
     return { success: false, canceled: true };
   }
-  fs.writeFileSync(filePath, jsonData, "utf-8");
+  fs.writeFileSync(filePath, zlib.gzipSync(jsonData));
   return { success: true };
 });
 
@@ -132,13 +134,16 @@ ipcMain.handle("import-db", async (event) => {
   const win = BrowserWindow.fromWebContents(event.sender);
   const { filePaths, canceled } = await dialog.showOpenDialog(win, {
     title: "Import GymScore Database",
-    filters: [{ name: "GymScore Backup", extensions: ["json"] }],
+    filters: [{ name: "GymScore Backup", extensions: ["gz", "json"] }],
     properties: ["openFile"],
   });
   if (canceled || filePaths.length === 0) {
     return { success: false, canceled: true };
   }
-  const data = fs.readFileSync(filePaths[0], "utf-8");
+  const raw = fs.readFileSync(filePaths[0]);
+  const data = filePaths[0].endsWith(".gz")
+    ? zlib.gunzipSync(raw).toString("utf-8")
+    : raw.toString("utf-8");
   return { success: true, data };
 });
 
