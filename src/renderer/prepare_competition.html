@@ -84,7 +84,10 @@
     </div>
     <div id="competitorAlreadyAddedWarning" class="text-danger small d-none">This competitor is already in the competition.</div>
     <div id="groupAssignToolbar" class="mb-2 d-flex align-items-center gap-2">
-      <span id="groupAssignCount"></span>
+      <div class="group-assign-label">
+        <span id="groupAssignGuidance">Select competitors to assign a group</span>
+        <span id="groupAssignCount"></span>
+      </div>
       <div id="groupAssignButtons" class="btn-group btn-group-sm"></div>
     </div>
     <table class="table table-sm table-striped table-bordered w-auto competitors-table" id="competitors">
@@ -96,7 +99,7 @@
           <th data-col="step"><span>Step</span> <i class="bi bi-arrow-down-up text-muted"></i></th>
           <th data-col="gym"><span>Gym</span> <i class="bi bi-arrow-down-up text-muted"></i></th>
           <th data-col="team"><span>Team</span> <i class="bi bi-arrow-down-up text-muted"></i></th>
-          <th>Group</th>
+          <th data-col="group"><span>Group</span> <i class="bi bi-arrow-down-up text-muted"></i></th>
           <th>Edit</th>
           <th>Remove from competition</th>
         </tr>

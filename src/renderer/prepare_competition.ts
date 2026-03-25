@@ -39,7 +39,7 @@ let editingCompetitorId: number | null = null;
 let lastUsedStep: number | null = null;
 let lastUsedDivision: number | null = null;
 
-type SortColumn = "name" | "nationalId" | "step" | "gym" | "team";
+type SortColumn = "name" | "nationalId" | "step" | "gym" | "team" | "group";
 const tableSorter = new pageCommon.TableSorter<SortColumn>();
 
 class Elements extends pageCommon.BaseElements {
@@ -79,6 +79,7 @@ class Elements extends pageCommon.BaseElements {
   nationalIdDuplicateWarning: HTMLDivElement = null;
   selectAllCheckbox: HTMLInputElement = null;
   groupAssignToolbar: HTMLDivElement = null;
+  groupAssignGuidance: HTMLSpanElement = null;
   groupAssignCount: HTMLSpanElement = null;
 
 }
@@ -288,6 +289,7 @@ function updateCompetitorsTable() {
       case "step": primary = (a.step - b.step) || Division[a.division].localeCompare(Division[b.division]); break;
       case "gym": primary = gymA.localeCompare(gymB); break;
       case "team": primary = teamA.localeCompare(teamB); break;
+      case "group": primary = (a.groupNumber || 0) - (b.groupNumber || 0); break;
       }
       return (primary !== 0 ? (tableSorter.direction === "asc" ? primary : -primary) : defaultOrder);
     })
@@ -781,9 +783,9 @@ function updateGroupAssignToolbar() {
   const count = selectedCompetitorIds.size;
   const hasSelection = count > 0;
 
-  elements.groupAssignCount.textContent = hasSelection
-    ? `${count} competitor${count !== 1 ? "s" : ""} selected — Assign to group:`
-    : "Select competitors to assign a group";
+  elements.groupAssignCount.textContent = `${count} competitors selected — Assign to group:`;
+  elements.groupAssignGuidance.style.visibility = hasSelection ? "hidden" : "visible";
+  elements.groupAssignCount.style.visibility = hasSelection ? "visible" : "hidden";
   elements.groupAssignToolbar.classList.toggle("opacity-50", !hasSelection);
 
   elements.groupAssignToolbar.querySelectorAll<HTMLButtonElement>(".group-assign-btn").forEach((btn) => {
