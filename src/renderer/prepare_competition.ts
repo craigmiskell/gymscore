@@ -34,6 +34,8 @@ let gymAutoComplete :Autocomplete = undefined;
 let competitorAutoComplete :Autocomplete = undefined;
 let teamAutoComplete :Autocomplete = undefined;
 let editingCompetitorId: number | null = null;
+let lastUsedStep: number | null = null;
+let lastUsedDivision: number | null = null;
 
 type SortColumn = "name" | "nationalId" | "step" | "gym" | "team";
 const tableSorter = new pageCommon.TableSorter<SortColumn>();
@@ -450,6 +452,11 @@ async function openAddCompetitorModal() {
     teamAutoComplete.setData([]);
   }
 
+  if (lastUsedStep !== null) {
+    elements.competitorStepSelectModal.value = lastUsedStep.toString();
+    elements.competitorDivisionSelectModal.value = lastUsedDivision.toString();
+  }
+
   elements.competitorDetailsForm.classList.remove("was-validated");
   elements.duplicateCompetitorError.classList.add("d-none");
   nationalIdIsDuplicate = false;
@@ -648,6 +655,9 @@ async function addCompetitor() {
   const modal = Modal.getOrCreateInstance(elements.addCompetitorModal);
   // Hide early, so any failures the modal will be gone and the user can continue.
   modal.hide();
+
+  lastUsedStep = parseInt(elements.competitorStepSelectModal.value);
+  lastUsedDivision = parseInt(elements.competitorDivisionSelectModal.value);
 
   const gymId = await gymIdWhenAddingCompetitor();
   const gym = await gymById(gymId);
