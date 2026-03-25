@@ -33,6 +33,7 @@ let competition: ICompetition = undefined;
 let gymAutoComplete :Autocomplete = undefined;
 let competitorAutoComplete :Autocomplete = undefined;
 let teamAutoComplete :Autocomplete = undefined;
+let editingCompetitorId: number | null = null;
 
 type SortColumn = "name" | "nationalId" | "step" | "gym" | "team";
 const tableSorter = new pageCommon.TableSorter<SortColumn>();
@@ -180,6 +181,7 @@ function displayCompetitorInRow(row: HTMLTableRowElement, competitor: Competitio
   groupSelect.value = (competitor.groupNumber || 0).toString();
 
   row.cells[6].children[0].setAttribute(COMPETITOR_ID_ATTR_NAME, competitorIdString);
+  row.cells[7].children[0].setAttribute(COMPETITOR_ID_ATTR_NAME, competitorIdString);
 }
 
 function createNewGroupSelect(index: number): HTMLSelectElement {
@@ -196,19 +198,28 @@ function createNewGroupSelect(index: number): HTMLSelectElement {
 
 function createCompetitorRow(tableSection: HTMLTableSectionElement, index: number): HTMLTableRowElement {
   const row = tableSection.insertRow(-1);
-  for(let i=0; i < 7; i++) {
+  for(let i=0; i < 8; i++) {
     row.insertCell();
   }
-  const link = document.createElement("a");
-  link.href = "";
-  link.addEventListener("click", removeCompetitor);
 
   row.cells[5].append(createNewGroupSelect(index));
 
-  const icon = document.createElement("i");
-  icon.classList.add("bi", "bi-trash");
-  link.appendChild(icon);
-  row.cells[6].appendChild(link);
+  const editLink = document.createElement("a");
+  editLink.href = "";
+  editLink.addEventListener("click", editCompetitor);
+  const editIcon = document.createElement("i");
+  editIcon.classList.add("bi", "bi-pencil");
+  editLink.appendChild(editIcon);
+  row.cells[6].appendChild(editLink);
+
+  const removeLink = document.createElement("a");
+  removeLink.href = "";
+  removeLink.addEventListener("click", removeCompetitor);
+  const removeIcon = document.createElement("i");
+  removeIcon.classList.add("bi", "bi-trash");
+  removeLink.appendChild(removeIcon);
+  row.cells[7].appendChild(removeLink);
+
   return row;
 }
 
@@ -399,9 +410,13 @@ async function setupTeamAutoComplete() {
 }
 
 async function openAddCompetitorModal() {
+  editingCompetitorId = null;
   const competitorIdString = elements.competitorName.getAttribute(COMPETITOR_ID_ATTR_NAME);
   const competitorId = parseInt(competitorIdString);
   const modal = Modal.getOrCreateInstance(elements.addCompetitorModal);
+
+  document.getElementById("addCompetitorModalTitle").textContent = "Adding competitor";
+  document.getElementById("addCompetitorModalYes").textContent = "Add to competition";
 
   elements.addCompetitorModal.setAttribute(COMPETITOR_ID_ATTR_NAME, competitorIdString);
 
@@ -454,6 +469,111 @@ async function openAddCompetitorModal() {
   modal.show();
 }
 
+function editCompetitor(event: Event) {
+  event.preventDefault();
+  const competitorId = parseInt((<HTMLAnchorElement>event.currentTarget).getAttribute(COMPETITOR_ID_ATTR_NAME));
+  void openEditCompetitorModal(competitorId);
+}
+
+async function openEditCompetitorModal(competitorId: number) {
+  editingCompetitorId = competitorId;
+  const modal = Modal.getOrCreateInstance(elements.addCompetitorModal);
+
+  document.getElementById("addCompetitorModalTitle").textContent = "Editing competitor";
+  document.getElementById("addCompetitorModalYes").textContent = "Save changes";
+
+  const competitorDetails = competition.getCompetitorById(competitorId);
+  const competitor = await db.competitors.where(":id").equals(competitorId).first();
+
+  elements.competitorNameModal.value = competitor.name;
+  elements.competitorNameModal.disabled = true;
+  elements.competitorIdModal.value = competitor.identifier;
+  elements.competitorIdModal.disabled = true;
+  elements.competitorStepSelectModal.selectedIndex = competitorDetails.step - 1;
+  elements.competitorDivisionSelectModal.value = competitorDetails.division.toString();
+
+  // Clear team value before setData so the autocomplete dropdown doesn't appear
+  elements.competitorTeamModal.value = "";
+  elements.competitorTeamModal.removeAttribute(TEAM_INDEX_ATTR_NAME);
+
+  const gym = await gymById(competitorDetails.gymId);
+  if (gym) {
+    elements.competitorGymModal.value = gym.name;
+    elements.competitorGymModal.setAttribute(GYM_ID_ATTR_NAME, gym.id.toString());
+    teamAutoComplete.setData(await fetchTeamsForGymForAutoComplete(gym.id));
+  } else {
+    elements.competitorGymModal.value = "";
+    elements.competitorGymModal.removeAttribute(GYM_ID_ATTR_NAME);
+    teamAutoComplete.setData([]);
+  }
+
+  elements.competitorTeamModal.value = competition.teams[competitorDetails.teamIndex]?.name ?? "";
+
+  elements.competitorDetailsForm.classList.remove("was-validated");
+  elements.duplicateCompetitorError.classList.add("d-none");
+  nationalIdIsDuplicate = false;
+  elements.nationalIdDuplicateWarning.classList.add("d-none");
+
+  elements.addCompetitorModal.addEventListener("shown.bs.modal", () => {
+    elements.competitorStepSelectModal.focus();
+  }, { once: true });
+
+  modal.show();
+}
+
+async function saveEditedCompetitor() {
+  const modal = Modal.getOrCreateInstance(elements.addCompetitorModal);
+  modal.hide();
+
+  const gymId = await gymIdWhenAddingCompetitor();
+  const gym = await gymById(gymId);
+  const competitorDetails = competition.getCompetitorById(editingCompetitorId);
+
+  const oldGymId = competitorDetails.gymId;
+  const newTeamIndex = await teamIndexWhenAddingCompetitor(gym);
+
+  const competitor = await db.competitors.where(":id").equals(editingCompetitorId).first();
+  competitor.step = parseInt(elements.competitorStepSelectModal.value);
+  competitor.division = parseInt(elements.competitorDivisionSelectModal.value);
+  competitor.gymId = gymId;
+  await db.competitors.put(competitor);
+
+  competitorDetails.step = parseInt(elements.competitorStepSelectModal.value);
+  competitorDetails.division = parseInt(elements.competitorDivisionSelectModal.value);
+  competitorDetails.gymId = gymId;
+  competitorDetails.gymName = gym.name;
+  competitorDetails.teamIndex = newTeamIndex;
+
+  pruneEmptyTeams(oldGymId);
+  if (gymId !== oldGymId) {
+    pruneEmptyTeams(gymId);
+  }
+
+  await db.competitions.update(competition.id, competition);
+  competitorAutoComplete.setData(await fetchCompetitorsForAutocomplete());
+  updateCompetitorsTable();
+  editingCompetitorId = null;
+}
+
+function pruneEmptyTeams(gymId: number) {
+  const indicesToRemove = competition.teams
+    .map((team, index) => ({ team, index }))
+    .filter(({ team, index }) =>
+      team.gymId === gymId && !competition.competitors.some((c) => c.teamIndex === index)
+    )
+    .map(({ index }) => index)
+    .sort((a, b) => b - a);
+
+  for (const removeIndex of indicesToRemove) {
+    competition.teams.splice(removeIndex, 1);
+    for (const c of competition.competitors) {
+      if (c.teamIndex > removeIndex) {
+        c.teamIndex--;
+      }
+    }
+  }
+}
+
 async function gymIdWhenAddingCompetitor() : Promise<number> {
   const gymField = elements.competitorGymModal;
 
@@ -503,6 +623,11 @@ async function addCompetitor() {
   const form = elements.competitorDetailsForm;
   if (!form.checkValidity()) {
     form.classList.add("was-validated");
+    return;
+  }
+
+  if (editingCompetitorId !== null) {
+    await saveEditedCompetitor();
     return;
   }
 
