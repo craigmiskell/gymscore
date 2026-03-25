@@ -125,7 +125,7 @@ function addSheetsForStepGroup(doc: jsPDF, titles: Titles, competitors: Competit
   }
 
   const headers = new Array<CellConfig>();
-  defineHeader(headers, "number", "#", 25);
+  defineHeader(headers, "number", "#", 30);
   defineHeader(headers, "name", "Name", 50);
   defineHeader(headers, "club", "Club", 50);
   defineHeader(headers, "dscore", "D Score", 30);
