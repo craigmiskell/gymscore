@@ -14,6 +14,7 @@
 // see <https://www.gnu.org/licenses/>.
 
 import { GymscoreVersion } from "./data/version";
+import { logger } from "./logger";
 import "./common.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.min.js";
@@ -105,21 +106,22 @@ export function setupFilterInputs(inputs: HTMLInputElement[], onFilter: () => vo
   });
 }
 
-// TODO: verify whether this can be hit
-window.addEventListener("error", (error) => {
-  alert("Caught unexpected exception " + error);
-  console.log("Caught exception");
-  console.log(error);
+window.addEventListener("error", (event) => {
+  logger.error("Uncaught error: {message}", {
+    message: event.message,
+    filename: event.filename,
+    line: event.lineno,
+    col: event.colno,
+    stack: event.error?.stack ?? "",
+  });
+  alert("Caught unexpected exception: " + event.message);
 });
 
 window.addEventListener("unhandledrejection", (event) => {
-  // TODO: keep the output somewhere we can copy out later, particularly if the page reloads
-  // because of a failure in a handler (although we try to avoid that happening)
-  // and it should really be in a log file we can ask the user to send in.
-
-  // Log the stack trace
-  console.log(event.reason._e);
-
-  // TODO: make this much prettier; bootstrap?
-  alert(`Unexpected error: ${event.reason.name} : ${event.reason.message}`);
+  logger.error("Unhandled promise rejection: {message}", {
+    message: event.reason?.message ?? String(event.reason),
+    name: event.reason?.name ?? "",
+    stack: event.reason?._e ?? event.reason?.stack ?? "",
+  });
+  alert(`Unexpected error: ${event.reason?.name ?? "Error"} : ${event.reason?.message ?? event.reason}`);
 });

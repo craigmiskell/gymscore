@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy"
+          content="default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:;">
+    <title>GymScore Logs</title>
+  </head>
+  <body class="d-flex flex-column vh-100 overflow-hidden">
+    <div class="p-2 border-bottom bg-light d-flex align-items-center gap-3 flex-wrap">
+      <div class="d-flex align-items-center gap-2">
+        <label for="viewLevelFilter" class="mb-0 text-nowrap">Show:</label>
+        <select id="viewLevelFilter" class="form-select form-select-sm w-auto">
+          <option value="-1" selected>All levels</option>
+          <option value="1">DEBUG+</option>
+          <option value="2">INFO+</option>
+          <option value="3">WARN+</option>
+          <option value="4">ERROR+</option>
+          <option value="5">FATAL only</option>
+        </select>
+      </div>
+      <div class="d-flex align-items-center gap-2 ms-auto">
+        <label for="exportLevelFilter" class="mb-0 text-nowrap">Export:</label>
+        <select id="exportLevelFilter" class="form-select form-select-sm w-auto">
+          <option value="0">All (TRACE+)</option>
+          <option value="1">DEBUG+</option>
+          <option value="2" selected>INFO+</option>
+          <option value="3">WARN+</option>
+          <option value="4">ERROR+</option>
+          <option value="5">FATAL only</option>
+        </select>
+        <button type="button" class="btn btn-sm btn-primary" id="exportButton">
+          <i class="bi bi-download"></i> Export .jsonl.gz
+        </button>
+      </div>
+    </div>
+    <div class="flex-grow-1 overflow-auto" id="tableContainer">
+      <table class="table table-sm table-striped table-bordered mb-0" id="logsTable">
+        <thead class="sticky-top table-light">
+          <tr>
+            <th style="width: 13em;">Timestamp</th>
+            <th style="width: 5.5em;">Level</th>
+            <th>Message</th>
+            <th style="width: 35%;">Fields</th>
+          </tr>
+        </thead>
+        <tbody id="logsBody">
+        </tbody>
+      </table>
+    </div>
+  </body>
+</html>

@@ -11,8 +11,6 @@
 * Certificates - for competitors; part of results.
 * Unit tests
 * General cleanup refactor, with unit tests to validate.
-* Debug logs + viewer/exporter, so users can provide logs and tell me what happened.
-  * Must *persist*.  JSON format ideally.
 * Collate all production licenses and put them in an 'about' page/window.  Show "NOTICE" files from any Apache 2.0; check other license types for any other requirements
 * Check if we have actually ended up  using jquery; remove if not.
 * Think about another UI for the front page: set of "unfinished" competitions; click one to go to a Comp page that offers further links to preparing, printing sheets/programmes/etc, collecting results, and printing results + certificates.

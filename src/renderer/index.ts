@@ -101,6 +101,10 @@ async function onLoaded() {
     });
   });
 
+  document.getElementById("openLogsButton").addEventListener("click", () => {
+    api.sendAsync("open-log-window", null);
+  });
+
   setupAccordion("recordsAccordionButton", "recordsCollapse");
   setupAccordion("databaseAccordionButton", "databaseCollapse");
 

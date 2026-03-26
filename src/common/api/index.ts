@@ -14,7 +14,7 @@ export default {
   },
   sendAsync: (channel:string, data: any) => {
     // allowlist channels
-    const validChannels = ["save-png", "generate-pdfs"];
+    const validChannels = ["save-png", "generate-pdfs", "log-entry", "open-log-window"];
     if (validChannels.includes(channel)) {
       ipcRenderer.send(channel, data);
     } else {
@@ -22,7 +22,7 @@ export default {
     }
   },
   receive: (channel:string, func: ReceiveCallbackFunction) => {
-    const validChannels = ["asynchronous-reply"];
+    const validChannels = ["asynchronous-reply", "log-window-entry"];
     if (validChannels.includes(channel)) {
       // Deliberately strip event as it includes `sender`
       ipcRenderer.on(channel, (event: IpcRendererEvent, ...args: any) => func(...args));
@@ -31,7 +31,7 @@ export default {
     }
   },
   invoke: (channel: string, data?: any): Promise<any> => {
-    const validChannels = ["export-db", "import-db"];
+    const validChannels = ["export-db", "import-db", "get-log-session", "export-logs"];
     if (validChannels.includes(channel)) {
       return ipcRenderer.invoke(channel, data);
     } else {

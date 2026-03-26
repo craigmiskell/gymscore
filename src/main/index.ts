@@ -27,6 +27,7 @@ globalThis.Blob = Blob;
 
 import { Competition } from "../common/data";
 import * as pdfs from "./pdfs";
+import { Logger } from "./logger";
 
 import { savePDF } from "./pdfs/savePdf";
 
@@ -58,7 +59,11 @@ const createWindow = () => {
   }
 };
 
+const logger = new Logger(app.getPath("userData"));
+logger.setupIpc();
+
 app.whenReady().then(() => {
+  logger.info("Application started", { version: app.getVersion() });
   createWindow();
 
   // Recommended boilerplate to recreate a window when activated
@@ -147,4 +152,4 @@ ipcMain.handle("import-db", async (event) => {
   return { success: true, data };
 });
 
-console.log("Data storage may be in "+ app.getPath("userData"));
+logger.debug("Data storage path", { path: app.getPath("userData") });
