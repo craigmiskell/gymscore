@@ -16,8 +16,13 @@
 declare const api: typeof import("../common/api").default;
 
 import { ICompetition } from "../common/data";
+import { logger } from "./logger";
 
 export function generateCompetitionPDFs(competition: ICompetition) {
+  logger.info("Requesting results and places PDFs", {
+    competitionId: competition.id,
+    competitionName: competition.name,
+  });
   api.sendAsync("generate-pdfs", { type: "results", competition });
   api.sendAsync("generate-pdfs", { type: "places", competition });
 }

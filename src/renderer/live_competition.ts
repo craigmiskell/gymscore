@@ -12,15 +12,13 @@
 //
 // You should have received a copy of the GNU General Public License along with this program. If not,
 // see <https://www.gnu.org/licenses/>.
-
-console.log("Preparing competition");
-
 import { db } from "./data/gymscoredb";
 import { ICompetition, CompetitionState, IGym, ICompetitor } from "../common/data";
 import { generateCompetitionPDFs } from "./competition_pdfs";
 import { CompetitionCompetitorDetails, CompetitorScore } from "../common/data/competition";
 import * as pageCommon from "./page_common";
 import { Modal } from "bootstrap";
+import { logger } from "./logger";
 
 pageCommon.setup();
 
@@ -56,7 +54,7 @@ async function onLoaded() {
 
   const urlParams = new URLSearchParams(window.location.search);
   const compId = urlParams.get("compId");
-  console.log(`Competition ID from query string: ${compId}`);
+  logger.debug("live_competition loaded", { compId });
 
   await loadCompetition(parseInt(compId));
 
@@ -86,6 +84,7 @@ function dismissResultsModal(event: Event) {
 }
 
 async function pauseCompetiton() {
+  logger.info("Pausing competition", { competitionId: competition.id, competitionName: competition.name });
   competition.state = CompetitionState.Preparing;
   await db.competitions.put(competition);
 }
@@ -108,10 +107,20 @@ function allResultsRecorded(): boolean {
 async function finishCompetition(event: Event) {
   event.preventDefault();
   if (!allResultsRecorded()) {
+    logger.warn("Finishing competition with unrecorded results", {
+      competitionId: competition.id,
+      competitionName: competition.name,
+    });
     if (!confirm("Not all results have been recorded. Do you still want to finish the competition?")) {
+      logger.info("User cancelled finish competition due to unrecorded results");
       return;
     }
   }
+  logger.info("Finishing competition", {
+    competitionId: competition.id,
+    competitionName: competition.name,
+    competitorCount: competition.competitors.length,
+  });
   competition.state = CompetitionState.Completed;
   await db.competitions.put(competition);
   generateCompetitionPDFs(competition);
@@ -121,9 +130,24 @@ async function loadCompetition(compId: number) {
   if(compId) {
     competition = await db.competitions.where(":id").equals(compId).first();
     if(competition) {
+      logger.info("Competition loaded for live scoring", {
+        compId,
+        name: competition.name,
+        date: competition.date,
+        location: competition.location,
+        competitorCount: competition.competitors.length,
+        vault: competition.vault,
+        bar: competition.bar,
+        beam: competition.beam,
+        floor: competition.floor,
+      });
       elements.competitionTitle.textContent = `${competition.name} - ${competition.date}`;
       elements.competitionLocation.textContent = competition.location;
+    } else {
+      logger.warn("Competition not found in DB for live scoring", { compId });
     }
+  } else {
+    logger.warn("No competition ID in URL for live scoring page");
   }
 }
 function getGroupsForCompetition(): Array<number>{
@@ -228,6 +252,7 @@ function editGroupApparatusResults(event: Event) {
 
   const groupId = link.getAttribute(GROUP_ID_ATTR_NAME);
   const apparatus = link.getAttribute(APPARATUS_ATTR_NAME);
+  logger.debug("Opening group/apparatus results modal", { groupId, apparatus });
 
   modalElement.setAttribute(GROUP_ID_ATTR_NAME, groupId);
   modalElement.setAttribute(APPARATUS_ATTR_NAME, apparatus);
@@ -454,21 +479,32 @@ async function saveScores(event: Event) {
   const form = elements.groupApparatusResultsModalForm;
   if (!form.checkValidity()) {
     form.classList.add("was-validated");
+    logger.debug("Save scores rejected: form invalid");
     return;
   }
 
+  const groupId = elements.groupApparatusResultsModal.getAttribute(GROUP_ID_ATTR_NAME);
+  const apparatus = elements.groupApparatusResultsModal.getAttribute(APPARATUS_ATTR_NAME);
+  logger.info("Saving scores", {
+    competitionId: competition.id,
+    groupId,
+    apparatus,
+  });
+
+  let savedCount = 0;
   for(const row of elements.groupApparatusResultsModalTable.rows) {
     const competitorId = parseInt(row.getAttribute(COMPETITOR_ID_ATTR_NAME));
     if(isNaN(competitorId)) {
       continue; // Probably the header row
     }
-    const apparatus = elements.groupApparatusResultsModal.getAttribute(APPARATUS_ATTR_NAME);
     const competitor = competition.getCompetitorById(competitorId);
 
     if(!rowCanCalculateScore(row)) {
+      logger.debug("Skipping competitor row with insufficient scores", { competitorId, apparatus });
       continue;
     }
 
+    const finalScore = parseScore(row.cells[FINAL_SCORE_COLUMN].textContent);
     competitor.scores[apparatus] = new CompetitorScore(
       parseScore(valueOfCell(row, D_SCORE_COLUMN)),
       parseScore(valueOfCell(row, FIRST_E_COLUMN), true),
@@ -476,9 +512,17 @@ async function saveScores(event: Event) {
       parseScore(valueOfCell(row, FIRST_E_COLUMN + 2), true),
       parseScore(valueOfCell(row, FIRST_E_COLUMN + 3), true),
       parseScore(valueOfCell(row, NEUTRAL_DEDUCTIONS_COLUMN)),
-      parseScore(row.cells[FINAL_SCORE_COLUMN].textContent)
+      finalScore
     );
+    logger.debug("Score saved for competitor", {
+      competitorId,
+      apparatus,
+      finalScore: finalScore / 1000,
+      dScore: parseScore(valueOfCell(row, D_SCORE_COLUMN)) / 1000,
+    });
+    savedCount++;
   }
+  logger.info("Scores saved", { competitionId: competition.id, groupId, apparatus, savedCount });
   await db.competitions.update(competition.id, competition);
 
   const savedGroupId = elements.groupApparatusResultsModal.getAttribute(GROUP_ID_ATTR_NAME);

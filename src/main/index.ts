@@ -40,6 +40,7 @@ if (isDev) {
 }
 
 const createWindow = () => {
+  logger.info("Creating main browser window");
   const win = new BrowserWindow({
     show: false,
     webPreferences: {
@@ -57,6 +58,9 @@ const createWindow = () => {
   if(isDev) {
     win.webContents.openDevTools();
   }
+  win.on("closed", () => {
+    logger.info("Main browser window closed");
+  });
 };
 
 const logger = new Logger(app.getPath("userData"));
@@ -76,11 +80,12 @@ app.whenReady().then(() => {
 // Recommended boiler-plate to quit the app when all windows are closed
 // except for OSX (see on activate above)
 app.on("window-all-closed", () => {
+  logger.info("All windows closed", { platform: process.platform });
   if (process.platform !== "darwin") {app.quit();}
 });
 
 ipcMain.on("asynchronous-message", (event: IpcMainEvent, arg: any) => {
-  console.log(arg);
+  logger.debug("asynchronous-message received", { arg });
   event.reply("asynchronous-reply", "async pong");
 });
 
@@ -102,18 +107,26 @@ ipcMain.on("save-png", (event: IpcMainEvent, arg: any) => {
 
 ipcMain.on("generate-pdfs", (event: IpcMainEvent, arg: any) => {
   const competition: Competition = arg.competition;
+  logger.info("Generating PDF", {
+    type: arg.type,
+    competitionName: competition.name,
+    competitionDate: competition.date,
+  });
   switch(arg.type) {
   case "recorder-sheets":
-    savePDF(competition, pdfs.generateRecorderSheets(competition), "recorder-sheets");
+    savePDF(competition, pdfs.generateRecorderSheets(competition), "recorder-sheets", logger);
     break;
   case "programme":
-    savePDF(competition, pdfs.generateProgramme(competition), "programme");
+    savePDF(competition, pdfs.generateProgramme(competition), "programme", logger);
     break;
   case "results":
-    savePDF(competition, pdfs.generateResults(competition), "results");
+    savePDF(competition, pdfs.generateResults(competition), "results", logger);
     break;
   case "places":
-    savePDF(competition, pdfs.generatePlaces(competition), "places");
+    savePDF(competition, pdfs.generatePlaces(competition), "places", logger);
+    break;
+  default:
+    logger.warn("Unknown PDF type requested", { type: arg.type });
     break;
   }
 });
@@ -122,6 +135,7 @@ ipcMain.on("generate-pdfs", (event: IpcMainEvent, arg: any) => {
 // so data is always copied (never passed by reference), regardless of size. See exportDatabase() in
 // renderer/index.ts for alternatives if the size ever becomes problematic.
 ipcMain.handle("export-db", async (event, jsonData: string) => {
+  logger.info("DB export dialog opening", { jsonSizeBytes: jsonData.length });
   const win = BrowserWindow.fromWebContents(event.sender);
   const { filePath, canceled } = await dialog.showSaveDialog(win, {
     title: "Export GymScore Database",
@@ -129,13 +143,22 @@ ipcMain.handle("export-db", async (event, jsonData: string) => {
     filters: [{ name: "GymScore Backup (gzip)", extensions: ["gz"] }],
   });
   if (canceled || !filePath) {
+    logger.info("DB export dialog cancelled");
     return { success: false, canceled: true };
   }
-  fs.writeFileSync(filePath, zlib.gzipSync(jsonData));
+  logger.info("Writing DB export file", { filePath });
+  try {
+    fs.writeFileSync(filePath, zlib.gzipSync(jsonData));
+    logger.info("DB export file written successfully", { filePath });
+  } catch (err) {
+    logger.error("DB export file write failed", { filePath, error: String(err) });
+    return { success: false, canceled: false };
+  }
   return { success: true };
 });
 
 ipcMain.handle("import-db", async (event) => {
+  logger.info("DB import dialog opening");
   const win = BrowserWindow.fromWebContents(event.sender);
   const { filePaths, canceled } = await dialog.showOpenDialog(win, {
     title: "Import GymScore Database",
@@ -143,13 +166,23 @@ ipcMain.handle("import-db", async (event) => {
     properties: ["openFile"],
   });
   if (canceled || filePaths.length === 0) {
+    logger.info("DB import dialog cancelled");
     return { success: false, canceled: true };
   }
-  const raw = fs.readFileSync(filePaths[0]);
-  const data = filePaths[0].endsWith(".gz")
-    ? zlib.gunzipSync(raw).toString("utf-8")
-    : raw.toString("utf-8");
-  return { success: true, data };
+  const filePath = filePaths[0];
+  logger.info("Reading DB import file", { filePath });
+  try {
+    const raw = fs.readFileSync(filePath);
+    const isGzip = filePath.endsWith(".gz");
+    const data = isGzip
+      ? zlib.gunzipSync(raw).toString("utf-8")
+      : raw.toString("utf-8");
+    logger.info("DB import file read successfully", { filePath, isGzip, sizeBytes: data.length });
+    return { success: true, data };
+  } catch (err) {
+    logger.error("DB import file read failed", { filePath, error: String(err) });
+    return { success: false, canceled: false };
+  }
 });
 
 logger.debug("Data storage path", { path: app.getPath("userData") });

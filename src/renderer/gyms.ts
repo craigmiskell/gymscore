@@ -17,6 +17,7 @@ import { db } from "./data/gymscoredb";
 import { IGym} from "../common/data";
 import * as pageCommon from "./page_common";
 import { Modal } from "bootstrap";
+import { logger } from "./logger";
 
 const GYM_ID_ATTR_NAME = "gymId";
 
@@ -74,6 +75,7 @@ async function updateGymsTable() {
   const body = elements.gyms.tBodies[0];
 
   const gyms = await db.gyms.toCollection().sortBy("name");
+  logger.debug("Updating gyms table", { count: gyms.length });
 
   // If the table is too long, trim it; if it's short, we'll create more later
   while (body.rows.length > gyms.length) {
@@ -90,8 +92,10 @@ async function updateGymsTable() {
 }
 
 async function openEditModal(gymId: number) {
+  logger.debug("Opening gym edit modal", { gymId });
   const gym = await db.gyms.get(gymId);
   if (!gym) {
+    logger.warn("Gym not found when opening edit modal", { gymId });
     return;
   }
 
@@ -105,16 +109,20 @@ async function openEditModal(gymId: number) {
 async function saveEdit() {
   elements.editGymForm.classList.add("was-validated");
   if (!elements.editGymForm.checkValidity()) {
+    logger.debug("Gym edit save rejected: form invalid");
     return;
   }
 
   const gymId = parseInt(elements.editGymModal.getAttribute(GYM_ID_ATTR_NAME));
   const existing = await db.gyms.get(gymId);
   if (!existing) {
+    logger.warn("Gym not found when saving edit", { gymId });
     return;
   }
 
+  const oldName = existing.name;
   existing.name = elements.editGymName.value;
+  logger.info("Saving gym edit", { gymId, oldName, newName: existing.name });
   await db.gyms.put(existing);
   Modal.getOrCreateInstance(elements.editGymModal).hide();
   await updateGymsTable();

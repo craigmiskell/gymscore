@@ -17,7 +17,7 @@
 //Alternatively, more selective:
 //import { Tooltip, Toast, Popover } from 'bootstrap';
 
-console.log("Welcome to GymScore");
+logger.info("Renderer index loaded");
 
 const COMPETITION_ID_ATTR = "competitionId";
 
@@ -26,16 +26,17 @@ const COMPETITION_ID_ATTR = "competitionId";
 if (navigator.storage && navigator.storage.persist) {
   navigator.storage.persist().then(function(persistent) {
     if (persistent) {
-      console.log("Storage will not be cleared except by explicit user action");
+      logger.info("Storage persistence granted; data will not be cleared except by explicit user action");
     } else {
-      // TODO: alert the user to tell me that this unexpected event has happened.
-      console.log("Storage may be cleared by the UA under storage pressure.");
+      logger.warn("Storage persistence denied; data may be cleared by the browser under storage pressure");
     }
   });
 }
 navigator.storage.estimate().then(estimation =>{
-  console.log(`Quota: ${estimation.quota/1024/1024}MB`);
-  console.log(`Usage: ${estimation.usage/1024/1024}MB`);
+  logger.debug("Storage estimate", {
+    quotaMB: (estimation.quota / 1024 / 1024).toFixed(1),
+    usageMB: (estimation.usage / 1024 / 1024).toFixed(3),
+  });
 });
 
 import { db } from "./data/gymscoredb";
@@ -44,6 +45,7 @@ import * as pageCommon from "./page_common";
 import { generateCompetitionPDFs } from "./competition_pdfs";
 import { Collapse, Modal } from "bootstrap";
 import { exportDB, importInto } from "dexie-export-import";
+import { logger } from "./logger";
 
 declare const api: typeof import("../common/api").default;
 
@@ -120,13 +122,13 @@ function promptDeleteCompetition(competition: ICompetition) {
 }
 
 function doDeleteCompetition(competitionId: number) {
-  console.log(`Deleting: ${competitionId}`);
+  logger.info("Deleting competition", { competitionId });
   db.competitions.delete(competitionId);
   const table = <HTMLTableElement>document.getElementById("preparingCompetitions");
 
   const row = table.querySelector(`tr[${COMPETITION_ID_ATTR}="${competitionId}"]`);
   if (row == null) {
-    console.log(`Did not find row with competition ID ${competitionId}`);
+    logger.warn("Did not find table row for deleted competition", { competitionId });
     return;
   }
   row.remove();
@@ -135,9 +137,19 @@ function doDeleteCompetition(competitionId: number) {
 async function startCompetition(competition: ICompetition) {
   const ungrouped = competition.competitors.filter((c) => c.groupNumber === 0);
   if (ungrouped.length > 0) {
+    logger.warn("Cannot start competition: {count} ungrouped competitors", {
+      count: ungrouped.length,
+      competitionId: competition.id,
+      competitionName: competition.name,
+    });
     Modal.getOrCreateInstance(document.getElementById("ungroupedCompetitorsModal")).show();
     return;
   }
+  logger.info("Starting competition", {
+    competitionId: competition.id,
+    competitionName: competition.name,
+    competitorCount: competition.competitors.length,
+  });
   competition.state = CompetitionState.Live;
   await db.competitions.put(competition);
   window.location.href = `live_competition.html?compId=${competition.id}`;
@@ -236,11 +248,14 @@ function setupAccordion(buttonId: string, collapseId: string) {
 }
 
 async function clearDB() {
+  logger.warn("Clearing entire database at user request");
   await db.delete();
   await db.open();
+  logger.info("Database cleared and reopened");
 }
 
 async function exportDatabase() {
+  logger.info("Database export started");
   const blob = await exportDB(db);
   // The JSON string is serialized (Structured Clone) and copied across the process boundary into main.
   // For large databases this could cause a brief UI freeze and a peak of ~3x the export size in memory.
@@ -250,9 +265,15 @@ async function exportDatabase() {
   //   - Run exportDB() in a Web Worker to keep the serialization off the main thread (best effort/reward).
   //   - Stream chunks via repeated IPC sends to a WriteStream in main, keeping memory bounded.
   const text = await blob.text();
+  logger.debug("Database export serialized", { sizeBytes: text.length });
   const result = await api.invoke("export-db", text);
   if (result && !result.success && !result.canceled) {
+    logger.error("Database export failed", { result });
     alert("Export failed.");
+  } else if (result?.canceled) {
+    logger.info("Database export cancelled by user");
+  } else {
+    logger.info("Database export completed successfully");
   }
 }
 
@@ -282,14 +303,19 @@ function showDangerModal(config: DangerModalConfig) {
 }
 
 async function doImportDatabase() {
+  logger.info("Database import started");
   const result = await api.invoke("import-db");
   if (!result || result.canceled || !result.success) {
+    logger.info("Database import cancelled or failed", { canceled: result?.canceled, success: result?.success });
     return;
   }
+  logger.debug("Database import file received", { sizeBytes: result.data?.length });
   const blob = new Blob([result.data], { type: "application/json" });
+  logger.info("Clearing database before import");
   await db.delete();
   await db.open();
   await importInto(db, blob, { clearTablesBeforeImport: true });
+  logger.info("Database import completed, reloading");
   window.location.reload();
 }
 

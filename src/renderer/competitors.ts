@@ -18,6 +18,7 @@ import { ICompetitor, Division } from "../common/data";
 import { Competitor } from "../common/data";
 import * as pageCommon from "./page_common";
 import { Modal } from "bootstrap";
+import { logger } from "./logger";
 
 const COMPETITOR_ID_ATTR = "competitorId";
 
@@ -71,6 +72,7 @@ async function onLoaded() {
 
   elements.deleteConfirmationYes.addEventListener("click", async () => {
     const competitorId = parseInt(elements.deleteConfirmationModal.getAttribute(COMPETITOR_ID_ATTR));
+    logger.info("Deleting competitor", { competitorId });
     await db.competitors.delete(competitorId);
     Modal.getOrCreateInstance(elements.deleteConfirmationModal).hide();
     await updateCompetitorsTable();
@@ -98,6 +100,7 @@ async function loadCompetitorDisplays(): Promise<CompetitorDisplay[]> {
   const gymIds = [...new Set(competitors.map(c => c.gymId))];
   const gyms = await db.gyms.where(":id").anyOf(gymIds).toArray();
   const gymMap = new Map<number, string>(gyms.map(g => [g.id, g.name]));
+  logger.debug("Loaded competitors for display", { competitorCount: competitors.length, gymCount: gyms.length });
   return competitors.map(c => ({
     competitor: c,
     gymName: gymMap.get(c.gymId) ?? "",
@@ -199,8 +202,10 @@ function displayCompetitorInRow(row: HTMLTableRowElement, display: CompetitorDis
 }
 
 async function openEditModal(competitorId: number) {
+  logger.debug("Opening competitor edit modal", { competitorId });
   const competitor = await db.competitors.get(competitorId);
   if (!competitor) {
+    logger.warn("Competitor not found when opening edit modal", { competitorId });
     return;
   }
   const gym = await db.gyms.get(competitor.gymId);
@@ -223,20 +228,25 @@ async function resolveGymId(gymName: string, existingGymId: number): Promise<num
   }
   const found = await db.gyms.where("name").equalsIgnoreCase(gymName).first();
   if (found) {
+    logger.debug("Resolved gym by name match", { gymName, gymId: found.id });
     return found.id;
   }
-  return await db.gyms.add({ name: gymName });
+  const newId = await db.gyms.add({ name: gymName });
+  logger.info("Created new gym from competitor edit", { gymName, gymId: newId });
+  return newId;
 }
 
 async function saveEdit() {
   elements.editCompetitorForm.classList.add("was-validated");
   if (!elements.editCompetitorForm.checkValidity()) {
+    logger.debug("Competitor edit save rejected: form invalid");
     return;
   }
 
   const competitorId = parseInt(elements.editCompetitorModal.getAttribute(COMPETITOR_ID_ATTR));
   const existing = await db.competitors.get(competitorId);
   if (!existing) {
+    logger.warn("Competitor not found when saving edit", { competitorId });
     return;
   }
 
@@ -250,6 +260,14 @@ async function saveEdit() {
     competitorId
   );
 
+  logger.info("Saving competitor edit", {
+    competitorId,
+    name: updated.name,
+    identifier: updated.identifier,
+    step: updated.step,
+    division: updated.division,
+    gymId,
+  });
   await db.competitors.put(updated);
   Modal.getOrCreateInstance(elements.editCompetitorModal).hide();
   await updateCompetitorsTable();

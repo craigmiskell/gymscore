@@ -22,6 +22,7 @@ import * as pageCommon from "./page_common";
 import { Autocomplete } from "./autocomplete";
 import { Collapse, Modal } from "bootstrap";
 import { CompetitionCompetitorDetails, Team } from "../common/data/competition";
+import { logger } from "./logger";
 
 const COMPETITOR_ID_ATTR_NAME = "competitorId";
 const GYM_ID_ATTR_NAME = "gymId";
@@ -94,7 +95,7 @@ async function onLoaded() {
 
   const urlParams = new URLSearchParams(window.location.search);
   const compId = urlParams.get("compId");
-  console.log(`Competition ID from query string: ${compId}`);
+  logger.debug("prepare_competition loaded", { compId });
 
   await loadCompetition(parseInt(compId));
 
@@ -173,6 +174,7 @@ async function removeCompetitor(event: Event) {
   event.preventDefault();
 
   const competitorId = parseInt((<HTMLAnchorElement>event.currentTarget).getAttribute(COMPETITOR_ID_ATTR_NAME));
+  logger.info("Removing competitor from competition", { competitorId, competitionId: competition.id });
   selectedCompetitorIds.delete(competitorId);
   competition.removeCompetitorById(competitorId);
   await db.competitions.update(competition.id, competition);
@@ -352,7 +354,7 @@ function setupAutocomplete(
       maximumItems: 8,
       showOnFocus: showOnFocus ?? false,
       onSelectItem: (selected: {label: string, value: string}) => {
-        console.log("Found by autocomplete:", selected.label, selected.value);
+        logger.debug("Item selected by autocomplete", { label: selected.label, value: selected.value, attribute });
         field.setAttribute(attribute, selected.value);
         if (typeof callbackOnSelect !== "undefined") {
           callbackOnSelect();
@@ -381,10 +383,11 @@ async function setupCompetitorAutoComplete() {
       threshold: 1,
       maximumItems: 8,
       onSelectItem: (selected: {label: string, value: string}) => {
-        console.log("Competitor found by autocomplete:", selected.label, selected.value);
+        logger.debug("Competitor selected by autocomplete", { label: selected.label, competitorId: selected.value });
         competitorNameField.setAttribute(COMPETITOR_ID_ATTR_NAME, selected.value);
         const alreadyAdded = competition?.competitors.some((c) => c.competitorId === parseInt(selected.value));
         if (alreadyAdded) {
+          logger.debug("Autocomplete-selected competitor already in competition", { competitorId: selected.value });
           elements.competitorAlreadyAddedWarning.classList.remove("d-none");
           return;
         }
@@ -430,7 +433,7 @@ async function setupGymAutoComplete() {
       maximumItems: 8,
       onSelectItem: async (selected: {label: string, value: string}) => {
         const gymId = selected.value;
-        console.log("Gym found by autocomplete:", selected.label, gymId);
+        logger.debug("Gym selected by autocomplete", { label: selected.label, gymId });
         gymField.setAttribute(GYM_ID_ATTR_NAME, gymId);
         teamAutoComplete.setData(await fetchTeamsForGymForAutoComplete(parseInt(gymId)));
         elements.competitorTeamModal.focus();
@@ -574,6 +577,7 @@ async function openEditCompetitorModal(competitorId: number) {
 }
 
 async function saveEditedCompetitor() {
+  logger.info("Saving edited competitor", { editingCompetitorId, competitionId: competition.id });
   const modal = Modal.getOrCreateInstance(elements.addCompetitorModal);
   modal.hide();
 
@@ -602,6 +606,13 @@ async function saveEditedCompetitor() {
   }
 
   await db.competitions.update(competition.id, competition);
+  logger.info("Competitor edit saved", {
+    competitorId: editingCompetitorId,
+    step: competitorDetails.step,
+    division: competitorDetails.division,
+    gymId,
+    gymName: gym.name,
+  });
   competitorAutoComplete.setData(await fetchCompetitorsForAutocomplete());
   updateCompetitorsTable();
   editingCompetitorId = null;
@@ -634,11 +645,11 @@ async function gymIdWhenAddingCompetitor() : Promise<number> {
   }
   const existingGym = await db.gyms.where("name").equalsIgnoreCase(gymField.value).first();
   if (existingGym != undefined) {
-    console.log(`Gym named "${gymField.value}" already exists; not creating a new ones`);
+    logger.debug("Gym matched by name; reusing existing", { gymName: gymField.value, gymId: existingGym.id });
     gymField.setAttribute(GYM_ID_ATTR_NAME, existingGym.id.toString());
     return existingGym.id;
   }
-  console.log("Creating a new gym with name " + gymField.value);
+  logger.info("Creating new gym", { gymName: gymField.value });
   const gymId = await db.gyms.put(new Gym(gymField.value));
   gymField.setAttribute(GYM_ID_ATTR_NAME, gymId.toString());
   gymAutoComplete.setData(await fetchGymsForAutocomplete());
@@ -657,11 +668,13 @@ async function teamIndexWhenAddingCompetitor(gym: IGym) : Promise<number> {
   );
 
   if(existingTeamIndex != -1) {
-    console.log(`Team named "${teamField.value}" already exists for gym ${gym.name}; not creating a new ones`);
+    logger.debug("Team matched by name; reusing existing", {
+      teamName: teamField.value, gymName: gym.name, teamIndex: existingTeamIndex,
+    });
     return existingTeamIndex;
   }
 
-  console.log("Creating a new team with name " + teamField.value);
+  logger.info("Creating new team", { teamName: teamField.value, gymName: gym.name, gymId: gym.id });
   const team = new Team(teamField.value, gym.id);
   const teamIndex = competition.teams.push(team) - 1; //
   teamField.setAttribute(TEAM_INDEX_ATTR_NAME, teamIndex.toString());
@@ -670,15 +683,15 @@ async function teamIndexWhenAddingCompetitor(gym: IGym) : Promise<number> {
 }
 
 async function addCompetitor() {
-  console.log("Adding competitor");
-
   const form = elements.competitorDetailsForm;
   if (!form.checkValidity()) {
+    logger.debug("Add competitor rejected: form invalid");
     form.classList.add("was-validated");
     return;
   }
 
   if (editingCompetitorId !== null) {
+    logger.debug("Delegating to saveEditedCompetitor", { editingCompetitorId });
     await saveEditedCompetitor();
     return;
   }
@@ -689,12 +702,21 @@ async function addCompetitor() {
     c.competitorName === nameToAdd && c.competitorIdentifier === identifierToAdd
   );
   if (isDuplicate) {
+    logger.warn("Duplicate competitor rejected", { name: nameToAdd, identifier: identifierToAdd });
     elements.duplicateCompetitorError.classList.remove("d-none");
     return;
   }
   if (nationalIdIsDuplicate) {
+    logger.warn("Competitor add rejected: national ID duplicate", { identifier: identifierToAdd });
     return;
   }
+  logger.debug("Adding competitor to competition", {
+    name: nameToAdd,
+    identifier: identifierToAdd,
+    step: elements.competitorStepSelectModal.value,
+    division: elements.competitorDivisionSelectModal.value,
+    competitionId: competition.id,
+  });
 
   let competitorId;
   const modal = Modal.getOrCreateInstance(elements.addCompetitorModal);
@@ -746,6 +768,14 @@ async function addCompetitor() {
     0, // Default is "no group", index 0
   ));
   await db.competitions.update(competition.id, competition);
+  logger.info("Competitor added to competition", {
+    competitorId: competitor.id,
+    name: competitor.name,
+    identifier: competitor.identifier,
+    gymName: gym.name,
+    competitionId: competition.id,
+    totalCompetitors: competition.competitors.length,
+  });
   updateCompetitorsTable();
   elements.competitorTeamModal.value = "";
 }
@@ -755,7 +785,13 @@ async function groupSelectChanged(event: Event) {
   const competitorId = parseInt(select.getAttribute(COMPETITOR_ID_ATTR_NAME));
 
   const competitor: CompetitionCompetitorDetails = competition.getCompetitorById(competitorId);
+  const oldGroup = competitor.groupNumber;
   competitor.groupNumber = parseInt(select.value);
+  logger.debug("Competitor group changed via select", {
+    competitorId,
+    oldGroup,
+    newGroup: competitor.groupNumber,
+  });
   await db.competitions.update(competition.id, competition);
 
   const row = select.closest("tr") as HTMLTableRowElement;
@@ -821,6 +857,11 @@ function updateSelectAllCheckbox() {
 }
 
 async function assignGroupToSelected(groupNumber: number) {
+  logger.info("Assigning group to selected competitors", {
+    groupNumber,
+    competitorCount: selectedCompetitorIds.size,
+    competitorIds: [...selectedCompetitorIds],
+  });
   for (const competitorId of selectedCompetitorIds) {
     const competitor = competition.getCompetitorById(competitorId);
     if (competitor) {
@@ -921,6 +962,19 @@ async function loadCompetition(compId: number) {
     if(competition) {
       competition.teams = competition.teams ?? [];
       competition.competitors = competition.competitors ?? [];
+      logger.info("Competition loaded", {
+        compId,
+        name: competition.name,
+        date: competition.date,
+        location: competition.location,
+        competitorCount: competition.competitors.length,
+        teamCount: competition.teams.length,
+        vault: competition.vault,
+        bar: competition.bar,
+        beam: competition.beam,
+        floor: competition.floor,
+        state: competition.state,
+      });
       (<HTMLInputElement>elements.competitionName).value = competition.name;
       (<HTMLInputElement>elements.competitionDate).value = competition.date;
       (<HTMLInputElement>elements.competitionLocation).value = competition.location;
@@ -929,8 +983,11 @@ async function loadCompetition(compId: number) {
       (<HTMLInputElement>elements.enableFloor).checked = competition.floor;
       (<HTMLInputElement>elements.enableVault).checked = competition.vault;
       updateCollapsedText(competition);
+    } else {
+      logger.warn("Competition not found in DB", { compId });
     }
   } else {
+    logger.info("No competition ID in URL; creating new competition");
     (<HTMLInputElement>elements.enableBar).checked =
     (<HTMLInputElement>elements.enableBeam).checked =
     (<HTMLInputElement>elements.enableFloor).checked =
@@ -945,6 +1002,16 @@ async function saveCompetitionDetails() {
     competition.location = (<HTMLInputElement>elements.competitionLocation).value;
     competition.state = CompetitionState.Preparing;
     populateCompetitionDisciplines(competition);
+    logger.debug("Auto-saving competition details", {
+      competitionId: competition.id,
+      name: competition.name,
+      date: competition.date,
+      location: competition.location,
+      vault: competition.vault,
+      bar: competition.bar,
+      beam: competition.beam,
+      floor: competition.floor,
+    });
     db.competitions.put(competition);
   } else {
     competition = await createCompetition();
@@ -961,6 +1028,16 @@ async function createCompetition() {
   );
   populateCompetitionDisciplines(competition);
   await db.competitions.add(competition);
+  logger.info("New competition created", {
+    competitionId: competition.id,
+    name: competition.name,
+    date: competition.date,
+    location: competition.location,
+    vault: competition.vault,
+    bar: competition.bar,
+    beam: competition.beam,
+    floor: competition.floor,
+  });
   return competition;
 }
 
@@ -1004,6 +1081,9 @@ async function checkNationalIdDuplicate() {
   }
   const existing = await db.competitors.where("identifier").equalsIgnoreCase(identifier).first();
   nationalIdIsDuplicate = existing != null;
+  if (nationalIdIsDuplicate) {
+    logger.debug("National ID duplicate detected", { identifier, existingCompetitorId: existing.id });
+  }
   elements.nationalIdDuplicateWarning.classList.toggle("d-none", !nationalIdIsDuplicate);
 }
 
@@ -1039,10 +1119,12 @@ type AutoCompleteCallbackOnInputFunc = {
 }
 
 function createRecorderSheets() {
+  logger.info("Requesting recorder sheets PDF", { competitionId: competition.id, competitionName: competition.name });
   api.sendAsync("generate-pdfs", {type: "recorder-sheets", competition: competition});
 }
 
 function createProgramme() {
+  logger.info("Requesting programme PDF", { competitionId: competition.id, competitionName: competition.name });
   api.sendAsync("generate-pdfs", {type: "programme", competition: competition});
 }
 
