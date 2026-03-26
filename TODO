@@ -1,3 +1,5 @@
+* Bug: Partial entry then deletion of values on an apparatus score leaves avg/e/final; they should clear.
+* Should results entry be per Step (and Division?).  Alternatively: if they are for multi-step, order by step and perhaps display that fact more clearly (deliniation)
 * Announcments: validate on a properly sized competition
 * Vanity count of competitors in prepare_competition
 * Make it possible to delete a set of scores for a competitor in an event; setting all entries to emtpy does nothing, even when saving (returns to the prior values)

@@ -265,7 +265,10 @@ function editGroupApparatusResults(event: Event) {
 
   modalElement.addEventListener("shown.bs.modal", () => {
     const body = elements.groupApparatusResultsModalTable.tBodies[0];
-    const firstEmptyRow = Array.from(body.rows).find(row => fieldForCol(row, D_SCORE_COLUMN).value === "");
+    const firstEmptyRow = Array.from(body.rows).find(row => {
+      if (row.getAttribute("data-step-header")) { return false; }
+      return fieldForCol(row, D_SCORE_COLUMN).value === "";
+    });
     if (firstEmptyRow) {
       fieldForCol(firstEmptyRow, D_SCORE_COLUMN).focus();
     }
@@ -443,25 +446,36 @@ async function displayCompetitorInRow(
   }
 }
 
+function createStepHeaderRow(body: HTMLTableSectionElement, step: number): HTMLTableRowElement {
+  const row = body.insertRow(-1);
+  row.setAttribute("data-step-header", "true");
+  const cell = row.insertCell();
+  cell.colSpan = 11;
+  cell.textContent = `Step ${step}`;
+  cell.classList.add("fw-bold", "table-secondary", "py-1", "small");
+  return row;
+}
+
 function populateApparatusGroupResultsTable(groupId: number, apparatus: string) {
-  const groupCompetitors = competition.competitors.filter(competitor => {
-    return competitor.groupNumber == groupId;
-  });
+  const groupCompetitors = competition.competitors
+    .filter(competitor => competitor.groupNumber == groupId)
+    .sort((a, b) => a.step - b.step);
 
   const body = elements.groupApparatusResultsModalTable.tBodies[0];
 
-  // If the table is too long, trim it; if it's short, we'll create more later
-  while (body.rows.length > groupCompetitors.length) {
+  while (body.rows.length > 0) {
     body.deleteRow(-1);
   }
 
-  groupCompetitors.forEach((competitor, i) => {
-    let row = body.rows[i];
-    if(row == undefined) {
-      row = createCompetitorRow(body);
+  let currentStep: number | undefined = undefined;
+  for (const competitor of groupCompetitors) {
+    if (competitor.step !== currentStep) {
+      currentStep = competitor.step;
+      createStepHeaderRow(body, currentStep);
     }
+    const row = createCompetitorRow(body);
     displayCompetitorInRow(row, competitor, apparatus);
-  });
+  }
 }
 
 function countNonNaN(prev: number, curr: number) {
