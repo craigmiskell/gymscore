@@ -15,12 +15,12 @@
 
 
 // See https://dexie.org/docs/Typescript for some other inspiration
-export interface IGym {
+export interface IClub {
   id?: number;
   name: string;
 }
 
-export class Gym implements IGym {
+export class Club implements IClub {
   id: number;
   name: string;
 

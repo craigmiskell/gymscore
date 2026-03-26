@@ -14,7 +14,7 @@
 // see <https://www.gnu.org/licenses/>.
 
 import Dexie from "dexie";
-import { IGym, Gym } from "../../common/data";
+import { IClub, Club } from "../../common/data";
 import { ICompetitor, Competitor } from "../../common/data/competitor";
 import { ICompetition, Competition } from "../../common/data/competition";
 
@@ -22,19 +22,19 @@ import { ICompetition, Competition } from "../../common/data/competition";
 class GymScoreDB extends Dexie {
   competitions!: Dexie.Table<ICompetition, number>;
   competitors!: Dexie.Table<ICompetitor, number>;
-  gyms!: Dexie.Table<IGym, number>;
+  clubs!: Dexie.Table<IClub, number>;
 
   constructor () {
     super("GymScoreDB");
-    this.version(1).stores({
+    this.version(3).stores({
       competitions: "++id, name, date, location, state",
-      competitors: "++id, identifier, name, gymId",
-      gyms: "++id, name",
+      competitors: "++id, identifier, name, clubId",
+      clubs: "++id, name",
     });
   }
 }
 
 export const db = new GymScoreDB();
-db.gyms.mapToClass(Gym);
+db.clubs.mapToClass(Club);
 db.competitors.mapToClass(Competitor);
 db.competitions.mapToClass(Competition);

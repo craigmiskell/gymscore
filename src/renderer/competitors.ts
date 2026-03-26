@@ -22,7 +22,7 @@ import { logger } from "./logger";
 
 const COMPETITOR_ID_ATTR = "competitorId";
 
-type SortColumn = "nationalId" | "name" | "step" | "gym";
+type SortColumn = "nationalId" | "name" | "step" | "club";
 const tableSorter = new pageCommon.TableSorter<SortColumn>();
 
 class Elements extends pageCommon.BaseElements {
@@ -30,14 +30,14 @@ class Elements extends pageCommon.BaseElements {
   filterNationalId: HTMLInputElement = null;
   filterName: HTMLInputElement = null;
   filterStep: HTMLInputElement = null;
-  filterGym: HTMLInputElement = null;
+  filterClub: HTMLInputElement = null;
   editCompetitorModal: HTMLElement = null;
   editCompetitorForm: HTMLFormElement = null;
   editNationalId: HTMLInputElement = null;
   editName: HTMLInputElement = null;
   editStep: HTMLSelectElement = null;
   editDivision: HTMLSelectElement = null;
-  editGym: HTMLInputElement = null;
+  editClub: HTMLInputElement = null;
   editCompetitorSave: HTMLButtonElement = null;
   deleteConfirmationModal: HTMLElement = null;
   deleteConfirmationNo: HTMLButtonElement = null;
@@ -53,7 +53,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
 interface CompetitorDisplay {
   competitor: ICompetitor;
-  gymName: string;
+  clubName: string;
 }
 
 async function onLoaded() {
@@ -84,7 +84,7 @@ async function onLoaded() {
 
   tableSorter.setup(elements.competitors, () => { void updateCompetitorsTable(); });
   pageCommon.setupFilterInputs(
-    [elements.filterName, elements.filterNationalId, elements.filterStep, elements.filterGym],
+    [elements.filterName, elements.filterNationalId, elements.filterStep, elements.filterClub],
     () => { void updateCompetitorsTable(); }
   );
   elements.filterNationalId.style.width = "13ch";
@@ -97,13 +97,13 @@ async function onLoaded() {
 
 async function loadCompetitorDisplays(): Promise<CompetitorDisplay[]> {
   const competitors = await db.competitors.toCollection().sortBy("name");
-  const gymIds = [...new Set(competitors.map(c => c.gymId))];
-  const gyms = await db.gyms.where(":id").anyOf(gymIds).toArray();
-  const gymMap = new Map<number, string>(gyms.map(g => [g.id, g.name]));
-  logger.debug("Loaded competitors for display", { competitorCount: competitors.length, gymCount: gyms.length });
+  const clubIds = [...new Set(competitors.map(c => c.clubId))];
+  const clubs = await db.clubs.where(":id").anyOf(clubIds).toArray();
+  const clubMap = new Map<number, string>(clubs.map(g => [g.id, g.name]));
+  logger.debug("Loaded competitors for display", { competitorCount: competitors.length, clubCount: clubs.length });
   return competitors.map(c => ({
     competitor: c,
-    gymName: gymMap.get(c.gymId) ?? "",
+    clubName: clubMap.get(c.clubId) ?? "",
   }));
 }
 
@@ -111,7 +111,7 @@ async function updateCompetitorsTable() {
   const nationalIdFilter = elements.filterNationalId.value.toLowerCase();
   const nameFilter = elements.filterName.value.toLowerCase();
   const stepFilter = elements.filterStep.value.toLowerCase();
-  const gymFilter = elements.filterGym.value.toLowerCase();
+  const clubFilter = elements.filterClub.value.toLowerCase();
 
   const allDisplays = await loadCompetitorDisplays();
 
@@ -129,7 +129,7 @@ async function updateCompetitorsTable() {
         primary = (a.competitor.step - b.competitor.step) ||
           Division[a.competitor.division].localeCompare(Division[b.competitor.division]);
         break;
-      case "gym": primary = (a.gymName ?? "").localeCompare(b.gymName ?? ""); break;
+      case "club": primary = (a.clubName ?? "").localeCompare(b.clubName ?? ""); break;
       }
       return primary !== 0 ? (tableSorter.direction === "asc" ? primary : -primary) : defaultOrder;
     })
@@ -139,7 +139,7 @@ async function updateCompetitorsTable() {
         d.competitor.identifier.toLowerCase().includes(nationalIdFilter) &&
         d.competitor.name.toLowerCase().includes(nameFilter) &&
         stepStr.includes(stepFilter) &&
-        (d.gymName ?? "").toLowerCase().includes(gymFilter)
+        (d.clubName ?? "").toLowerCase().includes(clubFilter)
       );
     });
 
@@ -198,7 +198,7 @@ function displayCompetitorInRow(row: HTMLTableRowElement, display: CompetitorDis
   row.cells[0].textContent = c.name;
   row.cells[1].textContent = c.identifier;
   row.cells[2].textContent = `${c.step} ${Division[c.division]}`;
-  row.cells[3].textContent = display.gymName;
+  row.cells[3].textContent = display.clubName;
 }
 
 async function openEditModal(competitorId: number) {
@@ -208,31 +208,31 @@ async function openEditModal(competitorId: number) {
     logger.warn("Competitor not found when opening edit modal", { competitorId });
     return;
   }
-  const gym = await db.gyms.get(competitor.gymId);
+  const club = await db.clubs.get(competitor.clubId);
 
   elements.editCompetitorModal.setAttribute(COMPETITOR_ID_ATTR, competitorId.toString());
   elements.editNationalId.value = competitor.identifier;
   elements.editName.value = competitor.name;
   elements.editStep.selectedIndex = competitor.step - 1;
   elements.editDivision.selectedIndex = competitor.division;
-  elements.editGym.value = gym ? gym.name : "";
+  elements.editClub.value = club ? club.name : "";
   elements.editCompetitorForm.classList.remove("was-validated");
 
   Modal.getOrCreateInstance(elements.editCompetitorModal).show();
 }
 
-async function resolveGymId(gymName: string, existingGymId: number): Promise<number> {
-  const existing = await db.gyms.get(existingGymId);
-  if (existing && existing.name.toLowerCase() === gymName.toLowerCase()) {
-    return existingGymId;
+async function resolveClubId(clubName: string, existingClubId: number): Promise<number> {
+  const existing = await db.clubs.get(existingClubId);
+  if (existing && existing.name.toLowerCase() === clubName.toLowerCase()) {
+    return existingClubId;
   }
-  const found = await db.gyms.where("name").equalsIgnoreCase(gymName).first();
+  const found = await db.clubs.where("name").equalsIgnoreCase(clubName).first();
   if (found) {
-    logger.debug("Resolved gym by name match", { gymName, gymId: found.id });
+    logger.debug("Resolved club by name match", { clubName, clubId: found.id });
     return found.id;
   }
-  const newId = await db.gyms.add({ name: gymName });
-  logger.info("Created new gym from competitor edit", { gymName, gymId: newId });
+  const newId = await db.clubs.add({ name: clubName });
+  logger.info("Created new club from competitor edit", { clubName, clubId: newId });
   return newId;
 }
 
@@ -250,13 +250,13 @@ async function saveEdit() {
     return;
   }
 
-  const gymId = await resolveGymId(elements.editGym.value.trim(), existing.gymId);
+  const clubId = await resolveClubId(elements.editClub.value.trim(), existing.clubId);
   const updated = new Competitor(
     elements.editNationalId.value.trim(),
     elements.editName.value.trim(),
     parseInt(elements.editStep.value),
     parseInt(elements.editDivision.value),
-    gymId,
+    clubId,
     competitorId
   );
 
@@ -266,7 +266,7 @@ async function saveEdit() {
     identifier: updated.identifier,
     step: updated.step,
     division: updated.division,
-    gymId,
+    clubId,
   });
   await db.competitors.put(updated);
   Modal.getOrCreateInstance(elements.editCompetitorModal).hide();

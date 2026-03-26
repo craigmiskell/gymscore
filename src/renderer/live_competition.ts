@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU General Public License along with this program. If not,
 // see <https://www.gnu.org/licenses/>.
 import { db } from "./data/gymscoredb";
-import { ICompetition, CompetitionState, IGym, ICompetitor } from "../common/data";
+import { ICompetition, CompetitionState, ICompetitor } from "../common/data";
 import { generateCompetitionPDFs } from "./competition_pdfs";
 import { CompetitionCompetitorDetails, CompetitorScore } from "../common/data/competition";
 import * as pageCommon from "./page_common";
@@ -417,8 +417,8 @@ async function displayCompetitorInRow(
   apparatus: string
 ) {
   const competitor: ICompetitor = await db.competitors.where(":id").equals(competitorDetails.competitorId).first();
-  const gym :IGym = await db.gyms.where(":id").equals(competitorDetails.gymId).first();
-  row.cells[0].textContent = `${competitor.name} (${competitor.identifier} ${gym.name})`;
+  const club = await db.clubs.where(":id").equals(competitorDetails.clubId).first();
+  row.cells[0].textContent = `${competitor.name} (${competitor.identifier} ${club.name})`;
 
   row.setAttribute(COMPETITOR_ID_ATTR_NAME, competitorDetails.competitorId.toString());
 

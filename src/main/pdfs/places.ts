@@ -231,7 +231,7 @@ function addDivisionPlaces(
       doc.text(ordinal(place) + (tied ? "=" : ""), DIV_PLACE_COL, state.y);
       doc.text(competitor.competitorName, DIV_NAME_COL, state.y);
       doc.text(formatScore(competitor.scores[apparatus].finalScore), DIV_SCORE_COL, state.y);
-      doc.text(competitor.gymName, DIV_CLUB_COL, state.y);
+      doc.text(competitor.clubName, DIV_CLUB_COL, state.y);
       state.y += ROW_HEIGHT;
     }
   }

@@ -17,7 +17,7 @@ declare const api: typeof import("../common/api").default;
 
 import { db } from "./data/gymscoredb";
 import { ICompetition, Competition, CompetitionState,
-  Division, ICompetitor, Competitor, Gym, IGym} from "../common/data";
+  Division, ICompetitor, Competitor, Club, IClub} from "../common/data";
 import * as pageCommon from "./page_common";
 import { Autocomplete } from "./autocomplete";
 import { Collapse, Modal } from "bootstrap";
@@ -25,7 +25,7 @@ import { CompetitionCompetitorDetails, Team } from "../common/data/competition";
 import { logger } from "./logger";
 
 const COMPETITOR_ID_ATTR_NAME = "competitorId";
-const GYM_ID_ATTR_NAME = "gymId";
+const CLUB_ID_ATTR_NAME = "clubId";
 const TEAM_INDEX_ATTR_NAME = "teamId";
 
 const selectedCompetitorIds = new Set<number>();
@@ -33,14 +33,14 @@ const selectedCompetitorIds = new Set<number>();
 pageCommon.setup();
 
 let competition: ICompetition = undefined;
-let gymAutoComplete :Autocomplete = undefined;
+let clubAutoComplete :Autocomplete = undefined;
 let competitorAutoComplete :Autocomplete = undefined;
 let teamAutoComplete :Autocomplete = undefined;
 let editingCompetitorId: number | null = null;
 let lastUsedStep: number | null = null;
 let lastUsedDivision: number | null = null;
 
-type SortColumn = "name" | "nationalId" | "step" | "gym" | "team" | "group";
+type SortColumn = "name" | "nationalId" | "step" | "club" | "team" | "group";
 const tableSorter = new pageCommon.TableSorter<SortColumn>();
 
 class Elements extends pageCommon.BaseElements {
@@ -63,7 +63,7 @@ class Elements extends pageCommon.BaseElements {
   competitorIdModal: HTMLInputElement = null;
   competitorStepSelectModal: HTMLSelectElement = null;
   competitorDivisionSelectModal: HTMLSelectElement = null;
-  competitorGymModal: HTMLInputElement = null;
+  competitorClubModal: HTMLInputElement = null;
   competitorTeamModal: HTMLInputElement = null;
   addCompetitorButton: HTMLButtonElement = null;
   competitorDetailsForm: HTMLFormElement = null;
@@ -73,7 +73,7 @@ class Elements extends pageCommon.BaseElements {
   filterName: HTMLInputElement = null;
   filterNationalId: HTMLInputElement = null;
   filterStep: HTMLInputElement = null;
-  filterGym: HTMLInputElement = null;
+  filterClub: HTMLInputElement = null;
   filterTeam: HTMLInputElement = null;
   duplicateCompetitorError: HTMLDivElement = null;
   competitorAlreadyAddedWarning: HTMLDivElement = null;
@@ -133,13 +133,13 @@ async function onLoaded() {
   elements.createProgrammeButton.addEventListener("click", createProgramme);
 
   await setupCompetitorAutoComplete();
-  await setupGymAutoComplete();
+  await setupClubAutoComplete();
   await setupTeamAutoComplete();
   tableSorter.setup(elements.competitors, updateCompetitorsTable);
   elements.selectAllCheckbox.addEventListener("change", selectAllChanged);
   setupGroupAssignToolbar();
   pageCommon.setupFilterInputs(
-    [elements.filterName, elements.filterNationalId, elements.filterStep, elements.filterGym, elements.filterTeam],
+    [elements.filterName, elements.filterNationalId, elements.filterStep, elements.filterClub, elements.filterTeam],
     updateCompetitorsTable
   );
   // Bootstrap's form-control sets width: 100%, which causes the table layout algorithm to size
@@ -192,7 +192,7 @@ function displayCompetitorInRow(row: HTMLTableRowElement, competitor: Competitio
   row.cells[1].textContent = competitor.competitorName;
   row.cells[2].textContent = competitor.competitorIdentifier;
   row.cells[3].textContent = competitor.step + " " + Division[competitor.division];
-  row.cells[4].textContent = competitor.gymName;
+  row.cells[4].textContent = competitor.clubName;
   row.cells[5].textContent = competition.teams[competitor.teamIndex]?.name ?? "";
 
   const groupSelect = <HTMLSelectElement>row.cells[6].firstChild;
@@ -265,17 +265,17 @@ function updateCompetitorsTable() {
   const nameFilter = elements.filterName.value.toLowerCase();
   const nationalIdFilter = elements.filterNationalId.value.toLowerCase();
   const stepFilter = elements.filterStep.value.toLowerCase();
-  const gymFilter = elements.filterGym.value.toLowerCase();
+  const clubFilter = elements.filterClub.value.toLowerCase();
   const teamFilter = elements.filterTeam.value.toLowerCase();
 
   const filtered = [...competition.competitors]
     .sort((a, b) => {
-      const gymA = a.gymName ?? "";
-      const gymB = b.gymName ?? "";
+      const clubA = a.clubName ?? "";
+      const clubB = b.clubName ?? "";
       const teamA = competition.teams[a.teamIndex]?.name ?? "";
       const teamB = competition.teams[b.teamIndex]?.name ?? "";
       const defaultOrder =
-        gymA.localeCompare(gymB) ||
+        clubA.localeCompare(clubB) ||
         teamA.localeCompare(teamB) ||
         (a.step - b.step) ||
         a.competitorName.localeCompare(b.competitorName);
@@ -289,7 +289,7 @@ function updateCompetitorsTable() {
       case "name": primary = a.competitorName.localeCompare(b.competitorName); break;
       case "nationalId": primary = (a.competitorIdentifier ?? "").localeCompare(b.competitorIdentifier ?? ""); break;
       case "step": primary = (a.step - b.step) || Division[a.division].localeCompare(Division[b.division]); break;
-      case "gym": primary = gymA.localeCompare(gymB); break;
+      case "club": primary = clubA.localeCompare(clubB); break;
       case "team": primary = teamA.localeCompare(teamB); break;
       case "group": primary = (a.groupNumber || 0) - (b.groupNumber || 0); break;
       }
@@ -302,7 +302,7 @@ function updateCompetitorsTable() {
         competitor.competitorName.toLowerCase().includes(nameFilter) &&
         (competitor.competitorIdentifier ?? "").toLowerCase().includes(nationalIdFilter) &&
         stepStr.includes(stepFilter) &&
-        (competitor.gymName ?? "").toLowerCase().includes(gymFilter) &&
+        (competitor.clubName ?? "").toLowerCase().includes(clubFilter) &&
         teamName.includes(teamFilter)
       );
     });
@@ -421,26 +421,26 @@ async function setupCompetitorAutoComplete() {
 }
 
 //TODO: convert to 'setupAutocomplete'
-async function setupGymAutoComplete() {
-  const gyms = await fetchGymsForAutocomplete();
+async function setupClubAutoComplete() {
+  const clubs = await fetchClubsForAutocomplete();
 
-  const gymField = elements.competitorGymModal;
-  gymAutoComplete = new Autocomplete(
-    gymField,
+  const clubField = elements.competitorClubModal;
+  clubAutoComplete = new Autocomplete(
+    clubField,
     {
-      data: gyms,
+      data: clubs,
       threshold: 1,
       maximumItems: 8,
       onSelectItem: async (selected: {label: string, value: string}) => {
-        const gymId = selected.value;
-        logger.debug("Gym selected by autocomplete", { label: selected.label, gymId });
-        gymField.setAttribute(GYM_ID_ATTR_NAME, gymId);
-        teamAutoComplete.setData(await fetchTeamsForGymForAutoComplete(parseInt(gymId)));
+        const clubId = selected.value;
+        logger.debug("Club selected by autocomplete", { label: selected.label, clubId });
+        clubField.setAttribute(CLUB_ID_ATTR_NAME, clubId);
+        teamAutoComplete.setData(await fetchTeamsForClubForAutoComplete(parseInt(clubId)));
         elements.competitorTeamModal.focus();
       },
       onInput:() => {
         // If the user types, clear the selection
-        gymField.removeAttribute(GYM_ID_ATTR_NAME);
+        clubField.removeAttribute(CLUB_ID_ATTR_NAME);
         teamAutoComplete.setData([]);
       },
       showOnFocus: true,
@@ -450,7 +450,7 @@ async function setupGymAutoComplete() {
 
 async function setupTeamAutoComplete() {
   teamAutoComplete = setupAutocomplete(
-    [], // Can't do anything until we have a gym, in the competitor modal
+    [], // Can't do anything until we have a club, in the competitor modal
     elements.competitorTeamModal,
     TEAM_INDEX_ATTR_NAME,
     undefined,
@@ -472,7 +472,7 @@ async function openAddCompetitorModal() {
 
   let competitor: ICompetitor;
   if(isNaN(competitorId)) {
-    // Just a placeholder; we'll create a new one on save.  No ID, no gym
+    // Just a placeholder; we'll create a new one on save.  No ID, no club
     competitor = new Competitor("", elements.competitorName.value, 1, Division.Under, -1);
     elements.competitorNameModal.disabled = false;
     elements.competitorIdModal.disabled = false;
@@ -480,7 +480,7 @@ async function openAddCompetitorModal() {
     competitor = await db.competitors.where(":id").equals(competitorId).first();
     elements.competitorNameModal.disabled = true; //Cannot edit this here and now; autocomplete found it
     elements.competitorIdModal.disabled = true;
-    elements.competitorGymModal.setAttribute(GYM_ID_ATTR_NAME, competitor.gymId.toString());
+    elements.competitorClubModal.setAttribute(CLUB_ID_ATTR_NAME, competitor.clubId.toString());
   }
 
   // Populate modal fields
@@ -490,13 +490,13 @@ async function openAddCompetitorModal() {
   elements.competitorTeamModal.value = "";
   elements.competitorTeamModal.removeAttribute(TEAM_INDEX_ATTR_NAME);
 
-  const gym = await gymForCompetitor(competitor);
-  if(gym) {
-    elements.competitorGymModal.value = gym.name;
-    teamAutoComplete.setData(await fetchTeamsForGymForAutoComplete(gym.id));
+  const club = await clubForCompetitor(competitor);
+  if(club) {
+    elements.competitorClubModal.value = club.name;
+    teamAutoComplete.setData(await fetchTeamsForClubForAutoComplete(club.id));
   } else {
-    elements.competitorGymModal.value = "";
-    elements.competitorGymModal.removeAttribute(GYM_ID_ATTR_NAME);
+    elements.competitorClubModal.value = "";
+    elements.competitorClubModal.removeAttribute(CLUB_ID_ATTR_NAME);
     teamAutoComplete.setData([]);
   }
 
@@ -514,7 +514,7 @@ async function openAddCompetitorModal() {
     const fields: HTMLInputElement[] = [
       elements.competitorNameModal,
       elements.competitorIdModal,
-      elements.competitorGymModal,
+      elements.competitorClubModal,
       elements.competitorTeamModal,
     ];
     const firstEmpty = fields.find((f) => !f.disabled && f.value === "");
@@ -551,14 +551,14 @@ async function openEditCompetitorModal(competitorId: number) {
   elements.competitorTeamModal.value = "";
   elements.competitorTeamModal.removeAttribute(TEAM_INDEX_ATTR_NAME);
 
-  const gym = await gymById(competitorDetails.gymId);
-  if (gym) {
-    elements.competitorGymModal.value = gym.name;
-    elements.competitorGymModal.setAttribute(GYM_ID_ATTR_NAME, gym.id.toString());
-    teamAutoComplete.setData(await fetchTeamsForGymForAutoComplete(gym.id));
+  const club = await clubById(competitorDetails.clubId);
+  if (club) {
+    elements.competitorClubModal.value = club.name;
+    elements.competitorClubModal.setAttribute(CLUB_ID_ATTR_NAME, club.id.toString());
+    teamAutoComplete.setData(await fetchTeamsForClubForAutoComplete(club.id));
   } else {
-    elements.competitorGymModal.value = "";
-    elements.competitorGymModal.removeAttribute(GYM_ID_ATTR_NAME);
+    elements.competitorClubModal.value = "";
+    elements.competitorClubModal.removeAttribute(CLUB_ID_ATTR_NAME);
     teamAutoComplete.setData([]);
   }
 
@@ -581,28 +581,28 @@ async function saveEditedCompetitor() {
   const modal = Modal.getOrCreateInstance(elements.addCompetitorModal);
   modal.hide();
 
-  const gymId = await gymIdWhenAddingCompetitor();
-  const gym = await gymById(gymId);
+  const clubId = await clubIdWhenAddingCompetitor();
+  const club = await clubById(clubId);
   const competitorDetails = competition.getCompetitorById(editingCompetitorId);
 
-  const oldGymId = competitorDetails.gymId;
-  const newTeamIndex = await teamIndexWhenAddingCompetitor(gym);
+  const oldClubId = competitorDetails.clubId;
+  const newTeamIndex = await teamIndexWhenAddingCompetitor(club);
 
   const competitor = await db.competitors.where(":id").equals(editingCompetitorId).first();
   competitor.step = parseInt(elements.competitorStepSelectModal.value);
   competitor.division = parseInt(elements.competitorDivisionSelectModal.value);
-  competitor.gymId = gymId;
+  competitor.clubId = clubId;
   await db.competitors.put(competitor);
 
   competitorDetails.step = parseInt(elements.competitorStepSelectModal.value);
   competitorDetails.division = parseInt(elements.competitorDivisionSelectModal.value);
-  competitorDetails.gymId = gymId;
-  competitorDetails.gymName = gym.name;
+  competitorDetails.clubId = clubId;
+  competitorDetails.clubName = club.name;
   competitorDetails.teamIndex = newTeamIndex;
 
-  pruneEmptyTeams(oldGymId);
-  if (gymId !== oldGymId) {
-    pruneEmptyTeams(gymId);
+  pruneEmptyTeams(oldClubId);
+  if (clubId !== oldClubId) {
+    pruneEmptyTeams(clubId);
   }
 
   await db.competitions.update(competition.id, competition);
@@ -610,19 +610,19 @@ async function saveEditedCompetitor() {
     competitorId: editingCompetitorId,
     step: competitorDetails.step,
     division: competitorDetails.division,
-    gymId,
-    gymName: gym.name,
+    clubId,
+    clubName: club.name,
   });
   competitorAutoComplete.setData(await fetchCompetitorsForAutocomplete());
   updateCompetitorsTable();
   editingCompetitorId = null;
 }
 
-function pruneEmptyTeams(gymId: number) {
+function pruneEmptyTeams(clubId: number) {
   const indicesToRemove = competition.teams
     .map((team, index) => ({ team, index }))
     .filter(({ team, index }) =>
-      team.gymId === gymId && !competition.competitors.some((c) => c.teamIndex === index)
+      team.clubId === clubId && !competition.competitors.some((c) => c.teamIndex === index)
     )
     .map(({ index }) => index)
     .sort((a, b) => b - a);
@@ -637,26 +637,26 @@ function pruneEmptyTeams(gymId: number) {
   }
 }
 
-async function gymIdWhenAddingCompetitor() : Promise<number> {
-  const gymField = elements.competitorGymModal;
+async function clubIdWhenAddingCompetitor() : Promise<number> {
+  const clubField = elements.competitorClubModal;
 
-  if(gymField.hasAttribute(GYM_ID_ATTR_NAME)) {
-    return parseInt(gymField.getAttribute(GYM_ID_ATTR_NAME));
+  if(clubField.hasAttribute(CLUB_ID_ATTR_NAME)) {
+    return parseInt(clubField.getAttribute(CLUB_ID_ATTR_NAME));
   }
-  const existingGym = await db.gyms.where("name").equalsIgnoreCase(gymField.value).first();
-  if (existingGym != undefined) {
-    logger.debug("Gym matched by name; reusing existing", { gymName: gymField.value, gymId: existingGym.id });
-    gymField.setAttribute(GYM_ID_ATTR_NAME, existingGym.id.toString());
-    return existingGym.id;
+  const existingClub = await db.clubs.where("name").equalsIgnoreCase(clubField.value).first();
+  if (existingClub != undefined) {
+    logger.debug("Club matched by name; reusing existing", { clubName: clubField.value, clubId: existingClub.id });
+    clubField.setAttribute(CLUB_ID_ATTR_NAME, existingClub.id.toString());
+    return existingClub.id;
   }
-  logger.info("Creating new gym", { gymName: gymField.value });
-  const gymId = await db.gyms.put(new Gym(gymField.value));
-  gymField.setAttribute(GYM_ID_ATTR_NAME, gymId.toString());
-  gymAutoComplete.setData(await fetchGymsForAutocomplete());
-  return gymId;
+  logger.info("Creating new club", { clubName: clubField.value });
+  const clubId = await db.clubs.put(new Club(clubField.value));
+  clubField.setAttribute(CLUB_ID_ATTR_NAME, clubId.toString());
+  clubAutoComplete.setData(await fetchClubsForAutocomplete());
+  return clubId;
 }
 
-async function teamIndexWhenAddingCompetitor(gym: IGym) : Promise<number> {
+async function teamIndexWhenAddingCompetitor(club: IClub) : Promise<number> {
   const teamField = elements.competitorTeamModal;
 
   if(teamField.hasAttribute(TEAM_INDEX_ATTR_NAME)) {
@@ -664,18 +664,18 @@ async function teamIndexWhenAddingCompetitor(gym: IGym) : Promise<number> {
   }
 
   const existingTeamIndex = competition.teams.findIndex((team) =>
-    team.name.toLowerCase() == teamField.value.toLowerCase() && team.gymId == gym.id
+    team.name.toLowerCase() == teamField.value.toLowerCase() && team.clubId == club.id
   );
 
   if(existingTeamIndex != -1) {
     logger.debug("Team matched by name; reusing existing", {
-      teamName: teamField.value, gymName: gym.name, teamIndex: existingTeamIndex,
+      teamName: teamField.value, clubName: club.name, teamIndex: existingTeamIndex,
     });
     return existingTeamIndex;
   }
 
-  logger.info("Creating new team", { teamName: teamField.value, gymName: gym.name, gymId: gym.id });
-  const team = new Team(teamField.value, gym.id);
+  logger.info("Creating new team", { teamName: teamField.value, clubName: club.name, clubId: club.id });
+  const team = new Team(teamField.value, club.id);
   const teamIndex = competition.teams.push(team) - 1; //
   teamField.setAttribute(TEAM_INDEX_ATTR_NAME, teamIndex.toString());
 
@@ -726,18 +726,18 @@ async function addCompetitor() {
   lastUsedStep = parseInt(elements.competitorStepSelectModal.value);
   lastUsedDivision = parseInt(elements.competitorDivisionSelectModal.value);
 
-  const gymId = await gymIdWhenAddingCompetitor();
-  const gym = await gymById(gymId);
-  const teamId = await teamIndexWhenAddingCompetitor(gym);
+  const clubId = await clubIdWhenAddingCompetitor();
+  const club = await clubById(clubId);
+  const teamId = await teamIndexWhenAddingCompetitor(club);
   let competitor;
 
   if(elements.competitorName.hasAttribute(COMPETITOR_ID_ATTR_NAME)) {
     competitorId = elements.competitorName.getAttribute(COMPETITOR_ID_ATTR_NAME);
-    // Update competitor with current step + gym (for future)
+    // Update competitor with current step + club (for future)
     competitor = await db.competitors.where(":id").equals(parseInt(competitorId)).first();
     competitor.step = parseInt(elements.competitorStepSelectModal.value);
     competitor.division = parseInt(elements.competitorDivisionSelectModal.value);
-    competitor.gymId = gymId;
+    competitor.clubId = clubId;
     await db.competitors.put(competitor);
   } else {
     // No auto-completed competitor; create a new one
@@ -746,7 +746,7 @@ async function addCompetitor() {
       elements.competitorNameModal.value,
       parseInt(elements.competitorStepSelectModal.value),
       parseInt(elements.competitorDivisionSelectModal.value),
-      gymId);
+      clubId);
     competitorId = await db.competitors.put(competitor);
   }
   // Clear the name field before setData so the autocomplete dropdown doesn't reappear
@@ -755,15 +755,15 @@ async function addCompetitor() {
   elements.addCompetitorButton.disabled = true;
   elements.competitorAlreadyAddedWarning.classList.add("d-none");
 
-  // Always update; for new competitor, or if the gym has changed on an existing competitor
+  // Always update; for new competitor, or if the club has changed on an existing competitor
   competitorAutoComplete.setData(await fetchCompetitorsForAutocomplete());
 
   competition.competitors.push(new CompetitionCompetitorDetails(
     competitor,
     parseInt(elements.competitorStepSelectModal.value),
     parseInt(elements.competitorDivisionSelectModal.value),
-    gymId,
-    gym.name, // A convenience, because we need it in the main process and won't be able to look things up in the DB.
+    clubId,
+    club.name, // A convenience, because we need it in the main process and won't be able to look things up in the DB.
     teamId,
     0, // Default is "no group", index 0
   ));
@@ -772,7 +772,7 @@ async function addCompetitor() {
     competitorId: competitor.id,
     name: competitor.name,
     identifier: competitor.identifier,
-    gymName: gym.name,
+    clubName: club.name,
     competitionId: competition.id,
     totalCompetitors: competition.competitors.length,
   });
@@ -899,36 +899,36 @@ function setupGroupAssignToolbar() {
   updateGroupAssignToolbar();
 }
 
-async function gymById(id: number) : Promise<IGym> {
+async function clubById(id: number) : Promise<IClub> {
   // TODO: cache (local, or in a DAO layer)
   if(isNaN(id)) {
     return undefined; // Mostly belt'n'braces for old bugs.
   }
-  const gyms = db.gyms.where(":id").equals(id);
-  if (await gyms.count() == 0) {
+  const clubs = db.clubs.where(":id").equals(id);
+  if (await clubs.count() == 0) {
     return undefined;
   }
-  return gyms.first();
+  return clubs.first();
 }
 
-async function gymForCompetitor(competitor: ICompetitor) : Promise<IGym> {
-  return await gymById(competitor.gymId);
+async function clubForCompetitor(competitor: ICompetitor) : Promise<IClub> {
+  return await clubById(competitor.clubId);
 }
 
 async function fetchCompetitorsForAutocomplete() {
   const competitors = await db.competitors.toArray();
   return await Promise.all(competitors.map(async (c: ICompetitor) => {
-    const gym = await gymForCompetitor(c);
+    const club = await clubForCompetitor(c);
     return {
-      label: `${c.name} (${c.identifier}) - ${gym?.name}`,
+      label: `${c.name} (${c.identifier}) - ${club?.name}`,
       value: c.id
     };
   }));
 }
 
-async function fetchGymsForAutocomplete() {
-  const gyms = await db.gyms.toArray();
-  return await Promise.all(gyms.map(async (g: IGym) => {
+async function fetchClubsForAutocomplete() {
+  const clubs = await db.clubs.toArray();
+  return await Promise.all(clubs.map(async (g: IClub) => {
     return {
       label: g.name,
       value: g.id
@@ -936,7 +936,7 @@ async function fetchGymsForAutocomplete() {
   }));
 }
 
-async function fetchTeamsForGymForAutoComplete(gymId: number) {
+async function fetchTeamsForClubForAutoComplete(clubId: number) {
   if(competition == undefined ) {
     return [];
   }
@@ -945,10 +945,10 @@ async function fetchTeamsForGymForAutoComplete(gymId: number) {
     return {
       label: team.name,
       value: index,
-      gymId: team.gymId,
+      clubId: team.clubId,
     };
   }).filter(team => {
-    return team.gymId == gymId;
+    return team.clubId == clubId;
   });
 }
 
@@ -1136,8 +1136,8 @@ async function populateFakeCompetitors() {
     "Wendy", "Xavier", "Yvette", "Zorro"];
   const lastNames = ["White", "Green", "Black", "Brown", "Purple", "Red", "Yellow", "Pink", "Mauve", "Taupe", "Orange",
     "Indigo", "Violet", "Turquoise"];
-  const gym = new Gym("St Bernadettes", 1);
-  db.gyms.put(gym);
+  const club = new Club("St Bernadettes", 1);
+  db.clubs.put(club);
   for (let i=0; i < 20; i++) {
     const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
     const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
@@ -1147,7 +1147,7 @@ async function populateFakeCompetitors() {
       `${firstName} ${lastName}`,
       Math.floor(Math.random() * 9)+1,
       Math.random() < 0.5 ? Division.Under : Division.Over,
-      gym.id
+      club.id
     ));
   }
 }

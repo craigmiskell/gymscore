@@ -22,9 +22,9 @@ export { Competition, ICompetition, CompetitionState, Team };
 
 export { Division } from "./division";
 
-import { Gym } from "./gym";
-import type {IGym}  from "./gym";
-export { Gym, IGym };
+import { Club } from "./club";
+import type {IClub}  from "./club";
+export { Club, IClub };
 
 import { Competitor } from "./competitor";
 import type { ICompetitor } from "./competitor";

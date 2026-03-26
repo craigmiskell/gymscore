@@ -118,7 +118,7 @@ function addSheetsForStepGroup(doc: jsPDF, titles: Titles, competitors: Competit
     data.push({
       number: competitor.competitorIdentifier,
       name: competitor.competitorName,
-      club: competitor.gymName,
+      club: competitor.clubName,
       dscore: space, e1: space, e2: space, e3:space, e4:space,
       average: space, escore: space, neutralDeductions: space, finalScore: space
     });

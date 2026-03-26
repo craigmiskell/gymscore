@@ -1,6 +1,6 @@
 // Copyright 2022 Craig Miskell (craig@stroppykitten.com)
 //
-// This file is part of gymscore
+// This file is part of clubscore
 //
 // Gymscore is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
 // License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
@@ -198,7 +198,7 @@ function addTeamTable(
 interface CompetitorColLayout {
   name: number;
   id: number;
-  gym: number;
+  club: number;
   team: number;
   apparatus: number[];
   overall: number;
@@ -207,17 +207,17 @@ interface CompetitorColLayout {
 function computeCompetitorColLayout(apparatuses: string[]): CompetitorColLayout {
   const nameWidth = 50;
   const idWidth = 18;
-  const gymWidth = 35;
+  const clubWidth = 35;
   const teamWidth = 30;
   const overallWidth = 28;
-  const fixedWidth = nameWidth + idWidth + gymWidth + teamWidth + overallWidth;
+  const fixedWidth = nameWidth + idWidth + clubWidth + teamWidth + overallWidth;
   const apparatusWidth = (CONTENT_WIDTH - fixedWidth) / Math.max(apparatuses.length, 1);
 
   const layout: CompetitorColLayout = {
     name: MARGIN,
     id: MARGIN + nameWidth,
-    gym: MARGIN + nameWidth + idWidth,
-    team: MARGIN + nameWidth + idWidth + gymWidth,
+    club: MARGIN + nameWidth + idWidth,
+    team: MARGIN + nameWidth + idWidth + clubWidth,
     apparatus: [],
     overall: MARGIN + fixedWidth - overallWidth + apparatuses.length * apparatusWidth,
   };
@@ -283,7 +283,7 @@ function addCompetitorTable(
 
   doc.text("Name", layout.name, state.y);
   doc.text("ID", layout.id, state.y);
-  doc.text("Gym", layout.gym, state.y);
+  doc.text("Club", layout.club, state.y);
   doc.text("Team", layout.team, state.y);
   for (let i = 0; i < apparatuses.length; i++) {
     doc.text(capitalise(apparatuses[i]), layout.apparatus[i], state.y);
@@ -302,7 +302,7 @@ function addCompetitorTable(
     const teamName = competition.teams[competitor.teamIndex]?.name ?? "";
     doc.text(competitor.competitorName, layout.name, state.y);
     doc.text(competitor.competitorIdentifier, layout.id, state.y);
-    doc.text(competitor.gymName, layout.gym, state.y);
+    doc.text(competitor.clubName, layout.club, state.y);
     doc.text(teamName, layout.team, state.y);
 
     for (let i = 0; i < apparatuses.length; i++) {

@@ -297,7 +297,7 @@ function addDivisionAnnouncements(
     for (let i = 0; i < lines.length; i++) {
       doc.text(lines[i], PLACINGS_COL, state.y + i * ROW_HEIGHT);
     }
-    doc.text(row.competitor.gymName, CLUB_COL, state.y);
+    doc.text(row.competitor.clubName, CLUB_COL, state.y);
     state.y += rowHeight;
   }
 }

@@ -21,7 +21,7 @@ export interface ICompetitor {
   name: string,
   step: number,
   division: Division,
-  gymId: number,
+  clubId: number,
 }
 
 export class Competitor implements ICompetitor {
@@ -30,14 +30,14 @@ export class Competitor implements ICompetitor {
   // as an opaque string)
   identifier: string;
   name: string;
-  gymId: number;
+  clubId: number;
   step: number;
   division: Division;
 
-  constructor(identifier: string, name: string, step: number, division: Division, gymId: number, id?:number) {
+  constructor(identifier: string, name: string, step: number, division: Division, clubId: number, id?:number) {
     this.identifier = identifier;
     this.name = name;
-    this.gymId = gymId;
+    this.clubId = clubId;
     this.step = step;
     this.division = division;
 

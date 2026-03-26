@@ -35,7 +35,7 @@ export class CompetitorScore {
 
 // Details of a competitor *at a given competition*
 // They will, over their competitive lifetime, change steps as they grow
-// and may change gyms.  So while we store those details against the competitor
+// and may change clubs.  So while we store those details against the competitor
 // as the current/last known value, it's more important to know what state they
 // were in at a given competition.
 // This is the data object stored in competitors list for the competition.
@@ -45,21 +45,21 @@ export class CompetitionCompetitorDetails {
   competitorName: string;
   step: number;
   division: Division;
-  gymId: number;
-  gymName: string;
+  clubId: number;
+  clubName: string;
   teamIndex: number;
   groupNumber: number;
   scores: CompetitorScores;
 
-  constructor(competitor: ICompetitor, step: number, division: Division, gymId: number,
-    gymName: string, teamIndex: number, groupNumber: number) {
+  constructor(competitor: ICompetitor, step: number, division: Division, clubId: number,
+    clubName: string, teamIndex: number, groupNumber: number) {
     this.competitorId = competitor.id;
     this.competitorIdentifier = competitor.identifier,
     this.competitorName = competitor.name;
     this.step = step;
     this.division = division;
-    this.gymId = gymId;
-    this.gymName = gymName;
+    this.clubId = clubId;
+    this.clubName = clubName;
     this.teamIndex = teamIndex;
     this.groupNumber = groupNumber;
     this.scores = {};
@@ -69,7 +69,7 @@ export class CompetitionCompetitorDetails {
 export class Team {
   constructor(
     public name: string,
-    public gymId: number,
+    public clubId: number,
   ) {}
 }
 
