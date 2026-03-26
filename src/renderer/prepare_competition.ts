@@ -317,8 +317,23 @@ function updateCompetitorsTable() {
     displayCompetitorInRow(row, competitor);
   });
   updateSelectAllCheckbox();
+  updateGroupButtonCounts();
 }
 
+function updateGroupButtonCounts() {
+  const counts = new Map<number, number>();
+  for (const competitor of competition.competitors) {
+    const g = competitor.groupNumber || 0;
+    counts.set(g, (counts.get(g) ?? 0) + 1);
+  }
+
+  elements.groupAssignToolbar.querySelectorAll<HTMLButtonElement>(".group-assign-btn").forEach((btn) => {
+    const g = parseInt(btn.dataset.group);
+    const label = g === 0 ? "None" : g.toString();
+    const count = counts.get(g) ?? 0;
+    btn.innerHTML = `<span class="group-btn-label">${label}</span><span class="group-btn-count">(${count})</span>`;
+  });
+}
 
 function setupAutocomplete(
   data: AutoCompleteData,
@@ -749,6 +764,7 @@ async function groupSelectChanged(event: Event) {
   } else {
     delete row.dataset.group;
   }
+  updateGroupButtonCounts();
 }
 
 function competitorCheckboxChanged(event: Event) {
