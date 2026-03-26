@@ -28,6 +28,7 @@ const GROUP_ID_ATTR_NAME = "groupId";
 const APPARATUS_ATTR_NAME = "apparatus";
 const COMPETITOR_ID_ATTR_NAME = "competitorId";
 const HAS_CHANGES_ATTR_NAME = "hasChanges";
+const SCORES_DELETED_ATTR_NAME = "scoresDeleted";
 
 class Elements extends pageCommon.BaseElements {
   competitionTitle: HTMLElement = null;
@@ -353,6 +354,9 @@ function rowCanCalculateScore(row: HTMLTableRowElement) {
 // Section 3.4  (page 13) for scoring definition
 function updateScoreRow(row: HTMLTableRowElement) {
   if(!rowCanCalculateScore(row)) {
+    row.cells[AVERAGE_E_COLUMN].textContent = "";
+    row.cells[E_SCORE_COLUMN].textContent = "";
+    row.cells[FINAL_SCORE_COLUMN].textContent = "";
     return;
   }
   const dScore = parseScore(valueOfCell(row, D_SCORE_COLUMN));
@@ -371,6 +375,7 @@ function updateScoreRow(row: HTMLTableRowElement) {
 function scoreInputFieldChanged(event: Event) {
   const inputField = <HTMLInputElement>event.currentTarget;
   const row: HTMLTableRowElement = <HTMLTableRowElement>inputField.parentElement.parentElement;
+  row.removeAttribute(SCORES_DELETED_ATTR_NAME);
   elements.groupApparatusResultsModal.setAttribute(HAS_CHANGES_ATTR_NAME, "true");
   updateScoreRow(row);
 }
@@ -388,6 +393,20 @@ function addInputFieldToCell(row: HTMLTableRowElement, cellIndex: number) {
   inputField.addEventListener("change", scoreInputFieldChanged);
 }
 
+function deleteScores(event: Event) {
+  event.preventDefault();
+  const button = <HTMLButtonElement>event.currentTarget;
+  const row = <HTMLTableRowElement>button.closest("tr");
+  for (const i of COLS_WITH_INPUT_FIELDS) {
+    fieldForCol(row, i).value = "";
+  }
+  row.cells[AVERAGE_E_COLUMN].textContent = "";
+  row.cells[E_SCORE_COLUMN].textContent = "";
+  row.cells[FINAL_SCORE_COLUMN].textContent = "";
+  row.setAttribute(SCORES_DELETED_ATTR_NAME, "true");
+  elements.groupApparatusResultsModal.setAttribute(HAS_CHANGES_ATTR_NAME, "true");
+}
+
 function createCompetitorRow(body: HTMLTableSectionElement): HTMLTableRowElement {
   const row = body.insertRow(-1);
   for(let i=0; i < 11; i++) {
@@ -400,6 +419,16 @@ function createCompetitorRow(body: HTMLTableSectionElement): HTMLTableRowElement
   for (const i of COLS_WITH_INPUT_FIELDS) {
     addInputFieldToCell(row, i);
   }
+
+  const deleteCell = row.insertCell();
+  const deleteButton = document.createElement("button");
+  deleteButton.type = "button";
+  deleteButton.classList.add("btn", "btn-outline-secondary", "btn-sm", "py-0", "opacity-50");
+  const trashIcon = document.createElement("i");
+  trashIcon.classList.add("bi", "bi-trash");
+  deleteButton.appendChild(trashIcon);
+  deleteButton.addEventListener("click", deleteScores);
+  deleteCell.appendChild(deleteButton);
 
   return row;
 }
@@ -424,6 +453,7 @@ async function displayCompetitorInRow(
   row.cells[0].textContent = `${competitor.name} (${competitor.identifier} ${club.name})`;
 
   row.setAttribute(COMPETITOR_ID_ATTR_NAME, competitorDetails.competitorId.toString());
+  row.removeAttribute(SCORES_DELETED_ATTR_NAME);
 
   if(competitorDetails.scores[apparatus]) {
     const scores = competitorDetails.scores[apparatus];
@@ -450,7 +480,7 @@ function createStepHeaderRow(body: HTMLTableSectionElement, step: number): HTMLT
   const row = body.insertRow(-1);
   row.setAttribute("data-step-header", "true");
   const cell = row.insertCell();
-  cell.colSpan = 11;
+  cell.colSpan = 12;
   cell.textContent = `Step ${step}`;
   cell.classList.add("fw-bold", "table-secondary", "py-1", "small");
   return row;
@@ -512,6 +542,13 @@ async function saveScores(event: Event) {
       continue; // Probably the header row
     }
     const competitor = competition.getCompetitorById(competitorId);
+
+    if(row.getAttribute(SCORES_DELETED_ATTR_NAME) === "true") {
+      delete competitor.scores[apparatus];
+      logger.debug("Deleted scores for competitor", { competitorId, apparatus });
+      savedCount++;
+      continue;
+    }
 
     if(!rowCanCalculateScore(row)) {
       logger.debug("Skipping competitor row with insufficient scores", { competitorId, apparatus });
