@@ -19,10 +19,11 @@ import { ICompetition } from "../common/data";
 import { logger } from "./logger";
 
 export function generateCompetitionPDFs(competition: ICompetition) {
-  logger.info("Requesting results and places PDFs", {
+  logger.info("Requesting results, places, and announcements PDFs", {
     competitionId: competition.id,
     competitionName: competition.name,
   });
   api.sendAsync("generate-pdfs", { type: "results", competition });
   api.sendAsync("generate-pdfs", { type: "places", competition });
+  api.sendAsync("generate-pdfs", { type: "announcements", competition });
 }

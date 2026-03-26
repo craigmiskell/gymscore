@@ -125,6 +125,9 @@ ipcMain.on("generate-pdfs", (event: IpcMainEvent, arg: any) => {
   case "places":
     savePDF(competition, pdfs.generatePlaces(competition), "places", logger);
     break;
+  case "announcements":
+    savePDF(competition, pdfs.generateAnnouncements(competition), "announcements", logger);
+    break;
   default:
     logger.warn("Unknown PDF type requested", { type: arg.type });
     break;

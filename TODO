@@ -1,11 +1,5 @@
-* MPlaces result page
-  * Used for announcements
-    * Competitors: down to Xth place (6th, but perhaps configurable?), for each Step+Division combo, for every competitor who placed X or higher in at least one apparatus or overall, add a row with:
-        * Division, Name, Placing (overall per-apparatus) with score in parentheses, and Club.
-        * Ordered:
-           * Competitors placing overall from X to 1 as the first X rows
-           * Other Competitors placing only in one or more apparatus', from X to 1, over Floor, Beam, Bars, and Vault in that order.  If they have several placings, assume the apparatus order and they get the first location that they have a relevant placing.
-    * Team (overall, combined unders/overs), down to Xth place.  Columns are team name, Results (total score), and Team Members.
+* Rename Gym to Club in the UI
+* Announcments: validate on a properly sized competition
 * Vanity count of competitors in prepare_competition
 * Make it possible to delete a set of scores for a competitor in an event; setting all entries to emtpy does nothing, even when saving (returns to the prior values)
 * Certificates - for competitors; part of results.

@@ -17,3 +17,4 @@ export { generateProgramme } from "./programme";
 export { generateRecorderSheets } from "./recorder-sheets";
 export { generateResults } from "./results";
 export { generatePlaces } from "./places";
+export { generateAnnouncements } from "./announcements";
