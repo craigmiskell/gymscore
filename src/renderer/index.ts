@@ -184,9 +184,11 @@ function displayLiveCompetition(row: HTMLTableRowElement, competition: ICompetit
 }
 
 function displayCompletedCompetition(row: HTMLTableRowElement, competition: ICompetition) {
+  displayCompetitionLink(row, getPageLink(competition, "prepare_competition", "Prepare", "pencil"));
+  displayCompetitionLink(row, getPageLink(competition, "live_competition", "Scores", "pencil-square"));
   displayCompetitionLink(
     row,
-    getJSLink(competition, generateCompetitionPDFs, "Generate result PDFs", "file-earmark-pdf")
+    getJSLink(competition, generateCompetitionPDFs, "Results PDFs", "file-earmark-pdf")
   );
   displayCompetitionLink(row, getJSLink(competition, promptDeleteCompetition, "Delete", "trash"));
 }
