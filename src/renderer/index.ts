@@ -42,7 +42,7 @@ navigator.storage.estimate().then(estimation =>{
 import { db } from "./data/gymscoredb";
 import { ICompetition, CompetitionState } from "../common/data";
 import * as pageCommon from "./page_common";
-import { generateCompetitionPDFs } from "./competition_pdfs";
+import { generateCompetitionPDFs, generateCertificatePDFs } from "./competition_pdfs";
 import { Collapse, Modal } from "bootstrap";
 import { exportDB, importInto } from "dexie-export-import";
 import { logger } from "./logger";
@@ -189,6 +189,10 @@ function displayCompletedCompetition(row: HTMLTableRowElement, competition: ICom
   displayCompetitionLink(
     row,
     getJSLink(competition, generateCompetitionPDFs, "Results PDFs", "file-earmark-pdf")
+  );
+  displayCompetitionLink(
+    row,
+    getJSLink(competition, generateCertificatePDFs, "Certificates", "award")
   );
   displayCompetitionLink(row, getJSLink(competition, promptDeleteCompetition, "Delete", "trash"));
 }

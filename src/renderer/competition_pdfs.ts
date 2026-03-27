@@ -27,3 +27,11 @@ export function generateCompetitionPDFs(competition: ICompetition) {
   api.sendAsync("generate-pdfs", { type: "places", competition });
   api.sendAsync("generate-pdfs", { type: "announcements", competition });
 }
+
+export function generateCertificatePDFs(competition: ICompetition) {
+  logger.info("Requesting certificates PDF", {
+    competitionId: competition.id,
+    competitionName: competition.name,
+  });
+  api.sendAsync("generate-pdfs", { type: "certificates", competition });
+}

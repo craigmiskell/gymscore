@@ -3,7 +3,6 @@
     * Should results entry be per Step (and Division?).  Alternatively: if they are for multi-step, order by step and perhaps display that fact more clearly (deliniation)
     * Should the results modal have national id and club in the left column?  It expands the display quite a bit (3 lines in worst cases), and another column makes it wider.  Does it add benefit, or is name enough?
 * Can we edit the name of a competitor in the middle of a competition, e.g. we find a typo?
-* Certificates - for competitors; part of results.
 * Unit tests
 * General cleanup refactor, with unit tests to validate.
 * Collate all production licenses and put them in an 'about' page/window.  Show "NOTICE" files from any Apache 2.0; check other license types for any other requirements

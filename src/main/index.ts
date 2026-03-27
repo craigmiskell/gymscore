@@ -128,6 +128,9 @@ ipcMain.on("generate-pdfs", (event: IpcMainEvent, arg: any) => {
   case "announcements":
     savePDF(competition, pdfs.generateAnnouncements(competition), "announcements", logger);
     break;
+  case "certificates":
+    savePDF(competition, pdfs.generateCertificates(competition), "certificates", logger);
+    break;
   default:
     logger.warn("Unknown PDF type requested", { type: arg.type });
     break;
