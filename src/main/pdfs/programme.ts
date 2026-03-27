@@ -14,7 +14,7 @@
 // see <https://www.gnu.org/licenses/>.
 
 import { Competition, Team} from "../../common/data";
-import { Division } from "../../common/data";
+import { Division, hasDivisions } from "../../common/data";
 import { jsPDF } from "jspdf";
 import { CompetitionCompetitorDetails } from "../../common/data/competition";
 import { getCompetitorsByGroup, getCompetitorsByStep } from "../../common/competitors_by";
@@ -48,10 +48,12 @@ const columnOffsets = {
   club: 53,
   team: 79,
 };
-function addGroupTitles(doc: jsPDF, xOffset: number, y: number) {
+function addGroupTitles(doc: jsPDF, xOffset: number, y: number, showDiv: boolean) {
   doc.text("Name", xOffset,                      y, {align: "left"});
   doc.text("Num",  xOffset + columnOffsets.num,  y, {align: "left"});
-  doc.text("Div",  xOffset + columnOffsets.div,  y, {align: "left"});
+  if (showDiv) {
+    doc.text("Div",  xOffset + columnOffsets.div,  y, {align: "left"});
+  }
   doc.text("Club", xOffset + columnOffsets.club, y, {align: "left"});
   doc.text("Team", xOffset + columnOffsets.team, y, {align: "left"});
 
@@ -72,8 +74,9 @@ function addSheetForStep(doc: jsPDF, teams: Team[], competitors: CompetitionComp
 
   doc.setFontSize(10);
   const lineHeight = doc.getTextDimensions("x").h * doc.getLineHeightFactor();
-  addGroupTitles(doc, 10, y);
-  addGroupTitles(doc, 155, y);
+  const showDiv = hasDivisions(parseInt(step));
+  addGroupTitles(doc, 10, y, showDiv);
+  addGroupTitles(doc, 155, y, showDiv);
 
   y += lineHeight * 1.5;
 
@@ -85,7 +88,9 @@ function addSheetForStep(doc: jsPDF, teams: Team[], competitors: CompetitionComp
   for (let i = 0; i < sortedGroups.length; i++) {
     const groupIndex = parseInt(sortedGroups[i]);
     const column = i % 2; // 0 = left column, 1 = right column
-    const h = addTableForGroup(doc, disciplines, teams, groupCompetitors[sortedGroups[i]], groupIndex, column, y);
+    const h = addTableForGroup(
+      doc, disciplines, teams, groupCompetitors[sortedGroups[i]], groupIndex, column, y, showDiv
+    );
     groupHeights[column] = h;
 
     if (column == 1) {
@@ -103,7 +108,8 @@ function addTableForGroup(
   competitors: CompetitionCompetitorDetails[],
   groupIndex: number,
   column: number,
-  startY: number): number {
+  startY: number,
+  showDiv: boolean): number {
 
   doc.setFontSize(8); // Not as small as you might expect
   const origFont = doc.getFont();
@@ -121,7 +127,9 @@ function addTableForGroup(
   for (const competitor of competitors) {
     doc.text(competitor.competitorName, columnOffsets.name + xOffset, y);
     doc.text(competitor.competitorIdentifier, columnOffsets.num + xOffset, y);
-    doc.text(Division[competitor.division], columnOffsets.div + xOffset, y);
+    if (showDiv) {
+      doc.text(Division[competitor.division], columnOffsets.div + xOffset, y);
+    }
     doc.text(competitor.clubName, columnOffsets.club + xOffset, y);
     doc.text(teams[competitor.teamIndex]?.name ?? "", columnOffsets.team + xOffset, y);
     y += lineHeight;

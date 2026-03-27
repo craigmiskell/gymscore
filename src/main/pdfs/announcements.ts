@@ -15,7 +15,7 @@
 
 import { jsPDF } from "jspdf";
 import { Competition, CompetitionCompetitorDetails } from "../../common/data/competition";
-import { Division } from "../../common/data/division";
+import { Division, hasDivisions } from "../../common/data/division";
 import { getCompetitorsByStep } from "../../common/competitors_by";
 import {
   PAGE_WIDTH, PAGE_HEIGHT, MARGIN, BOTTOM_MARGIN, ROW_HEIGHT, HEADING_FONT_SIZE, BODY_FONT_SIZE,
@@ -111,16 +111,22 @@ function addStepAnnouncements(
 
   const state: PageState = { doc, competition, step, y };
 
-  const unders = competitors.filter((c) => c.division === Division.Under);
-  const overs = competitors.filter((c) => c.division === Division.Over);
-
-  if (unders.length > 0) {
-    addDivisionAnnouncements(state, "Unders", apparatuses, unders);
-    state.y += 8;
-  }
-  if (overs.length > 0) {
-    addDivisionAnnouncements(state, "Overs", apparatuses, overs);
-    state.y += 8;
+  if (hasDivisions(parseInt(step))) {
+    const unders = competitors.filter((c) => c.division === Division.Under);
+    const overs = competitors.filter((c) => c.division === Division.Over);
+    if (unders.length > 0) {
+      addDivisionAnnouncements(state, "Unders", apparatuses, unders);
+      state.y += 8;
+    }
+    if (overs.length > 0) {
+      addDivisionAnnouncements(state, "Overs", apparatuses, overs);
+      state.y += 8;
+    }
+  } else {
+    if (competitors.length > 0) {
+      addDivisionAnnouncements(state, "Competitors", apparatuses, competitors);
+      state.y += 8;
+    }
   }
 
   addTeamAnnouncements(state, competition, apparatuses, competitors);

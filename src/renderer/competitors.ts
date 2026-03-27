@@ -14,7 +14,7 @@
 // see <https://www.gnu.org/licenses/>.
 
 import { db } from "./data/gymscoredb";
-import { ICompetitor, Division } from "../common/data";
+import { ICompetitor, Division, hasDivisions } from "../common/data";
 import { Competitor } from "../common/data";
 import * as pageCommon from "./page_common";
 import { Modal } from "bootstrap";
@@ -56,6 +56,13 @@ interface CompetitorDisplay {
   clubName: string;
 }
 
+function updateDivisionVisibility() {
+  const step = parseInt(elements.editStep.value);
+  const show = hasDivisions(step);
+  document.getElementById("editDivisionLabel").classList.toggle("d-none", !show);
+  document.getElementById("editDivisionCol").classList.toggle("d-none", !show);
+}
+
 async function onLoaded() {
   pageCommon.findElements(elements);
 
@@ -65,6 +72,7 @@ async function onLoaded() {
     opt.textContent = i.toString();
     elements.editStep.appendChild(opt);
   }
+  elements.editStep.addEventListener("change", updateDivisionVisibility);
 
   elements.deleteConfirmationModal.addEventListener("hide.bs.modal", () => {
     elements.deleteConfirmationModal.removeAttribute(COMPETITOR_ID_ATTR);
@@ -127,14 +135,18 @@ async function updateCompetitorsTable() {
       case "name": primary = a.competitor.name.localeCompare(b.competitor.name); break;
       case "step":
         primary = (a.competitor.step - b.competitor.step) ||
-          Division[a.competitor.division].localeCompare(Division[b.competitor.division]);
+          (hasDivisions(a.competitor.step)
+            ? Division[a.competitor.division].localeCompare(Division[b.competitor.division])
+            : 0);
         break;
       case "club": primary = (a.clubName ?? "").localeCompare(b.clubName ?? ""); break;
       }
       return primary !== 0 ? (tableSorter.direction === "asc" ? primary : -primary) : defaultOrder;
     })
     .filter((d) => {
-      const stepStr = `${d.competitor.step} ${Division[d.competitor.division]}`.toLowerCase();
+      const stepStr = hasDivisions(d.competitor.step)
+        ? `${d.competitor.step} ${Division[d.competitor.division]}`.toLowerCase()
+        : `${d.competitor.step}`;
       return (
         d.competitor.identifier.toLowerCase().includes(nationalIdFilter) &&
         d.competitor.name.toLowerCase().includes(nameFilter) &&
@@ -197,7 +209,7 @@ function displayCompetitorInRow(row: HTMLTableRowElement, display: CompetitorDis
   row.setAttribute(COMPETITOR_ID_ATTR, c.id.toString());
   row.cells[0].textContent = c.name;
   row.cells[1].textContent = c.identifier;
-  row.cells[2].textContent = `${c.step} ${Division[c.division]}`;
+  row.cells[2].textContent = hasDivisions(c.step) ? `${c.step} ${Division[c.division]}` : `${c.step}`;
   row.cells[3].textContent = display.clubName;
 }
 
@@ -215,6 +227,7 @@ async function openEditModal(competitorId: number) {
   elements.editName.value = competitor.name;
   elements.editStep.selectedIndex = competitor.step - 1;
   elements.editDivision.selectedIndex = competitor.division;
+  updateDivisionVisibility();
   elements.editClub.value = club ? club.name : "";
   elements.editCompetitorForm.classList.remove("was-validated");
 

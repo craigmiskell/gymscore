@@ -17,3 +17,7 @@ export enum Division {
   Under = 0,
   Over,
 }
+
+export function hasDivisions(step: number): boolean {
+  return step < 9;
+}

@@ -15,7 +15,7 @@
 
 import { jsPDF } from "jspdf";
 import { Competition, CompetitionCompetitorDetails } from "../../common/data/competition";
-import { Division } from "../../common/data/division";
+import { Division, hasDivisions } from "../../common/data/division";
 import { getCompetitorsByStep } from "../../common/competitors_by";
 import {
   PAGE_WIDTH, PAGE_HEIGHT, MARGIN, CONTENT_WIDTH, BOTTOM_MARGIN, ROW_HEIGHT, HEADING_FONT_SIZE, BODY_FONT_SIZE,
@@ -104,15 +104,20 @@ function addStepResults(
     placings.set(apparatus, computePlacings(competitors, apparatus));
   }
 
-  const overs = competitors.filter((c) => c.division === Division.Over);
-  const unders = competitors.filter((c) => c.division === Division.Under);
-
-  if (overs.length > 0) {
-    addCompetitorTable(state, "Overs", apparatuses, overs, placings, competition);
-    state.y += 8;
-  }
-  if (unders.length > 0) {
-    addCompetitorTable(state, "Unders", apparatuses, unders, placings, competition);
+  if (hasDivisions(parseInt(step))) {
+    const overs = competitors.filter((c) => c.division === Division.Over);
+    const unders = competitors.filter((c) => c.division === Division.Under);
+    if (overs.length > 0) {
+      addCompetitorTable(state, "Overs", apparatuses, overs, placings, competition);
+      state.y += 8;
+    }
+    if (unders.length > 0) {
+      addCompetitorTable(state, "Unders", apparatuses, unders, placings, competition);
+    }
+  } else {
+    if (competitors.length > 0) {
+      addCompetitorTable(state, "Competitors", apparatuses, competitors, placings, competition);
+    }
   }
 }
 

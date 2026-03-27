@@ -20,7 +20,7 @@ import { Competition, CompetitionState, Team} from "./competition";
 import type { ICompetition } from "./competition";
 export { Competition, ICompetition, CompetitionState, Team };
 
-export { Division } from "./division";
+export { Division, hasDivisions } from "./division";
 
 import { Club } from "./club";
 import type {IClub}  from "./club";

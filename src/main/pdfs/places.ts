@@ -15,7 +15,7 @@
 
 import { jsPDF } from "jspdf";
 import { Competition, CompetitionCompetitorDetails } from "../../common/data/competition";
-import { Division } from "../../common/data/division";
+import { Division, hasDivisions } from "../../common/data/division";
 import { getCompetitorsByStep } from "../../common/competitors_by";
 import {
   PAGE_WIDTH, PAGE_HEIGHT, MARGIN, BOTTOM_MARGIN, ROW_HEIGHT, HEADING_FONT_SIZE, BODY_FONT_SIZE,
@@ -86,16 +86,22 @@ function addStepPlaces(
 
   addTeamPlaces(state, competition, apparatuses, competitors);
 
-  const overs = competitors.filter((c) => c.division === Division.Over);
-  const unders = competitors.filter((c) => c.division === Division.Under);
-
-  if (overs.length > 0) {
-    state.y += 8;
-    addDivisionPlaces(state, "Overs", apparatuses, overs);
-  }
-  if (unders.length > 0) {
-    state.y += 8;
-    addDivisionPlaces(state, "Unders", apparatuses, unders);
+  if (hasDivisions(parseInt(step))) {
+    const overs = competitors.filter((c) => c.division === Division.Over);
+    const unders = competitors.filter((c) => c.division === Division.Under);
+    if (overs.length > 0) {
+      state.y += 8;
+      addDivisionPlaces(state, "Overs", apparatuses, overs);
+    }
+    if (unders.length > 0) {
+      state.y += 8;
+      addDivisionPlaces(state, "Unders", apparatuses, unders);
+    }
+  } else {
+    if (competitors.length > 0) {
+      state.y += 8;
+      addDivisionPlaces(state, "Competitors", apparatuses, competitors);
+    }
   }
 }
 

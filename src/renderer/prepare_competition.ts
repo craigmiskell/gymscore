@@ -15,7 +15,7 @@
 
 import { db } from "./data/gymscoredb";
 import { ICompetition, Competition, CompetitionState,
-  Division, ICompetitor, Competitor, Club, IClub} from "../common/data";
+  Division, hasDivisions, ICompetitor, Competitor, Club, IClub} from "../common/data";
 import * as pageCommon from "./page_common";
 import { Autocomplete } from "./autocomplete";
 import { Collapse, Modal } from "bootstrap";
@@ -156,11 +156,19 @@ async function onLoaded() {
   }
 }
 
+function updateDivisionVisibilityModal() {
+  const step = parseInt(elements.competitorStepSelectModal.value);
+  const show = hasDivisions(step);
+  document.getElementById("competitorDivisionLabelModal").classList.toggle("d-none", !show);
+  document.getElementById("competitorDivisionColModal").classList.toggle("d-none", !show);
+}
+
 function populateStepSelectModal() {
   const select = elements.competitorStepSelectModal;
   for (let i=1; i <= 10; i++) {
     select.add(new Option(i.toString(), i.toString()));
   }
+  select.addEventListener("change", updateDivisionVisibilityModal);
 }
 
 async function removeCompetitor(event: Event) {
@@ -185,7 +193,9 @@ function displayCompetitorInRow(row: HTMLTableRowElement, competitor: Competitio
 
   row.cells[1].textContent = competitor.competitorName;
   row.cells[2].textContent = competitor.competitorIdentifier;
-  row.cells[3].textContent = competitor.step + " " + Division[competitor.division];
+  row.cells[3].textContent = hasDivisions(competitor.step)
+    ? competitor.step + " " + Division[competitor.division]
+    : competitor.step.toString();
   row.cells[4].textContent = competitor.clubName;
   row.cells[5].textContent = competition.teams[competitor.teamIndex]?.name ?? "";
 
@@ -282,7 +292,8 @@ function updateCompetitorsTable() {
       switch (tableSorter.column) {
       case "name": primary = a.competitorName.localeCompare(b.competitorName); break;
       case "nationalId": primary = (a.competitorIdentifier ?? "").localeCompare(b.competitorIdentifier ?? ""); break;
-      case "step": primary = (a.step - b.step) || Division[a.division].localeCompare(Division[b.division]); break;
+      case "step": primary = (a.step - b.step) ||
+        (hasDivisions(a.step) ? Division[a.division].localeCompare(Division[b.division]) : 0); break;
       case "club": primary = clubA.localeCompare(clubB); break;
       case "team": primary = teamA.localeCompare(teamB); break;
       case "group": primary = (a.groupNumber || 0) - (b.groupNumber || 0); break;
@@ -290,7 +301,9 @@ function updateCompetitorsTable() {
       return (primary !== 0 ? (tableSorter.direction === "asc" ? primary : -primary) : defaultOrder);
     })
     .filter((competitor) => {
-      const stepStr = `${competitor.step} ${Division[competitor.division]}`.toLowerCase();
+      const stepStr = hasDivisions(competitor.step)
+        ? `${competitor.step} ${Division[competitor.division]}`.toLowerCase()
+        : `${competitor.step}`;
       const teamName = (competition.teams[competitor.teamIndex]?.name ?? "").toLowerCase();
       return (
         competitor.competitorName.toLowerCase().includes(nameFilter) &&
@@ -509,6 +522,7 @@ async function openAddCompetitorModal() {
     elements.competitorStepSelectModal.value = lastUsedStep.toString();
     elements.competitorDivisionSelectModal.value = lastUsedDivision.toString();
   }
+  updateDivisionVisibilityModal();
 
   elements.competitorDetailsForm.classList.remove("was-validated");
   elements.duplicateCompetitorError.classList.add("d-none");
@@ -551,6 +565,7 @@ async function openEditCompetitorModal(competitorId: number) {
   elements.competitorIdModal.disabled = true;
   elements.competitorStepSelectModal.selectedIndex = competitorDetails.step - 1;
   elements.competitorDivisionSelectModal.value = competitorDetails.division.toString();
+  updateDivisionVisibilityModal();
 
   // Clear team value before setData so the autocomplete dropdown doesn't appear
   elements.competitorTeamModal.value = "";
