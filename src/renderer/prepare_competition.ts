@@ -964,7 +964,7 @@ async function fetchTeamsForClubForAutoComplete(clubId: number) {
     };
   }).filter(team => {
     return team.clubId == clubId;
-  });
+  }).sort((a, b) => a.label.localeCompare(b.label));
 }
 
 function updateCollapsedText(competition: ICompetition) {
