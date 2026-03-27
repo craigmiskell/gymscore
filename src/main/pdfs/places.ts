@@ -197,6 +197,42 @@ function computeTop3WithPlaces(
   return entries;
 }
 
+interface OverallPlaceEntry {
+  competitor: CompetitionCompetitorDetails;
+  total: number;
+  place: number;
+  tied: boolean;
+}
+
+function computeTop3OverallWithPlaces(
+  competitors: CompetitionCompetitorDetails[],
+  apparatuses: string[]
+): OverallPlaceEntry[] {
+  const withTotals = competitors
+    .map((c) => ({
+      competitor: c,
+      total: apparatuses.reduce((sum, ap) => sum + (c.scores[ap]?.finalScore ?? 0), 0),
+      hasScore: apparatuses.some((ap) => c.scores[ap] !== undefined),
+    }))
+    .filter((e) => e.hasScore)
+    .sort((a, b) => b.total - a.total)
+    .slice(0, 3);
+
+  const entries: OverallPlaceEntry[] = [];
+  let place = 1;
+  for (let i = 0; i < withTotals.length; i++) {
+    const isTie = i > 0 && withTotals[i].total === withTotals[i - 1].total;
+    if (!isTie) { place = i + 1; }
+    entries.push({ competitor: withTotals[i].competitor, total: withTotals[i].total, place, tied: false });
+  }
+  for (const entry of entries) {
+    if (entries.filter((e) => e.place === entry.place).length > 1) {
+      entry.tied = true;
+    }
+  }
+  return entries;
+}
+
 function addDivisionPlaces(
   state: PageState,
   divisionTitle: string,
@@ -235,6 +271,22 @@ function addDivisionPlaces(
       doc.text(ordinal(place) + (tied ? "=" : ""), DIV_PLACE_COL, state.y);
       doc.text(competitor.competitorName, DIV_NAME_COL, state.y);
       doc.text(formatScore(competitor.scores[apparatus].finalScore), DIV_SCORE_COL, state.y);
+      doc.text(competitor.clubName, DIV_CLUB_COL, state.y);
+      state.y += ROW_HEIGHT;
+    }
+  }
+
+  const overallEntries = computeTop3OverallWithPlaces(competitors, apparatuses);
+  if (overallEntries.length > 0) {
+    checkPageBreak(state, ROW_HEIGHT * overallEntries.length);
+
+    for (let i = 0; i < overallEntries.length; i++) {
+      const { competitor, total, place, tied } = overallEntries[i];
+      doc.setFontSize(BODY_FONT_SIZE);
+      doc.text(i === 0 ? "Overall" : "", DIV_APPARATUS_COL, state.y);
+      doc.text(ordinal(place) + (tied ? "=" : ""), DIV_PLACE_COL, state.y);
+      doc.text(competitor.competitorName, DIV_NAME_COL, state.y);
+      doc.text(formatScore(total), DIV_SCORE_COL, state.y);
       doc.text(competitor.clubName, DIV_CLUB_COL, state.y);
       state.y += ROW_HEIGHT;
     }
