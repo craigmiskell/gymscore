@@ -1,3 +1,4 @@
+* Avoid pagebreaks between the header of one division and its results.  If the whole division cannot fit on the page, start a new one.
 * Competitor can be not in a team, and thus not contribute to the team results, but otherwise show up in all the standings
 * Deleting a competition is not reflected int he main page immediately, and should be
 * Main page:, no need to move competitions through states other than to archive perhaps.  ALways have all options available because who knows what fuckery will be required
