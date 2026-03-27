@@ -446,6 +446,17 @@ async function setupClubAutoComplete() {
       showOnFocus: true,
     }
   );
+
+  clubField.addEventListener("blur", async () => {
+    if (clubField.hasAttribute(CLUB_ID_ATTR_NAME)) {
+      return; // Already set by autocomplete selection
+    }
+    const existingClub = await db.clubs.where("name").equalsIgnoreCase(clubField.value).first();
+    if (existingClub) {
+      clubField.setAttribute(CLUB_ID_ATTR_NAME, existingClub.id.toString());
+      teamAutoComplete.setData(await fetchTeamsForClubForAutoComplete(existingClub.id));
+    }
+  });
 }
 
 async function setupTeamAutoComplete() {
