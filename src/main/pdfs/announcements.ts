@@ -310,7 +310,9 @@ function addTeamAnnouncements(
 ) {
   const doc = state.doc;
 
-  const teamIndices = Array.from(new Set(competitors.map((c) => c.teamIndex)));
+  const teamIndices = Array.from(new Set(
+    competitors.map((c) => c.teamIndex).filter((i): i is number => i !== null)
+  ));
   const teamTotals = teamIndices
     .map((teamIndex) => {
       const total = apparatuses.reduce((sum, ap) => {

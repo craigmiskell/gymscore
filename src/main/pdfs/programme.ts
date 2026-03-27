@@ -123,7 +123,7 @@ function addTableForGroup(
     doc.text(competitor.competitorIdentifier, columnOffsets.num + xOffset, y);
     doc.text(Division[competitor.division], columnOffsets.div + xOffset, y);
     doc.text(competitor.clubName, columnOffsets.club + xOffset, y);
-    doc.text(teams[competitor.teamIndex].name, columnOffsets.team + xOffset, y);
+    doc.text(teams[competitor.teamIndex]?.name ?? "", columnOffsets.team + xOffset, y);
     y += lineHeight;
   }
   y += lineHeight * 2; // Spacing between groups

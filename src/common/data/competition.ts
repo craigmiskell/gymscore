@@ -47,12 +47,12 @@ export class CompetitionCompetitorDetails {
   division: Division;
   clubId: number;
   clubName: string;
-  teamIndex: number;
+  teamIndex: number | null;
   groupNumber: number;
   scores: CompetitorScores;
 
   constructor(competitor: ICompetitor, step: number, division: Division, clubId: number,
-    clubName: string, teamIndex: number, groupNumber: number) {
+    clubName: string, teamIndex: number | null, groupNumber: number) {
     this.competitorId = competitor.id;
     this.competitorIdentifier = competitor.identifier,
     this.competitorName = competitor.name;

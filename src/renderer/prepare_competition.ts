@@ -630,7 +630,7 @@ function pruneEmptyTeams(clubId: number) {
   for (const removeIndex of indicesToRemove) {
     competition.teams.splice(removeIndex, 1);
     for (const c of competition.competitors) {
-      if (c.teamIndex > removeIndex) {
+      if (c.teamIndex !== null && c.teamIndex > removeIndex) {
         c.teamIndex--;
       }
     }
@@ -656,8 +656,12 @@ async function clubIdWhenAddingCompetitor() : Promise<number> {
   return clubId;
 }
 
-async function teamIndexWhenAddingCompetitor(club: IClub) : Promise<number> {
+async function teamIndexWhenAddingCompetitor(club: IClub) : Promise<number | null> {
   const teamField = elements.competitorTeamModal;
+
+  if (teamField.value.trim() === "") {
+    return null;
+  }
 
   if(teamField.hasAttribute(TEAM_INDEX_ATTR_NAME)) {
     return parseInt(teamField.getAttribute(TEAM_INDEX_ATTR_NAME));

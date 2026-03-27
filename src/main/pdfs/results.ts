@@ -90,7 +90,9 @@ function addStepResults(
   const state: PageState = { doc, competition, step, y: addStepTitlePage(doc, competition, step) };
 
   // Team table
-  const teamIndices = Array.from(new Set(competitors.map((c) => c.teamIndex))).sort((a, b) => a - b);
+  const teamIndices = Array.from(new Set(
+    competitors.map((c) => c.teamIndex).filter((i): i is number => i !== null)
+  )).sort((a, b) => a - b);
   if (teamIndices.length > 0) {
     addTeamTable(state, competition, apparatuses, competitors, teamIndices);
     state.y += 8;

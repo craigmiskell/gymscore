@@ -1,4 +1,3 @@
-* Competitor can be not in a team, and thus not contribute to the team results, but otherwise show up in all the standings
 * Main page:, no need to move competitions through states other than to archive perhaps.  ALways have all options available because who knows what fuckery will be required
 * Should results entry be per Step (and Division?).  Alternatively: if they are for multi-step, order by step and perhaps display that fact more clearly (deliniation)
 * Should the results modal have national id and club in the left column?  It expands the display quite a bit (3 lines in worst cases), and another column makes it wider.  Does it add benefit, or is name enough?
