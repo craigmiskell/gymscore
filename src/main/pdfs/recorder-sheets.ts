@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU General Public License along with this program. If not,
 // see <https://www.gnu.org/licenses/>.
 
-import { jsPDF, CellConfig } from "jspdf";
+import { jsPDF } from "jspdf";
 import { Competition, CompetitionCompetitorDetails } from "../../common/data/competition";
 import { getCompetitorsByGroup, getCompetitorsByStep } from "../../common/competitors_by";
 
@@ -24,6 +24,13 @@ interface Titles {
   step: string,
   apparatus: string,
   group: string,
+}
+
+interface ColDef {
+  key: string;
+  header: string;
+  subtext?: string;
+  width: number;
 }
 
 export function generateRecorderSheets(competition: Competition) {
@@ -112,45 +119,97 @@ function addSheetsForStepGroup(doc: jsPDF, titles: Titles, competitors: Competit
   doc.text("Judge 2 _________________________", PAGE_WIDTH_LANDSCAPE - 10, lineY(4), {align: "right"});
   doc.text("Judge 3 _________________________", PAGE_WIDTH_LANDSCAPE - 10, lineY(5), {align: "right"});
 
-  const space = " ";
-  const data = [];
-  for (const competitor of competitors) {
-    data.push({
-      number: competitor.competitorIdentifier,
-      name: competitor.competitorName,
-      club: competitor.clubName,
-      dscore: space, e1: space, e2: space, e3:space, e4:space,
-      average: space, escore: space, neutralDeductions: space, finalScore: space
-    });
+  const margin = 10;
+  const tableTop = lineY(6);
+  const mainFontSize = 9;
+  const subtextFontSize = 6;
+  const cellPad = 1.5;
+
+  // Columns: total width 257mm, fits within 277mm usable (297 - 2*10 margins)
+  const columns: ColDef[] = [
+    { key: "competitor", header: "Name", width: 60 },
+    { key: "e1", header: "Dedn 1", width: 16 },
+    { key: "e2", header: "Dedn 2", width: 16 },
+    { key: "e3", header: "Dedn 3", width: 16 },
+    { key: "e4", header: "Dedn 4", width: 16 },
+    { key: "average", header: "Average Dedn", width: 24 },
+    { key: "escore", header: "E Score", subtext: "=10-dedn", width: 24 },
+    { key: "dscore", header: "D Score", width: 22 },
+    { key: "total", header: "Total", subtext: "=E+D", width: 18 },
+    { key: "neutralDeductions", header: "Neutral Dedn", width: 24 },
+    { key: "finalScore", header: "Score", subtext: "=Tot-neut", width: 21 },
+  ];
+
+  // Measure text heights at each font size
+  doc.setFontSize(mainFontSize);
+  doc.setFont("helvetica", "bold");
+  const mainH = doc.getTextDimensions("Ag").h;
+  const mainLineSpacing = mainH * doc.getLineHeightFactor();
+
+  doc.setFontSize(subtextFontSize);
+  const subH = doc.getTextDimensions("Ag").h;
+
+  // Header: top pad + 2 main lines (some headers wrap) + subtext line + bottom pad
+  const headerHeight = cellPad + 2 * mainLineSpacing + subH + cellPad;
+  // Data row: top pad + 2 lines (name + id/club detail) + bottom pad
+  const dataRowHeight = cellPad + 2 * mainLineSpacing + cellPad;
+
+  const totalWidth = columns.reduce((sum, c) => sum + c.width, 0);
+
+  // Draw header row background
+  doc.setFillColor(220, 220, 220);
+  doc.rect(margin, tableTop, totalWidth, headerHeight, "FD");
+
+  // Draw header cells
+  let x = margin;
+  for (const col of columns) {
+    const cellCenterX = x + col.width / 2;
+
+    // Main header text (bold, wrapped to column width)
+    doc.setFontSize(mainFontSize);
+    doc.setFont("helvetica", "bold");
+    const headerLines = doc.splitTextToSize(col.header, col.width - 2 * cellPad);
+    const firstLineY = tableTop + cellPad + mainH;
+    doc.text(headerLines, cellCenterX, firstLineY, { align: "center" });
+
+    // Subtext in smaller font, pinned to bottom of header cell
+    if (col.subtext) {
+      doc.setFontSize(subtextFontSize);
+      doc.setFont("helvetica", "normal");
+      const subtextY = tableTop + headerHeight - cellPad;
+      doc.text(col.subtext, cellCenterX, subtextY, { align: "center" });
+    }
+
+    doc.rect(x, tableTop, col.width, headerHeight);
+    x += col.width;
   }
 
-  const headers = new Array<CellConfig>();
-  defineHeader(headers, "number", "#", 30);
-  defineHeader(headers, "name", "Name", 50);
-  defineHeader(headers, "club", "Club", 50);
-  defineHeader(headers, "dscore", "D Score", 30);
-  defineHeader(headers, "e1", "E1", 20);
-  defineHeader(headers, "e2", "E2", 20);
-  defineHeader(headers, "e3", "E3", 20);
-  defineHeader(headers, "e4", "E4", 20);
-  defineHeader(headers, "average", "Average\nDedn", 32);
-  defineHeader(headers, "escore", "E Score", 30);
-  defineHeader(headers, "neutralDeductions", "Neutral\nDeductions", 40);
-  defineHeader(headers, "finalScore", "Final\nScore", 25);
+  // Draw data rows
+  let rowTop = tableTop + headerHeight;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(mainFontSize);
 
-  doc.table(
-    10,
-    lineY(6),
-    data,
-    headers,
-    {}
-  );
+  for (const competitor of competitors) {
+    x = margin;
+    const nameY = rowTop + cellPad + mainH;
+    const detailY = nameY + mainLineSpacing;
+
+    for (const col of columns) {
+      doc.rect(x, rowTop, col.width, dataRowHeight);
+
+      if (col.key === "competitor") {
+        const nameLines = doc.splitTextToSize(competitor.competitorName, col.width - 2 * cellPad);
+        doc.text(nameLines[0], x + cellPad, nameY);
+        doc.text(`(${competitor.competitorIdentifier} ${competitor.clubName})`, x + cellPad, detailY);
+      }
+
+      x += col.width;
+    }
+
+    rowTop += dataRowHeight;
+  }
 }
 
-function defineHeader(headers: Array<CellConfig>, name: string, prompt: string, width: number) {
-  headers.push({ name: name, prompt: prompt, align: "left", padding: 0, width: width });
-
-}
 function competitionSlug(competition: Competition) {
   return competition.name +" - " + competition.location + " - " + competition.date;
 }
