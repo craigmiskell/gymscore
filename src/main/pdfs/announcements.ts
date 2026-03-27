@@ -340,7 +340,14 @@ function addTeamAnnouncements(
     team.tied = placedTeams.filter((t) => t.place === team.place).length > 1;
   }
 
-  checkPageBreak(state, ROW_HEIGHT * 3);
+  doc.addPage("a4", "landscape");
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  doc.text(
+    `${state.competition.name} \u2014 WAG Step ${state.step} Announcements (continued)`,
+    MARGIN, MARGIN + 4
+  );
+  state.y = MARGIN + 10;
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(HEADING_FONT_SIZE);
