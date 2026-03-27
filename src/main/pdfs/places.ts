@@ -30,6 +30,7 @@ const TEAM_NAME_WIDTH = 70;
 const TEAM_SCORE_COL = TEAM_NAME_COL + TEAM_NAME_WIDTH;
 const TEAM_SCORE_WIDTH = 30;
 const TEAM_MEMBERS_COL = TEAM_SCORE_COL + TEAM_SCORE_WIDTH;
+const TEAM_MEMBERS_WIDTH = PAGE_WIDTH - MARGIN - TEAM_MEMBERS_COL;
 
 // Division (Overs/Unders) section column x-positions
 const DIV_APPARATUS_COL = MARGIN;
@@ -152,13 +153,16 @@ function addTeamPlaces(
       .map((c) => c.competitorName)
       .join(", ");
 
-    checkPageBreak(state, ROW_HEIGHT);
     doc.setFontSize(BODY_FONT_SIZE);
+    const memberLines = doc.splitTextToSize(members, TEAM_MEMBERS_WIDTH);
+    const lineSpacing = doc.getFontSize() * doc.getLineHeightFactor() / doc.internal.scaleFactor;
+    const rowHeight = ROW_HEIGHT + (memberLines.length - 1) * lineSpacing;
+    checkPageBreak(state, rowHeight);
     doc.text(ordinal(place) + (isTie ? "=" : ""), TEAM_PLACE_COL, state.y);
     doc.text(team.name, TEAM_NAME_COL, state.y);
     doc.text(formatScore(total), TEAM_SCORE_COL, state.y);
-    doc.text(members, TEAM_MEMBERS_COL, state.y);
-    state.y += ROW_HEIGHT;
+    doc.text(memberLines, TEAM_MEMBERS_COL, state.y);
+    state.y += rowHeight;
   }
 }
 

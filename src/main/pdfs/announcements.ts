@@ -22,7 +22,7 @@ import {
   enabledApparatuses, formatScore, capitalise, ordinal, teamApparatusScore, addStepTitlePage,
 } from "./common";
 
-const TOP_X = 6;
+const TOP_X = 3;
 
 // Fixed apparatus display order for announcements (least dramatic to most dramatic).
 // "bar" is displayed as "U Bars" per gymnastics convention.
