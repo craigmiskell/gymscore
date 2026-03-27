@@ -79,6 +79,7 @@ export interface ICompetition {
   date: string,
   location: string,
   state: CompetitionState,
+  archived?: boolean,
   vault: boolean,
   bar: boolean,
   beam: boolean,
@@ -102,6 +103,7 @@ export class Competition implements ICompetition {
   date: string;
   location: string;
   state: CompetitionState;
+  archived = false;
   vault = false;
   bar = false;
   beam = false;

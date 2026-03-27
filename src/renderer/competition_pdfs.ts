@@ -18,6 +18,26 @@ declare const api: typeof import("../common/api").default;
 import { ICompetition } from "../common/data";
 import { logger } from "./logger";
 
+export function generatePrepSheets(competition: ICompetition) {
+  logger.info("Requesting recorder sheets and programme PDFs", {
+    competitionId: competition.id,
+    competitionName: competition.name,
+  });
+  api.sendAsync("generate-pdfs", { type: "recorder-sheets", competition });
+  api.sendAsync("generate-pdfs", { type: "programme", competition });
+}
+
+export function generateAllResultPDFs(competition: ICompetition) {
+  logger.info("Requesting all result PDFs (results, places, announcements, certificates)", {
+    competitionId: competition.id,
+    competitionName: competition.name,
+  });
+  api.sendAsync("generate-pdfs", { type: "results", competition });
+  api.sendAsync("generate-pdfs", { type: "places", competition });
+  api.sendAsync("generate-pdfs", { type: "announcements", competition });
+  api.sendAsync("generate-pdfs", { type: "certificates", competition });
+}
+
 export function generateCompetitionPDFs(competition: ICompetition) {
   logger.info("Requesting results, places, and announcements PDFs", {
     competitionId: competition.id,

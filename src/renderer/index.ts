@@ -13,10 +13,6 @@
 // You should have received a copy of the GNU General Public License along with this program. If not,
 // see <https://www.gnu.org/licenses/>.
 
-// import "bootstrap";
-//Alternatively, more selective:
-//import { Tooltip, Toast, Popover } from 'bootstrap';
-
 logger.info("Renderer index loaded");
 
 const COMPETITION_ID_ATTR = "competitionId";
@@ -40,17 +36,21 @@ navigator.storage.estimate().then(estimation =>{
 });
 
 import { db } from "./data/gymscoredb";
-import { ICompetition, CompetitionState } from "../common/data";
+import { ICompetition } from "../common/data";
 import * as pageCommon from "./page_common";
-import { generateCompetitionPDFs, generateCertificatePDFs } from "./competition_pdfs";
+import { generatePrepSheets, generateAllResultPDFs } from "./competition_pdfs";
 import { Collapse, Modal } from "bootstrap";
 import { exportDB, importInto } from "dexie-export-import";
 import { logger } from "./logger";
 
 declare const api: typeof import("../common/api").default;
 
-type CompetitionRowDisplayFunc = (row: HTMLTableRowElement, competition: ICompetition) => void;
 type CompetitionCallback = (competition: ICompetition) => void;
+type SortCol = "name" | "date" | "location";
+
+let allArchived: ICompetition[] = [];
+let archivedSortCol: SortCol = "date";
+let archivedSortAsc = false;
 
 pageCommon.setup();
 
@@ -59,23 +59,17 @@ window.addEventListener("DOMContentLoaded", () => {
 });
 
 async function onLoaded() {
-  const modal = document.getElementById("deleteConfirmationModal");
+  const deleteModal = document.getElementById("deleteCompetitionModal");
 
-  modal.addEventListener("hide.bs.modal", () => {
-    modal.removeAttribute(COMPETITION_ID_ATTR);
+  deleteModal.addEventListener("hide.bs.modal", () => {
+    deleteModal.removeAttribute(COMPETITION_ID_ATTR);
   });
 
-  document.getElementById("deleteConfirmationModalYes").addEventListener(
-    "click",
-    function() {
-      doDeleteCompetition(parseInt(modal.getAttribute(COMPETITION_ID_ATTR)));
-      // Hide must happen *after* deleting, because a hook on hiding unsets the ID
-      // we use to do the deletion.
-      // If this causes trouble (e.g. we can't catch errors when failing to delete), we may
-      // need to just remove the hide hook
-      Modal.getOrCreateInstance(modal).hide();
-    }
-  );
+  document.getElementById("deleteCompetitionModalYes").addEventListener("click", () => {
+    const id = parseInt(deleteModal.getAttribute(COMPETITION_ID_ATTR));
+    doDeleteCompetition(id);
+    Modal.getOrCreateInstance(deleteModal).hide();
+  });
 
   document.getElementById("delete-database-button").addEventListener("click", () => {
     showDangerModal({
@@ -88,9 +82,7 @@ async function onLoaded() {
     });
   });
 
-  document.getElementById("export-database-button").addEventListener(
-    "click", exportDatabase
-  );
+  document.getElementById("export-database-button").addEventListener("click", exportDatabase);
 
   document.getElementById("import-database-button").addEventListener("click", () => {
     showDangerModal({
@@ -107,109 +99,200 @@ async function onLoaded() {
     api.sendAsync("open-log-window", null);
   });
 
+  setupAccordion("archivedAccordionButton", "archivedCollapse");
   setupAccordion("recordsAccordionButton", "recordsCollapse");
   setupAccordion("databaseAccordionButton", "databaseCollapse");
 
-  displayCompetitionTable("preparingCompetitions", CompetitionState.Preparing, displayPreparingCompetition);
-  displayCompetitionTable("liveCompetitions", CompetitionState.Live, displayLiveCompetition);
-  displayCompetitionTable("pastCompetitions", CompetitionState.Completed, displayCompletedCompetition);
+  document.querySelectorAll("#archivedCompetitions thead th[data-col]").forEach(th => {
+    th.addEventListener("click", () => {
+      const col = th.getAttribute("data-col") as SortCol;
+      if (archivedSortCol === col) {
+        archivedSortAsc = !archivedSortAsc;
+      } else {
+        archivedSortCol = col;
+        archivedSortAsc = true;
+      }
+      updateArchivedSortIcons();
+      renderArchivedTable();
+    });
+  });
+
+  document.getElementById("filterArchivedName").addEventListener("input", renderArchivedTable);
+  document.getElementById("filterArchivedDate").addEventListener("input", renderArchivedTable);
+  document.getElementById("filterArchivedLocation").addEventListener("input", renderArchivedTable);
+
+  const all = await db.competitions.toArray();
+  const active = all.filter(c => !c.archived);
+  allArchived = all.filter(c => !!c.archived);
+
+  displayActiveCompetitions(active);
+  updateArchivedSortIcons();
+  renderArchivedTable();
+}
+
+function displayActiveCompetitions(competitions: ICompetition[]) {
+  const tbody = document.querySelector("#activeCompetitions tbody") as HTMLTableSectionElement;
+  for (const comp of competitions) {
+    tbody.appendChild(buildCompetitionRow(comp, false));
+  }
+}
+
+function renderArchivedTable() {
+  const filterName = (document.getElementById("filterArchivedName") as HTMLInputElement).value.toLowerCase();
+  const filterDate = (document.getElementById("filterArchivedDate") as HTMLInputElement).value.toLowerCase();
+  const filterLocation = (document.getElementById("filterArchivedLocation") as HTMLInputElement).value.toLowerCase();
+
+  const filtered = allArchived.filter(c =>
+    c.name.toLowerCase().includes(filterName) &&
+    c.date.toLowerCase().includes(filterDate) &&
+    c.location.toLowerCase().includes(filterLocation)
+  );
+
+  filtered.sort((a, b) => {
+    const valA = a[archivedSortCol].toLowerCase();
+    const valB = b[archivedSortCol].toLowerCase();
+    const cmp = valA.localeCompare(valB);
+    return archivedSortAsc ? cmp : -cmp;
+  });
+
+  const tbody = document.querySelector("#archivedCompetitions tbody") as HTMLTableSectionElement;
+  tbody.innerHTML = "";
+  for (const comp of filtered) {
+    tbody.appendChild(buildCompetitionRow(comp, true));
+  }
+}
+
+function buildCompetitionRow(competition: ICompetition, isArchived: boolean): HTMLTableRowElement {
+  const row = document.createElement("tr");
+  row.setAttribute(COMPETITION_ID_ATTR, competition.id.toString());
+  addTextCell(row, competition.name);
+  addTextCell(row, competition.date);
+  addTextCell(row, competition.location);
+  const actionsCell = row.insertCell();
+  actionsCell.appendChild(buildActionsDiv(competition, isArchived));
+  return row;
+}
+
+function buildActionsDiv(competition: ICompetition, isArchived: boolean): HTMLDivElement {
+  const div = document.createElement("div");
+  div.classList.add("d-flex", "gap-2", "flex-wrap");
+  div.appendChild(makePageLink(competition, "prepare_competition", "Prepare", "pencil"));
+  div.appendChild(makeJSLink(competition, promptAndGeneratePrepSheets, "Rec/Programme PDFs", "file-earmark-text"));
+  div.appendChild(makePageLink(competition, "live_competition", "Record Scores", "pencil-square"));
+  div.appendChild(makeJSLink(competition, promptAndGenerateResultPDFs, "Result PDFs", "file-earmark-pdf"));
+  if (isArchived) {
+    div.appendChild(makeJSLink(competition, promptDeleteCompetition, "Delete", "trash"));
+  } else {
+    div.appendChild(makeJSLink(competition, doArchiveCompetition, "Archive", "archive"));
+  }
+  return div;
+}
+
+function allCompetitorsGrouped(competition: ICompetition): boolean {
+  return competition.competitors.every(c => c.groupNumber !== 0);
+}
+
+function promptAndGeneratePrepSheets(competition: ICompetition) {
+  if (!allCompetitorsGrouped(competition)) {
+    logger.warn("Generating prep sheets with ungrouped competitors", {
+      competitionId: competition.id,
+      competitionName: competition.name,
+      ungroupedCount: competition.competitors.filter(c => c.groupNumber === 0).length,
+    });
+    if (!confirm("Not all competitors have been assigned to a group. Generate anyway?")) {
+      logger.info("User cancelled prep sheet generation due to ungrouped competitors");
+      return;
+    }
+  }
+  generatePrepSheets(competition);
+}
+
+function allResultsRecorded(competition: ICompetition): boolean {
+  for (const apparatus of ["bar", "beam", "floor", "vault"]) {
+    if (!competition[apparatus as keyof ICompetition]) {
+      continue;
+    }
+    const groups = Array.from(
+      competition.competitors.reduce((set, c) => set.add(c.groupNumber), new Set<number>())
+    );
+    for (const group of groups) {
+      const groupCompetitors = competition.competitors.filter(c => c.groupNumber === group);
+      const recorded = groupCompetitors.filter(c => c.scores[apparatus] !== undefined).length;
+      if (recorded < groupCompetitors.length) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+function promptAndGenerateResultPDFs(competition: ICompetition) {
+  if (!allResultsRecorded(competition)) {
+    logger.warn("Generating result PDFs with unrecorded results", {
+      competitionId: competition.id,
+      competitionName: competition.name,
+    });
+    if (!confirm("Not all results have been recorded. Do you still want to generate result PDFs?")) {
+      logger.info("User cancelled result PDF generation due to unrecorded results");
+      return;
+    }
+  }
+  generateAllResultPDFs(competition);
+}
+
+function addTextCell(row: HTMLTableRowElement, text: string) {
+  const cell = row.insertCell();
+  cell.textContent = text;
+}
+
+function updateArchivedSortIcons() {
+  document.querySelectorAll("#archivedCompetitions thead th[data-col]").forEach(th => {
+    const icon = th.querySelector(".sort-icon") as HTMLElement;
+    const col = th.getAttribute("data-col");
+    if (col === archivedSortCol) {
+      icon.className = archivedSortAsc ? "bi bi-arrow-up sort-icon" : "bi bi-arrow-down sort-icon";
+    } else {
+      icon.className = "bi bi-arrow-down-up text-muted sort-icon";
+    }
+  });
 }
 
 function promptDeleteCompetition(competition: ICompetition) {
-  const modal = document.getElementById("deleteConfirmationModal");
+  const modal = document.getElementById("deleteCompetitionModal");
   modal.setAttribute(COMPETITION_ID_ATTR, competition.id.toString());
+  document.getElementById("deleteCompetitionName").textContent =
+    `${competition.name} (${competition.date}, ${competition.location})`;
   Modal.getOrCreateInstance(modal).show();
 }
 
 function doDeleteCompetition(competitionId: number) {
   logger.info("Deleting competition", { competitionId });
   db.competitions.delete(competitionId);
-  const table = <HTMLTableElement>document.getElementById("preparingCompetitions");
-
-  const row = table.querySelector(`tr[${COMPETITION_ID_ATTR}="${competitionId}"]`);
-  if (row == null) {
-    logger.warn("Did not find table row for deleted competition", { competitionId });
-    return;
-  }
-  row.remove();
+  allArchived = allArchived.filter(c => c.id !== competitionId);
+  renderArchivedTable();
 }
 
-async function startCompetition(competition: ICompetition) {
-  const ungrouped = competition.competitors.filter((c) => c.groupNumber === 0);
-  if (ungrouped.length > 0) {
-    logger.warn("Cannot start competition: {count} ungrouped competitors", {
-      count: ungrouped.length,
-      competitionId: competition.id,
-      competitionName: competition.name,
-    });
-    Modal.getOrCreateInstance(document.getElementById("ungroupedCompetitorsModal")).show();
-    return;
-  }
-  logger.info("Starting competition", {
-    competitionId: competition.id,
-    competitionName: competition.name,
-    competitorCount: competition.competitors.length,
-  });
-  competition.state = CompetitionState.Live;
+async function doArchiveCompetition(competition: ICompetition) {
+  logger.info("Archiving competition", { competitionId: competition.id, competitionName: competition.name });
+  competition.archived = true;
   await db.competitions.put(competition);
-  window.location.href = `live_competition.html?compId=${competition.id}`;
+  allArchived = [...allArchived, competition];
+  const tbody = document.querySelector("#activeCompetitions tbody") as HTMLTableSectionElement;
+  const row = tbody.querySelector(`tr[${COMPETITION_ID_ATTR}="${competition.id}"]`);
+  if (row) {
+    row.remove();
+  }
+  renderArchivedTable();
 }
 
-async function displayCompetitionTable(
-  tableName: string,
-  state: CompetitionState,
-  displayFunc: CompetitionRowDisplayFunc) {
-
-  const table = <HTMLTableElement>document.getElementById(tableName);
-  db.transaction("r", db.competitions, async() => {
-    db.competitions.where("state").equals(state).toArray().then((a) => {
-      for (const competition of a) {
-        const row = table.insertRow();
-        row.setAttribute(COMPETITION_ID_ATTR, competition.id.toString());
-        row.insertCell().textContent = `${competition.name} (${competition.location})`;
-        displayFunc(row, competition);
-      }
-    });
-  });
-}
-
-function displayPreparingCompetition(row: HTMLTableRowElement, competition: ICompetition) {
-  displayCompetitionLink(row, getPageLink(competition, "prepare_competition", "Prepare", "pencil"));
-  displayCompetitionLink(row, getJSLink(competition, startCompetition, "Start", "play"));
-  displayCompetitionLink(row, getJSLink(competition, promptDeleteCompetition, "Delete", "trash"));
-}
-
-function displayLiveCompetition(row: HTMLTableRowElement, competition: ICompetition) {
-  displayCompetitionLink(row, getPageLink(competition, "live_competition", "Continue", "play"));
-}
-
-function displayCompletedCompetition(row: HTMLTableRowElement, competition: ICompetition) {
-  displayCompetitionLink(row, getPageLink(competition, "prepare_competition", "Prepare", "pencil"));
-  displayCompetitionLink(row, getPageLink(competition, "live_competition", "Scores", "pencil-square"));
-  displayCompetitionLink(
-    row,
-    getJSLink(competition, generateCompetitionPDFs, "Results PDFs", "file-earmark-pdf")
-  );
-  displayCompetitionLink(
-    row,
-    getJSLink(competition, generateCertificatePDFs, "Certificates", "award")
-  );
-  displayCompetitionLink(row, getJSLink(competition, promptDeleteCompetition, "Delete", "trash"));
-}
-
-function displayCompetitionLink(row: HTMLTableRowElement, link: HTMLAnchorElement) {
-  const cell = row.insertCell();
-  cell.appendChild(link);
-}
-
-function getPageLink(competition: ICompetition, pageName: string, text: string, iconName: string): HTMLAnchorElement {
+function makePageLink(competition: ICompetition, pageName: string, text: string, iconName: string): HTMLAnchorElement {
   const link = document.createElement("a");
   link.href = `${pageName}.html?compId=${competition.id}`;
   fillInLink(link, text, iconName);
   return link;
 }
 
-function getJSLink(
+function makeJSLink(
   competition: ICompetition,
   callback: CompetitionCallback,
   text: string,
@@ -324,16 +407,3 @@ async function doImportDatabase() {
   logger.info("Database import completed, reloading");
   window.location.reload();
 }
-
-// Leave this as an example for how to draw to a canvas and then save to disk
-// via the main context.  We'll move it elsewhere and add actual useful drawing later.
-// document.getElementById("printButton").addEventListener("click", async () => {
-//   const offscreen = new OffscreenCanvas(256, 256);
-//   const ctx = offscreen.getContext("2d");
-//   ctx.fillStyle = "rgb(200, 0, 0)";
-//   ctx.fillRect(10, 10, 50, 50);
-
-//   const blob = await offscreen.convertToBlob();
-//   const arrayBuffer = await blob.arrayBuffer();
-//   api.sendAsync("save-png", {data: arrayBuffer, filenameHint: "foobar"});
-// });

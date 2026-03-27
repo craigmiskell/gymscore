@@ -8,16 +8,56 @@
   <body>
     <a href="prepare_competition.html"><button type="button" class="btn btn-primary" id="createCompetition">Create New Competition</button></a>
     <hr>
-    <i class="bi bi-pencil-square"></i>&nbsp;Preparing
-    <table class="table table-sm table-striped w-auto" id="preparingCompetitions"></table>
-    <hr>
-    <i class="bi bi-stopwatch"></i>&nbsp;Live
-    <table class="table table-sm table-striped w-auto" id="liveCompetitions"></table>
-    <hr>
-    <i class="bi bi-check"></i>&nbsp;Completed
-    <hr>
-    <table class="table table-sm table-striped w-auto" id="pastCompetitions"></table>
+    <table class="table table-sm table-striped table-bordered w-auto" id="activeCompetitions">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Date</th>
+          <th>Location</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
     <hr class="border-secondary opacity-50 mt-1 hr-thick">
+    <div class="accordion mb-3" id="archivedAccordion">
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed" type="button"
+                  aria-expanded="false" aria-controls="archivedCollapse"
+                  id="archivedAccordionButton">
+            <i class="bi bi-archive me-2"></i>Archived Competitions
+          </button>
+        </h2>
+        <div id="archivedCollapse" class="accordion-collapse collapse">
+          <div class="accordion-body">
+            <table class="table table-sm table-striped table-bordered w-auto archived-competitions-table" id="archivedCompetitions">
+              <thead>
+                <tr>
+                  <th data-col="name">
+                    <span>Name</span> <i class="bi bi-arrow-down-up text-muted sort-icon"></i>
+                  </th>
+                  <th data-col="date">
+                    <span>Date</span> <i class="bi bi-arrow-down-up text-muted sort-icon"></i>
+                  </th>
+                  <th data-col="location">
+                    <span>Location</span> <i class="bi bi-arrow-down-up text-muted sort-icon"></i>
+                  </th>
+                  <th>Actions</th>
+                </tr>
+                <tr>
+                  <th><input type="text" class="form-control form-control-sm" id="filterArchivedName" placeholder="Filter..."></th>
+                  <th><input type="text" class="form-control form-control-sm" id="filterArchivedDate" placeholder="Filter..."></th>
+                  <th><input type="text" class="form-control form-control-sm" id="filterArchivedLocation" placeholder="Filter..."></th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
     <div class="accordion" id="managementAccordion">
       <div class="accordion-item">
         <h2 class="accordion-header">
@@ -69,17 +109,24 @@
         <i class="bi bi-journal-text"></i>Logs
       </button>
     </div>
-    <div class="modal fade" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" role="dialog" aria-hidden="true" id="ungroupedCompetitorsModal">
-      <div class="modal-dialog modal-sm">
+    <div class="modal fade" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" role="dialog" aria-hidden="true" id="deleteCompetitionModal">
+      <div class="modal-dialog">
         <div class="modal-content">
-          <div class="modal-header">
-            <h4 class="modal-title">Cannot start competition</h4>
+          <div class="modal-header bg-danger text-white">
+            <h4 class="modal-title"><i class="bi bi-exclamation-triangle-fill"></i> Delete Competition — DANGER</h4>
           </div>
           <div class="modal-body">
-            <p>All competitors must be assigned to a group before starting the competition.</p>
+            <p>You are about to permanently delete <strong><span id="deleteCompetitionName"></span></strong>.</p>
+            <ul>
+              <li>All competition data, scores, and results will be <strong>permanently erased</strong>.</li>
+              <li>This action <strong>cannot be undone</strong>.</li>
+              <li>Make sure you have exported any PDFs you need before proceeding.</li>
+            </ul>
+            <p class="fw-bold">Are you absolutely sure you want to delete this competition?</p>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-danger" id="deleteCompetitionModalYes">Yes, permanently delete</button>
           </div>
         </div>
       </div>
@@ -103,20 +150,6 @@
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
             <button type="button" class="btn btn-danger" id="dangerConfirmationModalYes"></button>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="modal fade" tabindex="-1" data-bs-backdrop="static" role="dialog" aria-hidden="true" id="deleteConfirmationModal">
-      <div class="modal-dialog modal-sm">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h4 class="modal-title">Delete competition?</h4>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-primary" data-bs-dismiss="modal" id="deleteConfirmationModalNo">No</button>
-            <button type="button" class="btn btn-default" id="deleteConfirmationModalYes">Yes</button>
           </div>
         </div>
       </div>

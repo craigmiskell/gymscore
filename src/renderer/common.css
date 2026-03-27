@@ -18,6 +18,10 @@
   height: 4px !important;
 }
 
+.archived-competitions-table thead th[data-col] {
+  cursor: pointer;
+}
+
 .competitors-table {
   flex: 1;
   min-height: 0;

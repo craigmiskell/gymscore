@@ -13,8 +13,7 @@
 // You should have received a copy of the GNU General Public License along with this program. If not,
 // see <https://www.gnu.org/licenses/>.
 import { db } from "./data/gymscoredb";
-import { ICompetition, CompetitionState, ICompetitor } from "../common/data";
-import { generateCompetitionPDFs } from "./competition_pdfs";
+import { ICompetition, ICompetitor } from "../common/data";
 import { CompetitionCompetitorDetails, CompetitorScore } from "../common/data/competition";
 import * as pageCommon from "./page_common";
 import { Modal } from "bootstrap";
@@ -40,8 +39,6 @@ class Elements extends pageCommon.BaseElements {
   groupApparatusResultsModalTitle: HTMLHeadingElement = null;
   groupApparatusResultsModalTable: HTMLTableElement = null;
   groupApparatusResultsModalDismiss: HTMLButtonElement = null;
-  pauseCompetitionLink: HTMLLinkElement = null;
-  finishCompetitionButton: HTMLButtonElement = null;
   saveScores: HTMLButtonElement = null;
 }
 const elements = new Elements();
@@ -59,8 +56,6 @@ async function onLoaded() {
 
   await loadCompetition(parseInt(compId));
 
-  elements.pauseCompetitionLink.addEventListener("click", pauseCompetiton);
-  elements.finishCompetitionButton.addEventListener("click", finishCompetition);
   elements.groupApparatusResultsModalDismiss.addEventListener("click", dismissResultsModal);
   elements.groupApparatusResultsModal.addEventListener("keydown", (event: KeyboardEvent) => {
     if (event.key === "Escape") {
@@ -84,48 +79,6 @@ function dismissResultsModal(event: Event) {
   }
 }
 
-async function pauseCompetiton() {
-  logger.info("Pausing competition", { competitionId: competition.id, competitionName: competition.name });
-  competition.state = CompetitionState.Preparing;
-  await db.competitions.put(competition);
-}
-
-function allResultsRecorded(): boolean {
-  for (const apparatus of ["bar", "beam", "floor", "vault"]) {
-    if (!competition[apparatus as keyof typeof competition]) {
-      continue;
-    }
-    for (const group of getGroupsForCompetition()) {
-      const { recorded, total } = getGroupRecordedCount(group, apparatus);
-      if (recorded < total) {
-        return false;
-      }
-    }
-  }
-  return true;
-}
-
-async function finishCompetition(event: Event) {
-  event.preventDefault();
-  if (!allResultsRecorded()) {
-    logger.warn("Finishing competition with unrecorded results", {
-      competitionId: competition.id,
-      competitionName: competition.name,
-    });
-    if (!confirm("Not all results have been recorded. Do you still want to finish the competition?")) {
-      logger.info("User cancelled finish competition due to unrecorded results");
-      return;
-    }
-  }
-  logger.info("Finishing competition", {
-    competitionId: competition.id,
-    competitionName: competition.name,
-    competitorCount: competition.competitors.length,
-  });
-  competition.state = CompetitionState.Completed;
-  await db.competitions.put(competition);
-  generateCompetitionPDFs(competition);
-}
 
 async function loadCompetition(compId: number) {
   if(compId) {
@@ -155,7 +108,7 @@ function getGroupsForCompetition(): Array<number>{
   const groups: Array<number> = <Array<number>>Array.from(competition.competitors.reduce((
     set, competitorDetails) => set.add(competitorDetails.groupNumber),
   new Set()
-  ));
+  )).filter((g: number) => g !== 0);
   groups.sort((a, b) => { return (<number>a - <number>b); });
   return groups;
 }

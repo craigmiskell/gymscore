@@ -13,8 +13,6 @@
 // You should have received a copy of the GNU General Public License along with this program. If not,
 // see <https://www.gnu.org/licenses/>.
 
-declare const api: typeof import("../common/api").default;
-
 import { db } from "./data/gymscoredb";
 import { ICompetition, Competition, CompetitionState,
   Division, ICompetitor, Competitor, Club, IClub} from "../common/data";
@@ -68,8 +66,6 @@ class Elements extends pageCommon.BaseElements {
   addCompetitorButton: HTMLButtonElement = null;
   competitorDetailsForm: HTMLFormElement = null;
   groupSelectTemplate: HTMLSelectElement = null;
-  createRecorderSheetsButton: HTMLButtonElement = null;
-  createProgrammeButton: HTMLButtonElement = null;
   filterName: HTMLInputElement = null;
   filterNationalId: HTMLInputElement = null;
   filterStep: HTMLInputElement = null;
@@ -129,8 +125,6 @@ async function onLoaded() {
       void addCompetitor();
     }
   });
-  elements.createRecorderSheetsButton.addEventListener("click", createRecorderSheets);
-  elements.createProgrammeButton.addEventListener("click", createProgramme);
 
   await setupCompetitorAutoComplete();
   await setupClubAutoComplete();
@@ -1131,16 +1125,6 @@ type AutoCompleteData = {
 
 type AutoCompleteCallbackOnInputFunc = {
   (): void;
-}
-
-function createRecorderSheets() {
-  logger.info("Requesting recorder sheets PDF", { competitionId: competition.id, competitionName: competition.name });
-  api.sendAsync("generate-pdfs", {type: "recorder-sheets", competition: competition});
-}
-
-function createProgramme() {
-  logger.info("Requesting programme PDF", { competitionId: competition.id, competitionName: competition.name });
-  api.sendAsync("generate-pdfs", {type: "programme", competition: competition});
 }
 
 async function populateFakeCompetitors() {

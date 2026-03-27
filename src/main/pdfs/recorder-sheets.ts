@@ -87,7 +87,7 @@ function addSheetsForStep(doc: jsPDF, titles: Titles, competitors: CompetitionCo
 
   titles.step = step;
 
-  for (const group of Object.keys(groupCompetitors).sort()) {
+  for (const group of Object.keys(groupCompetitors).sort().filter(g => g !== "0")) {
     titles.group = group;
     addSheetsForStepGroup(doc, titles, groupCompetitors[group]);
   }

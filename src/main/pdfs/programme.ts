@@ -80,7 +80,7 @@ function addSheetForStep(doc: jsPDF, teams: Team[], competitors: CompetitionComp
   const disciplines = ["Vault", "Bars", "Beam", "Floor"];
   const groupCompetitors = getCompetitorsByGroup(competitors);
   const groupHeights = [0, 0];
-  const sortedGroups = Object.keys(groupCompetitors).sort();
+  const sortedGroups = Object.keys(groupCompetitors).sort().filter(g => g !== "0");
 
   for (let i = 0; i < sortedGroups.length; i++) {
     const groupIndex = parseInt(sortedGroups[i]);

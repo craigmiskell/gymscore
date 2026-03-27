@@ -31,6 +31,17 @@ class GymScoreDB extends Dexie {
       competitors: "++id, identifier, name, clubId",
       clubs: "++id, name",
     });
+    this.version(4).stores({
+      competitions: "++id, name, date, location, state, archived",
+      competitors: "++id, identifier, name, clubId",
+      clubs: "++id, name",
+    }).upgrade(tx => {
+      return tx.table("competitions").toCollection().modify((competition: ICompetition) => {
+        if (competition.archived === undefined) {
+          competition.archived = false;
+        }
+      });
+    });
   }
 }
 
