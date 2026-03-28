@@ -21,13 +21,13 @@ import fs from "fs";
 import os from "os";
 import path from "path";
 import {shell} from "electron";
-import { Competition } from "../../common/data";
+import { CompetitionData } from "../../common/data";
 import { Logger } from "../logger";
 
 // The jsPDF "save" function either doesn't work (but swallows the error) or drops the
 // file somewhere I couldn't find.  Rather, we turn it into a byte array and write it
 // to a location of our careful choosing.
-export function savePDF(competition: Competition, pdfDocument: jsPDF, basename: string, logger?: Logger) {
+export function savePDF(competition: CompetitionData, pdfDocument: jsPDF, basename: string, logger?: Logger) {
   const buffer = pdfDocument.output("arraybuffer");
 
   const competitionSlug = competition.name.replace(/([^a-zA-Z0-1])+/g, "-") + " - " + competition.date;

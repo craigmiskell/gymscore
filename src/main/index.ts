@@ -13,19 +13,17 @@
 // You should have received a copy of the GNU General Public License along with this program. If not,
 // see <https://www.gnu.org/licenses/>.
 
-import {IpcMainEvent, app, BrowserWindow, ipcMain, shell, dialog} from "electron";
+import {IpcMainEvent, app, BrowserWindow, ipcMain, dialog} from "electron";
 import path from "path";
 import isDev from "electron-is-dev";
 import fs from "fs";
 import zlib from "zlib";
 import strftime from "strftime";
-import mktemp from "mktemp";
-import os from "os";
 import Blob from "cross-blob"; // Used by jsPDF to save
 // And this is necessary for jsPDF to find the Blob object (using Blob from buffer is insufficient)
 globalThis.Blob = Blob;
 
-import { Competition } from "../common/data";
+import { CompetitionData } from "../common/data/competition";
 import * as pdfs from "./pdfs";
 import { Logger } from "./logger";
 
@@ -84,29 +82,8 @@ app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {app.quit();}
 });
 
-ipcMain.on("asynchronous-message", (event: IpcMainEvent, arg: any) => {
-  logger.debug("asynchronous-message received", { arg });
-  event.reply("asynchronous-reply", "async pong");
-});
-
-// Old code, kept for reference only
-ipcMain.on("save-png", (event: IpcMainEvent, arg: any) => {
-  const buffer = Buffer.from(arg.data);
-
-  const tempDir = mktemp.createDirSync(path.join(os.tmpdir(), "XXXXXXX"));
-  const filename = path.join(tempDir, arg.filenameHint + ".png");
-  // TODO: create a singular temp directory per competition, perhaps a second hint (dirhint?)
-  fs.writeFile(filename, buffer, (error: any) => {
-    if (error) {
-      throw error;
-    }
-    // Let the system open and then user can print
-    shell.openPath(filename);
-  });
-});
-
 ipcMain.on("generate-pdfs", (event: IpcMainEvent, arg: any) => {
-  const competition: Competition = arg.competition;
+  const competition: CompetitionData = arg.competition;
   logger.info("Generating PDF", {
     type: arg.type,
     competitionName: competition.name,
@@ -233,7 +210,7 @@ ipcMain.handle("import-db", async (event) => {
   logger.info("Reading DB import file", { filePath });
   try {
     const raw = fs.readFileSync(filePath);
-    const isGzip = filePath.endsWith(".gz");
+    const isGzip = raw[0] === 0x1f && raw[1] === 0x8b;
     const data = isGzip
       ? zlib.gunzipSync(raw).toString("utf-8")
       : raw.toString("utf-8");

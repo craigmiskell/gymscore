@@ -26,6 +26,6 @@ export class Club implements IClub {
 
   constructor(name: string, id?:number) {
     this.name = name;
-    if (id) {this.id = id;}
+    if (id !== undefined) {this.id = id;}
   }
 }

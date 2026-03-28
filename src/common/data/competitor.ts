@@ -41,6 +41,6 @@ export class Competitor implements ICompetitor {
     this.step = step;
     this.division = division;
 
-    if (id) {this.id = id;}
+    if (id !== undefined) {this.id = id;}
   }
 }

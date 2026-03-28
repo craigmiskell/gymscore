@@ -37,21 +37,3 @@ export function generateAllResultPDFs(competition: ICompetition) {
   api.sendAsync("generate-pdfs", { type: "announcements", competition });
   api.sendAsync("generate-pdfs", { type: "certificates", competition });
 }
-
-export function generateCompetitionPDFs(competition: ICompetition) {
-  logger.info("Requesting results, places, and announcements PDFs", {
-    competitionId: competition.id,
-    competitionName: competition.name,
-  });
-  api.sendAsync("generate-pdfs", { type: "results", competition });
-  api.sendAsync("generate-pdfs", { type: "places", competition });
-  api.sendAsync("generate-pdfs", { type: "announcements", competition });
-}
-
-export function generateCertificatePDFs(competition: ICompetition) {
-  logger.info("Requesting certificates PDF", {
-    competitionId: competition.id,
-    competitionName: competition.name,
-  });
-  api.sendAsync("generate-pdfs", { type: "certificates", competition });
-}

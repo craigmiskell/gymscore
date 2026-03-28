@@ -18,6 +18,7 @@ import { CompetitionCompetitorDetails, CompetitorScore } from "../common/data/co
 import * as pageCommon from "./page_common";
 import { Modal } from "bootstrap";
 import { logger } from "./logger";
+import { formatScore, capitalise } from "../common/formatting";
 
 pageCommon.setup();
 
@@ -50,11 +51,10 @@ window.addEventListener("DOMContentLoaded", () => {
 async function onLoaded() {
   pageCommon.findElements(elements);
 
-  const urlParams = new URLSearchParams(window.location.search);
-  const compId = urlParams.get("compId");
+  const compId = pageCommon.getCompetitionIdFromUrl();
   logger.debug("live_competition loaded", { compId });
 
-  await loadCompetition(parseInt(compId));
+  await loadCompetition(compId);
 
   elements.groupApparatusResultsModalDismiss.addEventListener("click", dismissResultsModal);
   elements.groupApparatusResultsModal.addEventListener("keydown", (event: KeyboardEvent) => {
@@ -70,7 +70,7 @@ function dismissResultsModal(event: Event) {
   event.preventDefault();
   const modalElement = elements.groupApparatusResultsModal;
   const modal = Modal.getOrCreateInstance(modalElement);
-  if(modalElement.getAttribute(HAS_CHANGES_ATTR_NAME) != "true") {
+  if(modalElement.getAttribute(HAS_CHANGES_ATTR_NAME) !== "true") {
     modal.hide();
   } else {
     if(confirm("You have unsaved changes.  Do you really want to close without saving?")) {
@@ -80,7 +80,7 @@ function dismissResultsModal(event: Event) {
 }
 
 
-async function loadCompetition(compId: number) {
+async function loadCompetition(compId: number | undefined) {
   if(compId) {
     competition = await db.competitions.where(":id").equals(compId).first();
     if(competition) {
@@ -105,18 +105,14 @@ async function loadCompetition(compId: number) {
   }
 }
 function getGroupsForCompetition(): Array<number>{
-  const groups: Array<number> = <Array<number>>Array.from(competition.competitors.reduce((
+  const groups = Array.from(competition.competitors.reduce((
     set, competitorDetails) => set.add(competitorDetails.groupNumber),
   new Set()
-  )).filter((g: number) => g !== 0);
-  groups.sort((a, b) => { return (<number>a - <number>b); });
+  )).filter((g: number) => g !== 0) as number[];
+  groups.sort((a, b) => { return (a as number - (b as number)); });
   return groups;
 }
 
-// Simple ascii upper-casing only; unicode is... something else.  Do not use for names or other similar user input.
-function asciiCapitalizeFirstLetter(input: string) {
-  return input.charAt(0).toUpperCase() + input.slice(1);
-}
 function getGroupRecordedCount(groupId: number, apparatus: string): { recorded: number; total: number } {
   const groupCompetitors = competition.competitors.filter(c => c.groupNumber === groupId);
   const recorded = groupCompetitors.filter(c => c.scores[apparatus] !== undefined).length;
@@ -170,7 +166,7 @@ function populateCompetitionResultsTable() {
   for(const apparatus of ["bar", "beam", "floor", "vault"]) {
     if (competition[apparatus as keyof typeof competition]) {
       const cell = headerRow.insertCell();
-      cell.textContent = asciiCapitalizeFirstLetter(apparatus);
+      cell.textContent = capitalise(apparatus);
       cell.classList.add("col-2");
       apparatuses.push(apparatus);
     }
@@ -202,7 +198,7 @@ function editGroupApparatusResults(event: Event) {
   const modalElement = elements.groupApparatusResultsModal;
   const modal = Modal.getOrCreateInstance(modalElement);
 
-  const link = <HTMLAnchorElement>event.currentTarget;
+  const link = event.currentTarget as HTMLAnchorElement;
 
   const groupId = link.getAttribute(GROUP_ID_ATTR_NAME);
   const apparatus = link.getAttribute(APPARATUS_ATTR_NAME);
@@ -211,7 +207,7 @@ function editGroupApparatusResults(event: Event) {
   modalElement.setAttribute(GROUP_ID_ATTR_NAME, groupId);
   modalElement.setAttribute(APPARATUS_ATTR_NAME, apparatus);
 
-  elements.groupApparatusResultsModalTitle.textContent = ` Group ${groupId} - ${asciiCapitalizeFirstLetter(apparatus)}`;
+  elements.groupApparatusResultsModalTitle.textContent = ` Group ${groupId} - ${capitalise(apparatus)}`;
 
   populateApparatusGroupResultsTable(parseInt(groupId), apparatus);
   modalElement.removeAttribute(HAS_CHANGES_ATTR_NAME);
@@ -252,9 +248,9 @@ function averageJudgeEScores(rawScores: string[]) : number {
     .filter(score => {return !isNaN(score);});
   const totalScores = scores.reduce((prev, curr) => prev + curr, 0);
 
-  if(scores.length == 0 ) {
+  if(scores.length === 0 ) {
     return 0.0;
-  } else if(scores.length == 4) {
+  } else if(scores.length === 4) {
     // 4 judge scores; drop the min + max.
     return (totalScores - Math.min(...scores) - Math.max(...scores)) / 2;
   } else {
@@ -262,13 +258,8 @@ function averageJudgeEScores(rawScores: string[]) : number {
   }
 }
 
-// Per scoring definition: 3dp, but truncated (floored), not rounded.
-function formatScore(score: number): string{
-  return (Math.floor(score)/1000).toFixed(3);
-}
-
 function valueOfCell(row: HTMLTableRowElement, index: number) {
-  return (<HTMLInputElement>row.cells[index].firstChild).value;
+  return (row.cells[index].firstChild as HTMLInputElement).value;
 }
 
 // D-score, E1-E4, Neutral Deductions
@@ -296,7 +287,7 @@ function rowCanCalculateScore(row: HTMLTableRowElement) {
     index => parseScore(valueOfCell(row, index), true)
   ).reduce(countNonNaN, 0);
 
-  if (!dValue || dValue == "" || eScoreCount < 2) {
+  if (!dValue || dValue === "" || eScoreCount < 2) {
     return false;
     // Default 0 for neutral deductions is fine
   }
@@ -326,8 +317,8 @@ function updateScoreRow(row: HTMLTableRowElement) {
 }
 
 function scoreInputFieldChanged(event: Event) {
-  const inputField = <HTMLInputElement>event.currentTarget;
-  const row: HTMLTableRowElement = <HTMLTableRowElement>inputField.parentElement.parentElement;
+  const inputField = event.currentTarget as HTMLInputElement;
+  const row: HTMLTableRowElement = inputField.parentElement.parentElement as HTMLTableRowElement;
   row.removeAttribute(SCORES_DELETED_ATTR_NAME);
   elements.groupApparatusResultsModal.setAttribute(HAS_CHANGES_ATTR_NAME, "true");
   updateScoreRow(row);
@@ -348,8 +339,8 @@ function addInputFieldToCell(row: HTMLTableRowElement, cellIndex: number) {
 
 function deleteScores(event: Event) {
   event.preventDefault();
-  const button = <HTMLButtonElement>event.currentTarget;
-  const row = <HTMLTableRowElement>button.closest("tr");
+  const button = event.currentTarget as HTMLButtonElement;
+  const row = button.closest("tr") as HTMLTableRowElement;
   for (const i of COLS_WITH_INPUT_FIELDS) {
     fieldForCol(row, i).value = "";
   }
@@ -387,7 +378,7 @@ function createCompetitorRow(body: HTMLTableSectionElement): HTMLTableRowElement
 }
 
 function fieldForCol(row: HTMLTableRowElement, columnNumber: number) :HTMLInputElement {
-  return <HTMLInputElement>row.cells[columnNumber].firstChild;
+  return row.cells[columnNumber].firstChild as HTMLInputElement;
 }
 
 function populateScoreInField(row: HTMLTableRowElement, columnNumber: number, rawScore: number) {
@@ -441,7 +432,7 @@ function createStepHeaderRow(body: HTMLTableSectionElement, step: number): HTMLT
 
 function populateApparatusGroupResultsTable(groupId: number, apparatus: string) {
   const groupCompetitors = competition.competitors
-    .filter(competitor => competitor.groupNumber == groupId)
+    .filter(competitor => competitor.groupNumber === groupId)
     .sort((a, b) => a.step - b.step);
 
   const body = elements.groupApparatusResultsModalTable.tBodies[0];
@@ -531,9 +522,9 @@ async function saveScores(event: Event) {
 
   const savedGroupId = elements.groupApparatusResultsModal.getAttribute(GROUP_ID_ATTR_NAME);
   const savedApparatus = elements.groupApparatusResultsModal.getAttribute(APPARATUS_ATTR_NAME);
-  const savedLink = <HTMLAnchorElement>document.querySelector(
+  const savedLink = document.querySelector(
     `a[${GROUP_ID_ATTR_NAME}="${savedGroupId}"][${APPARATUS_ATTR_NAME}="${savedApparatus}"]`
-  );
+  ) as HTMLAnchorElement;
   if (savedLink) {
     updateCellStatus(savedLink);
   }

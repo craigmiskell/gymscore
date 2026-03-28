@@ -56,23 +56,14 @@ interface CompetitorDisplay {
   clubName: string;
 }
 
-function updateDivisionVisibility() {
-  const step = parseInt(elements.editStep.value);
-  const show = hasDivisions(step);
-  document.getElementById("editDivisionLabel").classList.toggle("d-none", !show);
-  document.getElementById("editDivisionCol").classList.toggle("d-none", !show);
-}
 
 async function onLoaded() {
   pageCommon.findElements(elements);
 
-  for (let i = 1; i <= 10; i++) {
-    const opt = document.createElement("option");
-    opt.value = i.toString();
-    opt.textContent = i.toString();
-    elements.editStep.appendChild(opt);
-  }
-  elements.editStep.addEventListener("change", updateDivisionVisibility);
+  pageCommon.populateStepSelect(elements.editStep);
+  elements.editStep.addEventListener("change", () => {
+    pageCommon.updateDivisionVisibility(elements.editStep, "editDivisionLabel", "editDivisionCol");
+  });
 
   elements.deleteConfirmationModal.addEventListener("hide.bs.modal", () => {
     elements.deleteConfirmationModal.removeAttribute(COMPETITOR_ID_ATTR);
@@ -95,10 +86,8 @@ async function onLoaded() {
     [elements.filterName, elements.filterNationalId, elements.filterStep, elements.filterClub],
     () => { void updateCompetitorsTable(); }
   );
-  elements.filterNationalId.style.width = "13ch";
-  elements.filterNationalId.style.minWidth = "0";
-  elements.filterStep.style.width = "13ch";
-  elements.filterStep.style.minWidth = "0";
+  pageCommon.applyNarrowFilterStyle(elements.filterNationalId);
+  pageCommon.applyNarrowFilterStyle(elements.filterStep);
 
   await updateCompetitorsTable();
   elements.filterName.focus();
@@ -157,15 +146,7 @@ async function updateCompetitorsTable() {
     });
 
   const body = elements.competitors.tBodies[0];
-  while (body.rows.length > filtered.length) {
-    body.deleteRow(-1);
-  }
-
-  filtered.forEach((display, i) => {
-    let row = body.rows[i];
-    if (row == undefined) {
-      row = createCompetitorRow(body);
-    }
+  pageCommon.updateTableBody(body, filtered, createCompetitorRow, (row, display) => {
     displayCompetitorInRow(row, display);
   });
 }
@@ -228,7 +209,7 @@ async function openEditModal(competitorId: number) {
   elements.editName.value = competitor.name;
   elements.editStep.selectedIndex = competitor.step - 1;
   elements.editDivision.selectedIndex = competitor.division;
-  updateDivisionVisibility();
+  pageCommon.updateDivisionVisibility(elements.editStep, "editDivisionLabel", "editDivisionCol");
   elements.editClub.value = club ? club.name : "";
   elements.editCompetitorForm.classList.remove("was-validated");
 

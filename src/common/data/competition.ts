@@ -54,7 +54,7 @@ export class CompetitionCompetitorDetails {
   constructor(competitor: ICompetitor, step: number, division: Division, clubId: number,
     clubName: string, teamIndex: number | null, groupNumber: number) {
     this.competitorId = competitor.id;
-    this.competitorIdentifier = competitor.identifier,
+    this.competitorIdentifier = competitor.identifier;
     this.competitorName = competitor.name;
     this.step = step;
     this.division = division;
@@ -91,6 +91,10 @@ export interface ICompetition {
   getCompetitorById(competitorId: number): CompetitionCompetitorDetails;
 }
 
+// Plain data view of a competition: what crosses the IPC boundary. Class instances are serialised
+// to plain objects by Structured Clone, so the main process only receives data properties, not methods.
+export type CompetitionData = Omit<ICompetition, "removeCompetitorById" | "getCompetitorById">;
+
 export enum CompetitionState {
   Preparing = 0,
   Live,
@@ -116,13 +120,13 @@ export class Competition implements ICompetition {
     this.date = date;
     this.location = location;
     this.state = CompetitionState.Preparing;
-    if (id) {this.id = id;}
+    if (id !== undefined) {this.id = id;}
   }
 
   removeCompetitorById(competitorId: number) {
     const index = this.competitors.findIndex(
       (otherCompetitor: CompetitionCompetitorDetails) => {
-        return competitorId == otherCompetitor.competitorId;
+        return competitorId === otherCompetitor.competitorId;
       }
     );
     if(index < 0) {
@@ -134,7 +138,7 @@ export class Competition implements ICompetition {
   getCompetitorById(competitorId: number) {
     return this.competitors.find(
       (otherCompetitor: CompetitionCompetitorDetails) => {
-        return competitorId == otherCompetitor.competitorId;
+        return competitorId === otherCompetitor.competitorId;
       }
     );
   }

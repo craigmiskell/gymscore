@@ -89,11 +89,10 @@ window.addEventListener("DOMContentLoaded", () => {
 async function onLoaded() {
   pageCommon.findElements(elements);
 
-  const urlParams = new URLSearchParams(window.location.search);
-  const compId = urlParams.get("compId");
+  const compId = pageCommon.getCompetitionIdFromUrl();
   logger.debug("prepare_competition loaded", { compId });
 
-  await loadCompetition(parseInt(compId));
+  await loadCompetition(compId);
 
   elements.detailsEditButton.addEventListener("click", onDetailsButtonClick);
   elements.detailsEditable.addEventListener("show.bs.collapse", onDetailsExpanding);
@@ -109,7 +108,6 @@ async function onLoaded() {
   elements.addCompetitorModal.addEventListener("hidden.bs.modal", () => {
     elements.competitorName.focus();
   });
-  document.getElementById("create-fake-competitors-button").addEventListener("click", populateFakeCompetitors);
   document.getElementById("addCompetitorModalYes").addEventListener("click", addCompetitor);
   elements.competitorIdModal.addEventListener("input", () => {
     clearTimeout(nationalIdCheckTimer);
@@ -139,16 +137,14 @@ async function onLoaded() {
   // Bootstrap's form-control sets width: 100%, which causes the table layout algorithm to size
   // this column by its header text ("National ID") rather than its content. CSS overrides on the
   // th are ignored for the same reason. Setting directly on the input here is the reliable fix.
-  elements.filterNationalId.style.width = "13ch";
-  elements.filterNationalId.style.minWidth = "0";
-  elements.filterStep.style.width = "13ch";
-  elements.filterStep.style.minWidth = "0";
+  pageCommon.applyNarrowFilterStyle(elements.filterNationalId);
+  pageCommon.applyNarrowFilterStyle(elements.filterStep);
   updateCompetitorsTable();
   populateStepSelectModal();
 
   if (competition == undefined) {
     elements.detailsEditable.addEventListener("shown.bs.collapse", () => {
-      (<HTMLInputElement>elements.competitionName).focus();
+      (elements.competitionName as HTMLInputElement).focus();
     }, { once: true });
     Collapse.getOrCreateInstance(elements.detailsEditable, { toggle: false }).show();
   } else {
@@ -156,26 +152,22 @@ async function onLoaded() {
   }
 }
 
-function updateDivisionVisibilityModal() {
-  const step = parseInt(elements.competitorStepSelectModal.value);
-  const show = hasDivisions(step);
-  document.getElementById("competitorDivisionLabelModal").classList.toggle("d-none", !show);
-  document.getElementById("competitorDivisionColModal").classList.toggle("d-none", !show);
-}
 
 function populateStepSelectModal() {
   const select = elements.competitorStepSelectModal;
-  for (let i=1; i <= 10; i++) {
-    select.add(new Option(i.toString(), i.toString()));
-  }
-  select.addEventListener("change", updateDivisionVisibilityModal);
+  pageCommon.populateStepSelect(select);
+  select.addEventListener("change", () => {
+    pageCommon.updateDivisionVisibility(
+      elements.competitorStepSelectModal, "competitorDivisionLabelModal", "competitorDivisionColModal"
+    );
+  });
 }
 
 async function removeCompetitor(event: Event) {
   // Do this *first* so we get a chance to catch errors and not immediately reload the page
   event.preventDefault();
 
-  const competitorId = parseInt((<HTMLAnchorElement>event.currentTarget).getAttribute(COMPETITOR_ID_ATTR_NAME));
+  const competitorId = parseInt((event.currentTarget as HTMLAnchorElement).getAttribute(COMPETITOR_ID_ATTR_NAME));
   logger.info("Removing competitor from competition", { competitorId, competitionId: competition.id });
   selectedCompetitorIds.delete(competitorId);
   competition.removeCompetitorById(competitorId);
@@ -187,7 +179,7 @@ async function removeCompetitor(event: Event) {
 function displayCompetitorInRow(row: HTMLTableRowElement, competitor: CompetitionCompetitorDetails) {
   const competitorIdString = competitor.competitorId.toString();
 
-  const checkbox = <HTMLInputElement>row.cells[0].firstChild;
+  const checkbox = row.cells[0].firstChild as HTMLInputElement;
   checkbox.setAttribute(COMPETITOR_ID_ATTR_NAME, competitorIdString);
   checkbox.checked = selectedCompetitorIds.has(competitor.competitorId);
 
@@ -199,7 +191,7 @@ function displayCompetitorInRow(row: HTMLTableRowElement, competitor: Competitio
   row.cells[4].textContent = competitor.clubName;
   row.cells[5].textContent = competition.teams[competitor.teamIndex]?.name ?? "";
 
-  const groupSelect = <HTMLSelectElement>row.cells[6].firstChild;
+  const groupSelect = row.cells[6].firstChild as HTMLSelectElement;
   groupSelect.setAttribute(COMPETITOR_ID_ATTR_NAME, competitorIdString);
   const groupNumber = competitor.groupNumber || 0;
   groupSelect.value = groupNumber.toString();
@@ -215,7 +207,7 @@ function displayCompetitorInRow(row: HTMLTableRowElement, competitor: Competitio
 }
 
 function createNewGroupSelect(index: number): HTMLSelectElement {
-  const newGroupSelect = <HTMLSelectElement>document.createElement("select");
+  const newGroupSelect = document.createElement("select") as HTMLSelectElement;
   newGroupSelect.classList.add("form-select","form-select-sm");
   newGroupSelect.add(new Option("None", "0"));
   for (let i=1; i < 10; i++) {
@@ -226,7 +218,8 @@ function createNewGroupSelect(index: number): HTMLSelectElement {
   return newGroupSelect;
 }
 
-function createCompetitorRow(tableSection: HTMLTableSectionElement, index: number): HTMLTableRowElement {
+function createCompetitorRow(tableSection: HTMLTableSectionElement): HTMLTableRowElement {
+  const index = tableSection.rows.length;
   const row = tableSection.insertRow(-1);
   for(let i=0; i < 9; i++) {
     row.insertCell();
@@ -314,15 +307,7 @@ function updateCompetitorsTable() {
       );
     });
 
-  while (tableBody.rows.length > filtered.length) {
-    tableBody.deleteRow(-1);
-  }
-
-  filtered.forEach((competitor, rowIndex) => {
-    let row = tableBody.rows[rowIndex];
-    if (row == undefined) {
-      row = createCompetitorRow(tableBody, rowIndex);
-    }
+  pageCommon.updateTableBody(tableBody, filtered, createCompetitorRow, (row, competitor) => {
     displayCompetitorInRow(row, competitor);
   });
   updateSelectAllCheckbox();
@@ -403,7 +388,7 @@ async function setupCompetitorAutoComplete() {
       onInput:() => {
         // If the user types, clear the selection
         competitorNameField.removeAttribute(COMPETITOR_ID_ATTR_NAME);
-        elements.addCompetitorButton.disabled = (competitorNameField.value == "");
+        elements.addCompetitorButton.disabled = (competitorNameField.value === "");
         elements.competitorAlreadyAddedWarning.classList.add("d-none");
       }
     }
@@ -522,7 +507,9 @@ async function openAddCompetitorModal() {
     elements.competitorStepSelectModal.value = lastUsedStep.toString();
     elements.competitorDivisionSelectModal.value = lastUsedDivision.toString();
   }
-  updateDivisionVisibilityModal();
+  pageCommon.updateDivisionVisibility(
+    elements.competitorStepSelectModal, "competitorDivisionLabelModal", "competitorDivisionColModal"
+  );
 
   elements.competitorDetailsForm.classList.remove("was-validated");
   elements.duplicateCompetitorError.classList.add("d-none");
@@ -545,7 +532,7 @@ async function openAddCompetitorModal() {
 
 function editCompetitor(event: Event) {
   event.preventDefault();
-  const competitorId = parseInt((<HTMLAnchorElement>event.currentTarget).getAttribute(COMPETITOR_ID_ATTR_NAME));
+  const competitorId = parseInt((event.currentTarget as HTMLAnchorElement).getAttribute(COMPETITOR_ID_ATTR_NAME));
   void openEditCompetitorModal(competitorId);
 }
 
@@ -565,7 +552,9 @@ async function openEditCompetitorModal(competitorId: number) {
   elements.competitorIdModal.disabled = true;
   elements.competitorStepSelectModal.selectedIndex = competitorDetails.step - 1;
   elements.competitorDivisionSelectModal.value = competitorDetails.division.toString();
-  updateDivisionVisibilityModal();
+  pageCommon.updateDivisionVisibility(
+    elements.competitorStepSelectModal, "competitorDivisionLabelModal", "competitorDivisionColModal"
+  );
 
   // Clear team value before setData so the autocomplete dropdown doesn't appear
   elements.competitorTeamModal.value = "";
@@ -688,10 +677,10 @@ async function teamIndexWhenAddingCompetitor(club: IClub) : Promise<number | nul
   }
 
   const existingTeamIndex = competition.teams.findIndex((team) =>
-    team.name.toLowerCase() == teamField.value.toLowerCase() && team.clubId == club.id
+    team.name.toLowerCase() === teamField.value.toLowerCase() && team.clubId === club.id
   );
 
-  if(existingTeamIndex != -1) {
+  if(existingTeamIndex !== -1) {
     logger.debug("Team matched by name; reusing existing", {
       teamName: teamField.value, clubName: club.name, teamIndex: existingTeamIndex,
     });
@@ -805,7 +794,7 @@ async function addCompetitor() {
 }
 
 async function groupSelectChanged(event: Event) {
-  const select = <HTMLSelectElement>event.target;
+  const select = event.target as HTMLSelectElement;
   const competitorId = parseInt(select.getAttribute(COMPETITOR_ID_ATTR_NAME));
 
   const competitor: CompetitionCompetitorDetails = competition.getCompetitorById(competitorId);
@@ -923,16 +912,11 @@ function setupGroupAssignToolbar() {
   updateGroupAssignToolbar();
 }
 
-async function clubById(id: number) : Promise<IClub> {
-  // TODO: cache (local, or in a DAO layer)
-  if(isNaN(id)) {
-    return undefined; // Mostly belt'n'braces for old bugs.
-  }
-  const clubs = db.clubs.where(":id").equals(id);
-  if (await clubs.count() == 0) {
+async function clubById(id: number): Promise<IClub> {
+  if (isNaN(id)) {
     return undefined;
   }
-  return clubs.first();
+  return db.clubs.where(":id").equals(id).first();
 }
 
 async function clubForCompetitor(competitor: ICompetitor) : Promise<IClub> {
@@ -972,7 +956,7 @@ async function fetchTeamsForClubForAutoComplete(clubId: number) {
       clubId: team.clubId,
     };
   }).filter(team => {
-    return team.clubId == clubId;
+    return team.clubId === clubId;
   }).sort((a, b) => a.label.localeCompare(b.label));
 }
 
@@ -980,7 +964,7 @@ function updateCollapsedText(competition: ICompetition) {
   elements.detailsCollapsedText.innerText = `${competition.name} - ${competition.date} - ${competition.location}`;
 }
 
-async function loadCompetition(compId: number) {
+async function loadCompetition(compId: number | undefined) {
   if(compId) {
     competition = await db.competitions.where(":id").equals(compId).first();
     if(competition) {
@@ -999,31 +983,31 @@ async function loadCompetition(compId: number) {
         floor: competition.floor,
         state: competition.state,
       });
-      (<HTMLInputElement>elements.competitionName).value = competition.name;
-      (<HTMLInputElement>elements.competitionDate).value = competition.date;
-      (<HTMLInputElement>elements.competitionLocation).value = competition.location;
-      (<HTMLInputElement>elements.enableBar).checked = competition.bar;
-      (<HTMLInputElement>elements.enableBeam).checked = competition.beam;
-      (<HTMLInputElement>elements.enableFloor).checked = competition.floor;
-      (<HTMLInputElement>elements.enableVault).checked = competition.vault;
+      (elements.competitionName as HTMLInputElement).value = competition.name;
+      (elements.competitionDate as HTMLInputElement).value = competition.date;
+      (elements.competitionLocation as HTMLInputElement).value = competition.location;
+      (elements.enableBar as HTMLInputElement).checked = competition.bar;
+      (elements.enableBeam as HTMLInputElement).checked = competition.beam;
+      (elements.enableFloor as HTMLInputElement).checked = competition.floor;
+      (elements.enableVault as HTMLInputElement).checked = competition.vault;
       updateCollapsedText(competition);
     } else {
       logger.warn("Competition not found in DB", { compId });
     }
   } else {
     logger.info("No competition ID in URL; creating new competition");
-    (<HTMLInputElement>elements.enableBar).checked =
-    (<HTMLInputElement>elements.enableBeam).checked =
-    (<HTMLInputElement>elements.enableFloor).checked =
-    (<HTMLInputElement>elements.enableVault).checked = true;
+    (elements.enableBar as HTMLInputElement).checked =
+    (elements.enableBeam as HTMLInputElement).checked =
+    (elements.enableFloor as HTMLInputElement).checked =
+    (elements.enableVault as HTMLInputElement).checked = true;
   }
 }
 
 async function saveCompetitionDetails() {
   if (competition) {
-    competition.name = (<HTMLInputElement>elements.competitionName).value;
-    competition.date = (<HTMLInputElement>elements.competitionDate).value;
-    competition.location = (<HTMLInputElement>elements.competitionLocation).value;
+    competition.name = (elements.competitionName as HTMLInputElement).value;
+    competition.date = (elements.competitionDate as HTMLInputElement).value;
+    competition.location = (elements.competitionLocation as HTMLInputElement).value;
     competition.state = CompetitionState.Preparing;
     populateCompetitionDisciplines(competition);
     logger.debug("Auto-saving competition details", {
@@ -1046,9 +1030,9 @@ async function saveCompetitionDetails() {
 // Called by the 'save' button when there is no pre-existing competition
 async function createCompetition() {
   competition = new Competition(
-    (<HTMLInputElement>elements.competitionName).value,
-    (<HTMLInputElement>elements.competitionDate).value,
-    (<HTMLInputElement>elements.competitionLocation).value,
+    (elements.competitionName as HTMLInputElement).value,
+    (elements.competitionDate as HTMLInputElement).value,
+    (elements.competitionLocation as HTMLInputElement).value,
   );
   populateCompetitionDisciplines(competition);
   await db.competitions.add(competition);
@@ -1066,10 +1050,10 @@ async function createCompetition() {
 }
 
 function populateCompetitionDisciplines(competition: ICompetition) {
-  competition.vault = (<HTMLInputElement>elements.enableVault).checked;
-  competition.bar = (<HTMLInputElement>elements.enableBar).checked;
-  competition.beam = (<HTMLInputElement>elements.enableBeam).checked;
-  competition.floor = (<HTMLInputElement>elements.enableFloor).checked;
+  competition.vault = (elements.enableVault as HTMLInputElement).checked;
+  competition.bar = (elements.enableBar as HTMLInputElement).checked;
+  competition.beam = (elements.enableBeam as HTMLInputElement).checked;
+  competition.floor = (elements.enableFloor as HTMLInputElement).checked;
 }
 
 function setFormFieldsEnabled(enabled: boolean) {
@@ -1080,7 +1064,7 @@ function setFormFieldsEnabled(enabled: boolean) {
   ];
   for (const field of fields) {
     field.classList.toggle("disabled", !enabled);
-    (<HTMLInputElement>field).disabled = !enabled;
+    (field as HTMLInputElement).disabled = !enabled;
   }
 }
 
@@ -1114,7 +1098,7 @@ async function checkNationalIdDuplicate() {
 let autoSaveTimer: ReturnType<typeof setTimeout> = null;
 
 function autoSave() {
-  if (!(<HTMLFormElement>elements.detailsForm).checkValidity()) {
+  if (!(elements.detailsForm as HTMLFormElement).checkValidity()) {
     return;
   }
   clearTimeout(autoSaveTimer);
@@ -1141,29 +1125,3 @@ type AutoCompleteData = {
 type AutoCompleteCallbackOnInputFunc = {
   (): void;
 }
-
-async function populateFakeCompetitors() {
-  db.competitors.toCollection().delete();
-
-  const firstNames = ["Amelia", "Barbara", "Collette", "Daphne", "Erin", "Francis", "Geri", "Harriet", "Isabelle",
-    "Jeanette", "Karen", "Lisa", "Margaret", "Nancy", "Ophelia", "Paris", "Rosie", "Susan", "Teri", "Ursula", "Vivian",
-    "Wendy", "Xavier", "Yvette", "Zorro"];
-  const lastNames = ["White", "Green", "Black", "Brown", "Purple", "Red", "Yellow", "Pink", "Mauve", "Taupe", "Orange",
-    "Indigo", "Violet", "Turquoise"];
-  const club = new Club("St Bernadettes", 1);
-  db.clubs.put(club);
-  for (let i=0; i < 20; i++) {
-    const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
-    const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
-
-    db.competitors.put(new Competitor(
-      `a${i}`,
-      `${firstName} ${lastName}`,
-      Math.floor(Math.random() * 9)+1,
-      Math.random() < 0.5 ? Division.Under : Division.Over,
-      club.id
-    ));
-  }
-}
-
-// TODO: some sort of alert if not all competitors are in groups

@@ -14,12 +14,12 @@
 // see <https://www.gnu.org/licenses/>.
 
 import { jsPDF } from "jspdf";
-import { Competition, CompetitionCompetitorDetails } from "../../common/data/competition";
-import { Division, hasDivisions } from "../../common/data/division";
+import { CompetitionData, CompetitionCompetitorDetails } from "../../common/data/competition";
 import { getCompetitorsByStep } from "../../common/competitors_by";
 import {
-  PAGE_WIDTH, PAGE_HEIGHT, MARGIN, BOTTOM_MARGIN, ROW_HEIGHT, HEADING_FONT_SIZE, BODY_FONT_SIZE,
-  enabledApparatuses, formatScore, capitalise, ordinal, teamApparatusScore, addStepTitlePage,
+  PAGE_WIDTH, MARGIN, ROW_HEIGHT, HEADING_FONT_SIZE, BODY_FONT_SIZE,
+  enabledApparatuses, formatScore, ordinal, addStepTitlePage, divisionSegments,
+  apparatusLabel, PageState, checkPageBreak, rankByScore, computeTeamTotals,
 } from "./common";
 
 const TOP_X = 3;
@@ -27,10 +27,6 @@ const TOP_X = 3;
 // Fixed apparatus display order for announcements (least dramatic to most dramatic).
 // "bar" is displayed as "U Bars" per gymnastics convention.
 const ANNOUNCEMENT_APPARATUS_ORDER = ["floor", "beam", "bar", "vault"];
-
-function apparatusLabel(apparatus: string): string {
-  return apparatus === "bar" ? "U Bars" : capitalise(apparatus);
-}
 
 // Competitor section column x-positions
 const NAME_COL = MARGIN;
@@ -48,13 +44,6 @@ const TEAM_SCORE_COL = TEAM_NAME_COL + TEAM_NAME_WIDTH;
 const TEAM_SCORE_WIDTH = 30;
 const TEAM_MEMBERS_COL = TEAM_SCORE_COL + TEAM_SCORE_WIDTH;
 
-interface PageState {
-  doc: jsPDF;
-  competition: Competition;
-  step: string;
-  y: number;
-}
-
 interface PlacingInfo {
   label: string;
   place: number;
@@ -67,7 +56,7 @@ interface AnnouncementRow {
   placings: PlacingInfo[];
 }
 
-export function generateAnnouncements(competition: Competition): jsPDF {
+export function generateAnnouncements(competition: CompetitionData): jsPDF {
   const doc = new jsPDF({ orientation: "landscape" });
   doc.deletePage(1);
 
@@ -82,22 +71,9 @@ export function generateAnnouncements(competition: Competition): jsPDF {
   return doc;
 }
 
-function checkPageBreak(state: PageState, neededHeight: number) {
-  if (state.y + neededHeight > PAGE_HEIGHT - BOTTOM_MARGIN) {
-    state.doc.addPage("a4", "landscape");
-    state.doc.setFont("helvetica", "normal");
-    state.doc.setFontSize(8);
-    state.doc.text(
-      `${state.competition.name} \u2014 WAG Step ${state.step} Announcements (continued)`,
-      MARGIN, MARGIN + 4
-    );
-    state.y = MARGIN + 10;
-  }
-}
-
 function addStepAnnouncements(
   doc: jsPDF,
-  competition: Competition,
+  competition: CompetitionData,
   apparatuses: string[],
   competitors: CompetitionCompetitorDetails[],
   step: string
@@ -111,51 +87,12 @@ function addStepAnnouncements(
 
   const state: PageState = { doc, competition, step, y };
 
-  if (hasDivisions(parseInt(step))) {
-    const unders = competitors.filter((c) => c.division === Division.Under);
-    const overs = competitors.filter((c) => c.division === Division.Over);
-    if (unders.length > 0) {
-      addDivisionAnnouncements(state, "Unders", apparatuses, unders);
-      state.y += 8;
-    }
-    if (overs.length > 0) {
-      addDivisionAnnouncements(state, "Overs", apparatuses, overs);
-      state.y += 8;
-    }
-  } else {
-    if (competitors.length > 0) {
-      addDivisionAnnouncements(state, "Competitors", apparatuses, competitors);
-      state.y += 8;
-    }
+  for (const segment of divisionSegments(competitors, step, true)) {
+    addDivisionAnnouncements(state, segment.label, apparatuses, segment.competitors);
+    state.y += 8;
   }
 
   addTeamAnnouncements(state, competition, apparatuses, competitors);
-}
-
-// Compute places for a list of competitors scored by getScore.
-// Competitors for whom getScore returns undefined are excluded.
-// Ties share the same place number; tied entries are flagged.
-function computeWithPlaces(
-  competitors: CompetitionCompetitorDetails[],
-  getScore: (c: CompetitionCompetitorDetails) => number | undefined
-): Map<number, { place: number; tied: boolean }> {
-  const withScore = competitors
-    .filter((c) => getScore(c) !== undefined)
-    .sort((a, b) => (getScore(b) ?? 0) - (getScore(a) ?? 0));
-
-  const result = new Map<number, { place: number; tied: boolean }>();
-  for (let i = 0; i < withScore.length; i++) {
-    const isTie = i > 0 && getScore(withScore[i]) === getScore(withScore[i - 1]);
-    const place = isTie ? (result.get(withScore[i - 1].competitorId)?.place ?? i + 1) : i + 1;
-    result.set(withScore[i].competitorId, { place, tied: false });
-  }
-  for (const [id, entry] of result) {
-    const count = [...result.values()].filter((e) => e.place === entry.place).length;
-    if (count > 1) {
-      result.set(id, { ...entry, tied: true });
-    }
-  }
-  return result;
 }
 
 function competitorOverallScore(competitor: CompetitionCompetitorDetails, apparatuses: string[]): number {
@@ -172,7 +109,7 @@ function buildDivisionRows(
 ): AnnouncementRow[] {
   const announcementApparatuses = ANNOUNCEMENT_APPARATUS_ORDER.filter((ap) => apparatuses.includes(ap));
 
-  const overallPlacings = computeWithPlaces(
+  const overallPlacings = rankByScore(
     competitors,
     (c) => apparatuses.some((ap) => c.scores[ap] !== undefined)
       ? competitorOverallScore(c, apparatuses)
@@ -181,7 +118,7 @@ function buildDivisionRows(
 
   const apparatusPlacings = new Map<string, Map<number, { place: number; tied: boolean }>>();
   for (const ap of announcementApparatuses) {
-    apparatusPlacings.set(ap, computeWithPlaces(competitors, (c) => c.scores[ap]?.finalScore));
+    apparatusPlacings.set(ap, rankByScore(competitors, (c) => c.scores[ap]?.finalScore));
   }
 
   // Build candidate set: all competitors with a qualifying placing (<= TOP_X in any category).
@@ -275,7 +212,7 @@ function addDivisionAnnouncements(
 ) {
   const doc = state.doc;
 
-  checkPageBreak(state, ROW_HEIGHT * 3);
+  checkPageBreak(state, ROW_HEIGHT * 3, "Announcements");
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(HEADING_FONT_SIZE);
@@ -298,7 +235,7 @@ function addDivisionAnnouncements(
     const lines: string[] = doc.splitTextToSize(placingsText, PLACINGS_WIDTH);
     const rowHeight = ROW_HEIGHT * Math.max(1, lines.length);
 
-    checkPageBreak(state, rowHeight);
+    checkPageBreak(state, rowHeight, "Announcements");
     doc.text(row.competitor.competitorName, NAME_COL, state.y);
     for (let i = 0; i < lines.length; i++) {
       doc.text(lines[i], PLACINGS_COL, state.y + i * ROW_HEIGHT);
@@ -310,7 +247,7 @@ function addDivisionAnnouncements(
 
 function addTeamAnnouncements(
   state: PageState,
-  competition: Competition,
+  competition: CompetitionData,
   apparatuses: string[],
   competitors: CompetitionCompetitorDetails[]
 ) {
@@ -319,22 +256,13 @@ function addTeamAnnouncements(
   const teamIndices = Array.from(new Set(
     competitors.map((c) => c.teamIndex).filter((i): i is number => i !== null)
   ));
-  const teamTotals = teamIndices
-    .map((teamIndex) => {
-      const total = apparatuses.reduce((sum, ap) => {
-        const score = teamApparatusScore(competitors, teamIndex, ap);
-        return score !== null ? sum + score : sum;
-      }, 0);
-      const hasScore = apparatuses.some((ap) => teamApparatusScore(competitors, teamIndex, ap) !== null);
-      return { teamIndex, total, hasScore };
-    })
+  const teamTotals = computeTeamTotals(teamIndices, competitors, apparatuses)
     .filter((t) => t.hasScore)
     .sort((a, b) => b.total - a.total)
     .slice(0, TOP_X);
 
   if (teamTotals.length === 0) { return; }
 
-  // Assign places and flag ties
   const placedTeams: Array<{ teamIndex: number; total: number; place: number; tied: boolean }> = [];
   let place = 1;
   for (let i = 0; i < teamTotals.length; i++) {
@@ -380,7 +308,7 @@ function addTeamAnnouncements(
         .map((c) => c.competitorName)
         .join(", ");
 
-      checkPageBreak(state, ROW_HEIGHT);
+      checkPageBreak(state, ROW_HEIGHT, "Announcements");
       doc.setFontSize(BODY_FONT_SIZE);
       doc.text(`${ordinal(p)}${tied ? "=" : ""}`, TEAM_PLACE_COL, state.y);
       doc.text(team.name, TEAM_NAME_COL, state.y);

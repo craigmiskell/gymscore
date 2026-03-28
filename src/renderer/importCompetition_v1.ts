@@ -342,6 +342,17 @@ async function complete(state: V1ImportState, decisions: V1ImportDecisions): Pro
   return newId;
 }
 
+function isCompetitionExportV1(data: unknown): data is CompetitionExportV1 {
+  if (typeof data !== "object" || data === null) { return false; }
+  const d = data as Record<string, unknown>;
+  return (
+    typeof d.formatVersion === "number" &&
+    typeof d.competition === "object" &&
+    d.competition !== null &&
+    Array.isArray((d.competition as Record<string, unknown>).competitors)
+  );
+}
+
 export const v1Handler: CompetitionImportHandler = {
   async run(
     data: unknown,
@@ -349,7 +360,11 @@ export const v1Handler: CompetitionImportHandler = {
     showReconcileModal: ShowReconcileModal,
   ): Promise<ImportCompetitionResult> {
     logger.info("Starting v1 import");
-    const prep = await prepare(data as CompetitionExportV1);
+    if (!isCompetitionExportV1(data)) {
+      throw new Error("Import data does not match expected CompetitionExportV1 structure");
+    }
+    const exportData = data;
+    const prep = await prepare(exportData);
 
     let duplicateAction: DuplicateAction | undefined;
     if (prep.duplicate) {

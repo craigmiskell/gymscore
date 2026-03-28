@@ -13,15 +13,9 @@
 // You should have received a copy of the GNU General Public License along with this program. If not,
 // see <https://www.gnu.org/licenses/>.
 
-import { LogLevel } from "../common/logger-types";
+import { LogLevel, renderTemplate } from "../common/logger-types";
 
 declare const api: typeof import("../common/api").default;
-
-function renderTemplate(template: string, fields: Record<string, unknown>): string {
-  return template.replace(/\{(\w+)\}/g, (_match, key: string) => {
-    return key in fields ? String(fields[key]) : `{${key}}`;
-  });
-}
 
 function log(level: LogLevel, template: string, fields: Record<string, unknown>) {
   const message = renderTemplate(template, fields);

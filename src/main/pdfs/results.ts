@@ -14,17 +14,17 @@
 // see <https://www.gnu.org/licenses/>.
 
 import { jsPDF } from "jspdf";
-import { Competition, CompetitionCompetitorDetails } from "../../common/data/competition";
-import { Division, hasDivisions } from "../../common/data/division";
+import { CompetitionData, CompetitionCompetitorDetails } from "../../common/data/competition";
 import { getCompetitorsByStep } from "../../common/competitors_by";
 import {
-  PAGE_WIDTH, PAGE_HEIGHT, MARGIN, CONTENT_WIDTH, BOTTOM_MARGIN, ROW_HEIGHT, HEADING_FONT_SIZE, BODY_FONT_SIZE,
-  enabledApparatuses, formatScore, capitalise, ordinal, teamApparatusScore, addStepTitlePage,
+  PAGE_WIDTH, MARGIN, CONTENT_WIDTH, ROW_HEIGHT, HEADING_FONT_SIZE, BODY_FONT_SIZE,
+  enabledApparatuses, formatScore, capitalise, ordinal, teamApparatusScore, addStepTitlePage, divisionSegments,
+  PageState, checkPageBreak, rankByScore, computeTeamTotals,
 } from "./common";
 
 const PLACING_FONT_SIZE = 7;
 
-export function generateResults(competition: Competition): jsPDF {
+export function generateResults(competition: CompetitionData): jsPDF {
   const doc = new jsPDF({ orientation: "landscape" });
   doc.deletePage(1);
 
@@ -43,46 +43,25 @@ function formatDScore(score: number): string {
   return parseFloat((Math.floor(score) / 1000).toFixed(3)).toString();
 }
 
-// Returns a map from competitorId to 1-based rank for the given apparatus across all competitors at this step.
-// Competitors with equal scores receive the same rank.
 function computePlacings(competitors: CompetitionCompetitorDetails[], apparatus: string): Map<number, number> {
-  const withScore = competitors
-    .filter((c) => c.scores[apparatus] !== undefined)
-    .sort((a, b) => b.scores[apparatus].finalScore - a.scores[apparatus].finalScore);
-
-  const result = new Map<number, number>();
-  for (let i = 0; i < withScore.length; i++) {
-    const isTie = i > 0 &&
-      withScore[i].scores[apparatus].finalScore === withScore[i - 1].scores[apparatus].finalScore;
-    result.set(withScore[i].competitorId, isTie ? result.get(withScore[i - 1].competitorId) : i + 1);
-  }
-  return result;
+  const ranked = rankByScore(competitors, (c) => c.scores[apparatus]?.finalScore);
+  return new Map([...ranked.entries()].map(([id, { place }]) => [id, place]));
 }
 
-interface PageState {
-  doc: jsPDF;
-  competition: Competition;
-  step: string;
-  y: number;
-}
-
-function addContinuationHeader(state: PageState) {
-  state.doc.addPage("a4", "landscape");
-  state.doc.setFont("helvetica", "normal");
-  state.doc.setFontSize(8);
-  state.doc.text(`${state.competition.name} \u2014 WAG Step ${state.step} (continued)`, MARGIN, MARGIN + 4);
-  state.y = MARGIN + 10;
-}
-
-function checkPageBreak(state: PageState, neededHeight: number) {
-  if (state.y + neededHeight > PAGE_HEIGHT - BOTTOM_MARGIN) {
-    addContinuationHeader(state);
-  }
+function computeOverallPlacings(
+  competitors: CompetitionCompetitorDetails[],
+  apparatuses: string[]
+): Map<number, { place: number; tied: boolean }> {
+  return rankByScore(competitors, (c) =>
+    apparatuses.some((ap) => c.scores[ap] !== undefined)
+      ? apparatuses.reduce((sum, ap) => sum + (c.scores[ap]?.finalScore ?? 0), 0)
+      : undefined
+  );
 }
 
 function addStepResults(
   doc: jsPDF,
-  competition: Competition,
+  competition: CompetitionData,
   apparatuses: string[],
   competitors: CompetitionCompetitorDetails[],
   step: string
@@ -104,20 +83,10 @@ function addStepResults(
     placings.set(apparatus, computePlacings(competitors, apparatus));
   }
 
-  if (hasDivisions(parseInt(step))) {
-    const overs = competitors.filter((c) => c.division === Division.Over);
-    const unders = competitors.filter((c) => c.division === Division.Under);
-    if (overs.length > 0) {
-      addCompetitorTable(state, "Overs", apparatuses, overs, placings, competition);
-      state.y += 8;
-    }
-    if (unders.length > 0) {
-      addCompetitorTable(state, "Unders", apparatuses, unders, placings, competition);
-    }
-  } else {
-    if (competitors.length > 0) {
-      addCompetitorTable(state, "Competitors", apparatuses, competitors, placings, competition);
-    }
+  const segments = divisionSegments(competitors, step);
+  for (let i = 0; i < segments.length; i++) {
+    if (i > 0) { state.y += 8; }
+    addCompetitorTable(state, segments[i].label, apparatuses, segments[i].competitors, placings, competition);
   }
 }
 
@@ -146,7 +115,7 @@ function computeTeamColLayout(apparatuses: string[]): TeamColLayout {
 
 function addTeamTable(
   state: PageState,
-  competition: Competition,
+  competition: CompetitionData,
   apparatuses: string[],
   competitors: CompetitionCompetitorDetails[],
   teamIndices: number[]
@@ -171,19 +140,10 @@ function addTeamTable(
   doc.line(MARGIN, state.y, PAGE_WIDTH - MARGIN, state.y);
   state.y += ROW_HEIGHT;
 
-  const teamOveralls = teamIndices.map((teamIndex) => {
-    const overall = apparatuses.reduce((sum, apparatus) => {
-      const score = teamApparatusScore(competitors, teamIndex, apparatus);
-      return score !== null ? sum + score : sum;
-    }, 0);
-    const hasAnyScore = apparatuses.some(
-      (apparatus) => teamApparatusScore(competitors, teamIndex, apparatus) !== null
-    );
-    return { teamIndex, overall, hasAnyScore };
-  });
-  teamOveralls.sort((a, b) => b.overall - a.overall);
+  const teamOveralls = computeTeamTotals(teamIndices, competitors, apparatuses)
+    .sort((a, b) => b.total - a.total);
 
-  for (const { teamIndex, overall, hasAnyScore } of teamOveralls) {
+  for (const { teamIndex, total, hasScore } of teamOveralls) {
     const team = competition.teams[teamIndex];
     if (!team) { continue; }
 
@@ -195,7 +155,7 @@ function addTeamTable(
       const score = teamApparatusScore(competitors, teamIndex, apparatuses[i]);
       doc.text(score !== null ? formatScore(score) : "-", layout.apparatus[i], state.y);
     }
-    doc.text(hasAnyScore ? formatScore(overall) : "-", layout.overall, state.y);
+    doc.text(hasScore ? formatScore(total) : "-", layout.overall, state.y);
     state.y += ROW_HEIGHT;
   }
 }
@@ -234,34 +194,6 @@ function computeCompetitorColLayout(apparatuses: string[]): CompetitorColLayout 
   return layout;
 }
 
-function computeOverallPlacings(
-  competitors: CompetitionCompetitorDetails[],
-  apparatuses: string[]
-): Map<number, { place: number; tied: boolean }> {
-  const totals = competitors.map((c) => ({
-    id: c.competitorId,
-    total: apparatuses.reduce((sum, ap) => sum + (c.scores[ap]?.finalScore ?? 0), 0),
-  }));
-  totals.sort((a, b) => b.total - a.total);
-
-  const result = new Map<number, { place: number; tied: boolean }>();
-  for (let i = 0; i < totals.length; i++) {
-    const place = i === 0 ? 1 : (
-      totals[i].total === totals[i - 1].total
-        ? result.get(totals[i - 1].id).place
-        : i + 1
-    );
-    result.set(totals[i].id, { place, tied: false });
-  }
-  // Mark ties
-  for (const [id, entry] of result) {
-    const samePlace = [...result.values()].filter((e) => e.place === entry.place);
-    if (samePlace.length > 1) {
-      result.set(id, { ...entry, tied: true });
-    }
-  }
-  return result;
-}
 
 function addCompetitorTable(
   state: PageState,
@@ -269,7 +201,7 @@ function addCompetitorTable(
   apparatuses: string[],
   competitors: CompetitionCompetitorDetails[],
   placings: Map<string, Map<number, number>>,
-  competition: Competition
+  competition: CompetitionData
 ) {
   const doc = state.doc;
   const layout = computeCompetitorColLayout(apparatuses);

@@ -39,3 +39,9 @@ export interface LogEntry {
   message: string;
   fields: Record<string, unknown>;
 }
+
+export function renderTemplate(template: string, fields: Record<string, unknown>): string {
+  return template.replace(/\{(\w+)\}/g, (_match, key: string) => {
+    return key in fields ? String(fields[key]) : `{${key}}`;
+  });
+}

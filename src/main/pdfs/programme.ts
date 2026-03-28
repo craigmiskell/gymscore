@@ -13,15 +13,14 @@
 // You should have received a copy of the GNU General Public License along with this program. If not,
 // see <https://www.gnu.org/licenses/>.
 
-import { Competition, Team} from "../../common/data";
+import { CompetitionData, Team} from "../../common/data";
 import { Division, hasDivisions } from "../../common/data";
 import { jsPDF } from "jspdf";
 import { CompetitionCompetitorDetails } from "../../common/data/competition";
 import { getCompetitorsByGroup, getCompetitorsByStep } from "../../common/competitors_by";
+import { PAGE_WIDTH } from "./common";
 
-const PAGE_WIDTH_LANDSCAPE=297;
-
-export function generateProgramme(competition: Competition) {
+export function generateProgramme(competition: CompetitionData) {
   const doc = new jsPDF({
     orientation: "landscape",
   });
@@ -69,7 +68,7 @@ function addSheetForStep(doc: jsPDF, teams: Team[], competitors: CompetitionComp
 
   doc.text("WAG Step " + step, 10, y, {align: "left"});
   y += 2;
-  doc.line(margin, y, PAGE_WIDTH_LANDSCAPE - margin, y);
+  doc.line(margin, y, PAGE_WIDTH - margin, y);
   y += 10;
 
   doc.setFontSize(10);

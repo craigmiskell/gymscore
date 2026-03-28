@@ -13,6 +13,18 @@
 // You should have received a copy of the GNU General Public License along with this program. If not,
 // see <https://www.gnu.org/licenses/>.
 
+import { db } from "./data/gymscoredb";
+import { ICompetition } from "../common/data";
+import * as pageCommon from "./page_common";
+import { generatePrepSheets, generateAllResultPDFs } from "./competition_pdfs";
+import { Collapse, Modal } from "bootstrap";
+import { exportDB, importInto } from "dexie-export-import";
+import { logger } from "./logger";
+import { buildCompetitionExport } from "./exportCompetition";
+import { importCompetition } from "./importCompetition";
+
+declare const api: typeof import("../common/api").default;
+
 logger.info("Renderer index loaded");
 
 const COMPETITION_ID_ATTR = "competitionId";
@@ -34,18 +46,6 @@ navigator.storage.estimate().then(estimation =>{
     usageMB: (estimation.usage / 1024 / 1024).toFixed(3),
   });
 });
-
-import { db } from "./data/gymscoredb";
-import { ICompetition } from "../common/data";
-import * as pageCommon from "./page_common";
-import { generatePrepSheets, generateAllResultPDFs } from "./competition_pdfs";
-import { Collapse, Modal } from "bootstrap";
-import { exportDB, importInto } from "dexie-export-import";
-import { logger } from "./logger";
-import { buildCompetitionExport } from "./exportCompetition";
-import { importCompetition } from "./importCompetition";
-
-declare const api: typeof import("../common/api").default;
 
 type CompetitionCallback = (competition: ICompetition) => void;
 type SortCol = "name" | "date" | "location";

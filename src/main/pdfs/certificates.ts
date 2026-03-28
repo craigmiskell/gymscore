@@ -14,10 +14,13 @@
 // see <https://www.gnu.org/licenses/>.
 
 import { jsPDF } from "jspdf";
-import { Competition, CompetitionCompetitorDetails } from "../../common/data/competition";
+import { CompetitionData, CompetitionCompetitorDetails } from "../../common/data/competition";
 import { Division } from "../../common/data/division";
 import { getCompetitorsByStep } from "../../common/competitors_by";
-import { enabledApparatuses, formatScore, ordinal, capitalise, teamApparatusScore } from "./common";
+import {
+  enabledApparatuses, formatScore, ordinal,
+  apparatusLabel, rankByScore, computeTeamTotals,
+} from "./common";
 
 const MONTH_NAMES = [
   "January", "February", "March", "April", "May", "June",
@@ -32,10 +35,6 @@ function formatDate(date: string): string {
   const year = parts[0];
   if (isNaN(day) || isNaN(month) || month < 0 || month > 11) { return date; }
   return `${day} ${MONTH_NAMES[month]} ${year}`;
-}
-
-function apparatusLabel(apparatus: string): string {
-  return apparatus === "bar" ? "U Bars" : capitalise(apparatus);
 }
 
 const UNDER_AGE: Record<number, number> = {
@@ -57,40 +56,15 @@ function stepDivisionLine(step: string, division: Division | null): string {
   return "WAG Step " + step;
 }
 
-// Compute placing and tie information for a set of competitors scored by getScore.
-// Competitors for whom getScore returns undefined are excluded.
-function computePlacings(
-  competitors: CompetitionCompetitorDetails[],
-  getScore: (c: CompetitionCompetitorDetails) => number | undefined
-): Map<number, { place: number; tied: boolean }> {
-  const withScore = competitors
-    .filter((c) => getScore(c) !== undefined)
-    .sort((a, b) => (getScore(b) ?? 0) - (getScore(a) ?? 0));
-
-  const result = new Map<number, { place: number; tied: boolean }>();
-  for (let i = 0; i < withScore.length; i++) {
-    const isTie = i > 0 && getScore(withScore[i]) === getScore(withScore[i - 1]);
-    const place = isTie ? (result.get(withScore[i - 1].competitorId)?.place ?? i + 1) : i + 1;
-    result.set(withScore[i].competitorId, { place, tied: false });
-  }
-  for (const [id, entry] of result) {
-    const count = [...result.values()].filter((e) => e.place === entry.place).length;
-    if (count > 1) {
-      result.set(id, { ...entry, tied: true });
-    }
-  }
-  return result;
-}
-
 const TOP_CERTIFICATES = 3;
 
 const CERT_WIDTH = 297;   // landscape A4
 const CERT_HEIGHT = 210;  // landscape A4
-const MARGIN = 20;
+const CERT_MARGIN = 20;
 const CENTER_X = CERT_WIDTH / 2;
-const CONTENT_WIDTH = CERT_WIDTH - 2 * MARGIN;
+const CERT_CONTENT_WIDTH = CERT_WIDTH - 2 * CERT_MARGIN;
 
-export function generateCertificates(competition: Competition): jsPDF {
+export function generateCertificates(competition: CompetitionData): jsPDF {
   const doc = new jsPDF({ orientation: "portrait", format: "a4" });
   doc.deletePage(1);
 
@@ -108,7 +82,7 @@ export function generateCertificates(competition: Competition): jsPDF {
 
 function addTeamCertificates(
   doc: jsPDF,
-  competition: Competition,
+  competition: CompetitionData,
   apparatuses: string[],
   competitors: CompetitionCompetitorDetails[],
   step: string
@@ -117,15 +91,7 @@ function addTeamCertificates(
     competitors.map((c) => c.teamIndex).filter((i): i is number => i !== null)
   ));
 
-  const teamTotals = teamIndices
-    .map((teamIndex) => {
-      const total = apparatuses.reduce((sum, ap) => {
-        const score = teamApparatusScore(competitors, teamIndex, ap);
-        return score !== null ? sum + score : sum;
-      }, 0);
-      const hasScore = apparatuses.some((ap) => teamApparatusScore(competitors, teamIndex, ap) !== null);
-      return { teamIndex, total, hasScore };
-    })
+  const teamTotals = computeTeamTotals(teamIndices, competitors, apparatuses)
     .filter((t) => t.hasScore)
     .sort((a, b) => b.total - a.total);
 
@@ -158,7 +124,7 @@ function addTeamCertificates(
 
 function addIndividualCertificates(
   doc: jsPDF,
-  competition: Competition,
+  competition: CompetitionData,
   apparatuses: string[],
   competitors: CompetitionCompetitorDetails[],
   step: string
@@ -191,7 +157,7 @@ interface OverallPlacing {
 
 function addDivisionIndividualCertificates(
   doc: jsPDF,
-  competition: Competition,
+  competition: CompetitionData,
   apparatuses: string[],
   competitors: CompetitionCompetitorDetails[],
   step: string,
@@ -199,7 +165,7 @@ function addDivisionIndividualCertificates(
 ) {
   if (competitors.length === 0) { return; }
 
-  const overallPlacings = computePlacings(
+  const overallPlacings = rankByScore(
     competitors,
     (c) => apparatuses.some((ap) => c.scores[ap] !== undefined)
       ? apparatuses.reduce((sum, ap) => sum + (c.scores[ap]?.finalScore ?? 0), 0)
@@ -208,7 +174,7 @@ function addDivisionIndividualCertificates(
 
   const apparatusPlacings = new Map<string, Map<number, { place: number; tied: boolean }>>();
   for (const ap of apparatuses) {
-    apparatusPlacings.set(ap, computePlacings(competitors, (c) => c.scores[ap]?.finalScore));
+    apparatusPlacings.set(ap, rankByScore(competitors, (c) => c.scores[ap]?.finalScore));
   }
 
   // A competitor qualifies for a certificate if they place top X in any category
@@ -262,7 +228,7 @@ function addDivisionIndividualCertificates(
 
 function addTeamCertificate(
   doc: jsPDF,
-  competition: Competition,
+  competition: CompetitionData,
   step: string,
   teamName: string,
   members: string[],
@@ -272,16 +238,16 @@ function addTeamCertificate(
 ) {
   doc.addPage("a4", "landscape");
 
-  let y = MARGIN + 15;
+  let y = CERT_MARGIN + 15;
 
-  // Competition name
+  // CompetitionData name
   doc.setFont("helvetica", "bold");
   doc.setFontSize(18);
   doc.text(competition.name, CENTER_X, y, { align: "center" });
   y += 12;
 
   // Divider
-  doc.line(MARGIN, y, CERT_WIDTH - MARGIN, y);
+  doc.line(CERT_MARGIN, y, CERT_WIDTH - CERT_MARGIN, y);
   y += 12;
 
   // Team name
@@ -294,7 +260,7 @@ function addTeamCertificate(
   doc.setFont("helvetica", "normal");
   doc.setFontSize(11);
   const membersText = members.join(", ");
-  const wrappedMembers: string[] = doc.splitTextToSize(membersText, CONTENT_WIDTH);
+  const wrappedMembers: string[] = doc.splitTextToSize(membersText, CERT_CONTENT_WIDTH);
   doc.text(wrappedMembers, CENTER_X, y, { align: "center" });
   y += wrappedMembers.length * 7 + 16;
 
@@ -317,15 +283,15 @@ function addTeamCertificate(
   doc.text(formatDate(competition.date), CENTER_X, y, { align: "center" });
 
   // Signature line near bottom
-  const sigLineY = CERT_HEIGHT - MARGIN - 20;
-  const sigLineX1 = MARGIN + 30;
-  const sigLineX2 = CERT_WIDTH - MARGIN - 30;
+  const sigLineY = CERT_HEIGHT - CERT_MARGIN - 20;
+  const sigLineX1 = CERT_MARGIN + 30;
+  const sigLineX2 = CERT_WIDTH - CERT_MARGIN - 30;
   doc.line(sigLineX1, sigLineY, sigLineX2, sigLineY);
 }
 
 function addIndividualCertificate(
   doc: jsPDF,
-  competition: Competition,
+  competition: CompetitionData,
   step: string,
   division: Division | null,
   name: string,
@@ -335,16 +301,16 @@ function addIndividualCertificate(
 ) {
   doc.addPage("a4", "landscape");
 
-  let y = MARGIN + 15;
+  let y = CERT_MARGIN + 15;
 
-  // Competition name
+  // CompetitionData name
   doc.setFont("helvetica", "bold");
   doc.setFontSize(18);
   doc.text(competition.name, CENTER_X, y, { align: "center" });
   y += 12;
 
   // Divider
-  doc.line(MARGIN, y, CERT_WIDTH - MARGIN, y);
+  doc.line(CERT_MARGIN, y, CERT_WIDTH - CERT_MARGIN, y);
   y += 12;
 
   // Name
@@ -385,8 +351,8 @@ function addIndividualCertificate(
   doc.text(formatDate(competition.date), CENTER_X, y, { align: "center" });
 
   // Signature line near bottom
-  const sigLineY = CERT_HEIGHT - MARGIN - 20;
-  const sigLineX1 = MARGIN + 30;
-  const sigLineX2 = CERT_WIDTH - MARGIN - 30;
+  const sigLineY = CERT_HEIGHT - CERT_MARGIN - 20;
+  const sigLineX1 = CERT_MARGIN + 30;
+  const sigLineX2 = CERT_WIDTH - CERT_MARGIN - 30;
   doc.line(sigLineX1, sigLineY, sigLineX2, sigLineY);
 }

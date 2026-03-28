@@ -14,10 +14,9 @@
 // see <https://www.gnu.org/licenses/>.
 
 import { jsPDF } from "jspdf";
-import { Competition, CompetitionCompetitorDetails } from "../../common/data/competition";
+import { CompetitionData, CompetitionCompetitorDetails } from "../../common/data/competition";
 import { getCompetitorsByGroup, getCompetitorsByStep } from "../../common/competitors_by";
-
-const PAGE_WIDTH_LANDSCAPE=297;
+import { PAGE_WIDTH } from "./common";
 
 interface Titles {
   competitionSlug: string,
@@ -33,11 +32,12 @@ interface ColDef {
   width: number;
 }
 
-export function generateRecorderSheets(competition: Competition) {
+export function generateRecorderSheets(competition: CompetitionData) {
   const doc = new jsPDF({
     orientation: "landscape",
   });
 
+  // Uncomment to log available jsPDF font names to the console — useful when choosing fonts for new layouts.
   //console.log(doc.getFontList());
   // helvetica: [ 'normal', 'bold', 'italic', 'bolditalic' ],
   // Helvetica: [ '', 'Bold', 'Oblique', 'BoldOblique' ],
@@ -112,12 +112,12 @@ function addSheetsForStepGroup(doc: jsPDF, titles: Titles, competitors: Competit
 
   doc.text(titles.competitionSlug, 10, lineY(0), {align: "left"});
   doc.text("WAG Step " + titles.step, 10, lineY(1), {align: "left"});
-  doc.text("Apparatus: " + titles.apparatus, PAGE_WIDTH_LANDSCAPE - 10, lineY(1), {align: "right"});
+  doc.text("Apparatus: " + titles.apparatus, PAGE_WIDTH - 10, lineY(1), {align: "right"});
   doc.text("Group " + titles.group, 10, lineY(2), {align: "left"});
-  doc.text("Head Judge _________________________", PAGE_WIDTH_LANDSCAPE - 10, lineY(2), {align: "right"});
-  doc.text("Judge 1 _________________________", PAGE_WIDTH_LANDSCAPE - 10, lineY(3), {align: "right"});
-  doc.text("Judge 2 _________________________", PAGE_WIDTH_LANDSCAPE - 10, lineY(4), {align: "right"});
-  doc.text("Judge 3 _________________________", PAGE_WIDTH_LANDSCAPE - 10, lineY(5), {align: "right"});
+  doc.text("Head Judge _________________________", PAGE_WIDTH - 10, lineY(2), {align: "right"});
+  doc.text("Judge 1 _________________________", PAGE_WIDTH - 10, lineY(3), {align: "right"});
+  doc.text("Judge 2 _________________________", PAGE_WIDTH - 10, lineY(4), {align: "right"});
+  doc.text("Judge 3 _________________________", PAGE_WIDTH - 10, lineY(5), {align: "right"});
 
   const margin = 10;
   const tableTop = lineY(6);
@@ -210,6 +210,6 @@ function addSheetsForStepGroup(doc: jsPDF, titles: Titles, competitors: Competit
   }
 }
 
-function competitionSlug(competition: Competition) {
+function competitionSlug(competition: CompetitionData) {
   return competition.name +" - " + competition.location + " - " + competition.date;
 }

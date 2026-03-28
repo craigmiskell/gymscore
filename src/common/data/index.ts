@@ -17,8 +17,8 @@
 // for the reason for 'import type' (interfaces are weird)
 
 import { Competition, CompetitionState, Team} from "./competition";
-import type { ICompetition } from "./competition";
-export { Competition, ICompetition, CompetitionState, Team };
+import type { ICompetition, CompetitionData } from "./competition";
+export { Competition, ICompetition, CompetitionData, CompetitionState, Team };
 
 export { Division, hasDivisions } from "./division";
 

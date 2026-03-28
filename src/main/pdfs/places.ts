@@ -14,12 +14,12 @@
 // see <https://www.gnu.org/licenses/>.
 
 import { jsPDF } from "jspdf";
-import { Competition, CompetitionCompetitorDetails } from "../../common/data/competition";
-import { Division, hasDivisions } from "../../common/data/division";
+import { CompetitionData, CompetitionCompetitorDetails } from "../../common/data/competition";
 import { getCompetitorsByStep } from "../../common/competitors_by";
 import {
-  PAGE_WIDTH, PAGE_HEIGHT, MARGIN, BOTTOM_MARGIN, ROW_HEIGHT, HEADING_FONT_SIZE, BODY_FONT_SIZE,
-  enabledApparatuses, formatScore, capitalise, ordinal, teamApparatusScore, addStepTitlePage,
+  PAGE_WIDTH, MARGIN, ROW_HEIGHT, HEADING_FONT_SIZE, BODY_FONT_SIZE,
+  enabledApparatuses, formatScore, capitalise, ordinal, addStepTitlePage, divisionSegments,
+  PageState, checkPageBreak, rankByScore, computeTeamTotals,
 } from "./common";
 
 // Team section column x-positions
@@ -43,14 +43,7 @@ const DIV_SCORE_COL = DIV_NAME_COL + DIV_NAME_WIDTH;
 const DIV_SCORE_WIDTH = 30;
 const DIV_CLUB_COL = DIV_SCORE_COL + DIV_SCORE_WIDTH;
 
-interface PageState {
-  doc: jsPDF;
-  competition: Competition;
-  step: string;
-  y: number;
-}
-
-export function generatePlaces(competition: Competition): jsPDF {
+export function generatePlaces(competition: CompetitionData): jsPDF {
   const doc = new jsPDF({ orientation: "landscape" });
   doc.deletePage(1);
 
@@ -65,19 +58,9 @@ export function generatePlaces(competition: Competition): jsPDF {
   return doc;
 }
 
-function checkPageBreak(state: PageState, neededHeight: number) {
-  if (state.y + neededHeight > PAGE_HEIGHT - BOTTOM_MARGIN) {
-    state.doc.addPage("a4", "landscape");
-    state.doc.setFont("helvetica", "normal");
-    state.doc.setFontSize(8);
-    state.doc.text(`${state.competition.name} \u2014 WAG Step ${state.step} (continued)`, MARGIN, MARGIN + 4);
-    state.y = MARGIN + 10;
-  }
-}
-
 function addStepPlaces(
   doc: jsPDF,
-  competition: Competition,
+  competition: CompetitionData,
   apparatuses: string[],
   competitors: CompetitionCompetitorDetails[],
   step: string
@@ -86,28 +69,15 @@ function addStepPlaces(
 
   addTeamPlaces(state, competition, apparatuses, competitors);
 
-  if (hasDivisions(parseInt(step))) {
-    const overs = competitors.filter((c) => c.division === Division.Over);
-    const unders = competitors.filter((c) => c.division === Division.Under);
-    if (overs.length > 0) {
-      state.y += 8;
-      addDivisionPlaces(state, "Overs", apparatuses, overs);
-    }
-    if (unders.length > 0) {
-      state.y += 8;
-      addDivisionPlaces(state, "Unders", apparatuses, unders);
-    }
-  } else {
-    if (competitors.length > 0) {
-      state.y += 8;
-      addDivisionPlaces(state, "Competitors", apparatuses, competitors);
-    }
+  for (const segment of divisionSegments(competitors, step)) {
+    state.y += 8;
+    addDivisionPlaces(state, segment.label, apparatuses, segment.competitors);
   }
 }
 
 function addTeamPlaces(
   state: PageState,
-  competition: Competition,
+  competition: CompetitionData,
   apparatuses: string[],
   competitors: CompetitionCompetitorDetails[]
 ) {
@@ -116,15 +86,7 @@ function addTeamPlaces(
   const teamIndices = Array.from(new Set(
     competitors.map((c) => c.teamIndex).filter((i): i is number => i !== null)
   ));
-  const teamTotals = teamIndices
-    .map((teamIndex) => {
-      const total = apparatuses.reduce((sum, ap) => {
-        const score = teamApparatusScore(competitors, teamIndex, ap);
-        return score !== null ? sum + score : sum;
-      }, 0);
-      const hasScore = apparatuses.some((ap) => teamApparatusScore(competitors, teamIndex, ap) !== null);
-      return { teamIndex, total, hasScore };
-    })
+  const teamTotals = computeTeamTotals(teamIndices, competitors, apparatuses)
     .filter((t) => t.hasScore)
     .sort((a, b) => b.total - a.total)
     .slice(0, 3);
@@ -184,25 +146,16 @@ function computeTop3WithPlaces(
   competitors: CompetitionCompetitorDetails[],
   apparatus: string
 ): PlaceEntry[] {
-  const sorted = [...competitors]
-    .filter((c) => c.scores[apparatus] !== undefined)
-    .sort((a, b) => b.scores[apparatus].finalScore - a.scores[apparatus].finalScore)
-    .slice(0, 3);
-
-  const entries: PlaceEntry[] = [];
-  let place = 1;
-  for (let i = 0; i < sorted.length; i++) {
-    const isTie = i > 0 && sorted[i].scores[apparatus].finalScore === sorted[i - 1].scores[apparatus].finalScore;
-    if (!isTie) { place = i + 1; }
-    entries.push({ competitor: sorted[i], place, tied: false });
-  }
-  // Mark ties: any place shared by more than one entry
-  for (const entry of entries) {
-    if (entries.filter((e) => e.place === entry.place).length > 1) {
-      entry.tied = true;
-    }
-  }
-  return entries;
+  const ranked = rankByScore(competitors, (c) => c.scores[apparatus]?.finalScore);
+  return [...competitors]
+    .filter((c) => ranked.has(c.competitorId))
+    .sort((a, b) =>
+      (ranked.get(a.competitorId)?.place ?? Infinity) - (ranked.get(b.competitorId)?.place ?? Infinity))
+    .slice(0, 3)
+    .map((c) => {
+      const r = ranked.get(c.competitorId);
+      return { competitor: c, place: r.place, tied: r.tied };
+    });
 }
 
 interface OverallPlaceEntry {
@@ -216,29 +169,21 @@ function computeTop3OverallWithPlaces(
   competitors: CompetitionCompetitorDetails[],
   apparatuses: string[]
 ): OverallPlaceEntry[] {
-  const withTotals = competitors
-    .map((c) => ({
-      competitor: c,
-      total: apparatuses.reduce((sum, ap) => sum + (c.scores[ap]?.finalScore ?? 0), 0),
-      hasScore: apparatuses.some((ap) => c.scores[ap] !== undefined),
-    }))
-    .filter((e) => e.hasScore)
-    .sort((a, b) => b.total - a.total)
-    .slice(0, 3);
-
-  const entries: OverallPlaceEntry[] = [];
-  let place = 1;
-  for (let i = 0; i < withTotals.length; i++) {
-    const isTie = i > 0 && withTotals[i].total === withTotals[i - 1].total;
-    if (!isTie) { place = i + 1; }
-    entries.push({ competitor: withTotals[i].competitor, total: withTotals[i].total, place, tied: false });
-  }
-  for (const entry of entries) {
-    if (entries.filter((e) => e.place === entry.place).length > 1) {
-      entry.tied = true;
-    }
-  }
-  return entries;
+  const ranked = rankByScore(competitors, (c) =>
+    apparatuses.some((ap) => c.scores[ap] !== undefined)
+      ? apparatuses.reduce((sum, ap) => sum + (c.scores[ap]?.finalScore ?? 0), 0)
+      : undefined
+  );
+  return [...competitors]
+    .filter((c) => ranked.has(c.competitorId))
+    .sort((a, b) =>
+      (ranked.get(a.competitorId)?.place ?? Infinity) - (ranked.get(b.competitorId)?.place ?? Infinity))
+    .slice(0, 3)
+    .map((c) => {
+      const total = apparatuses.reduce((sum, ap) => sum + (c.scores[ap]?.finalScore ?? 0), 0);
+      const r = ranked.get(c.competitorId);
+      return { competitor: c, total, place: r.place, tied: r.tied };
+    });
 }
 
 function addDivisionPlaces(

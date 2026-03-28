@@ -18,16 +18,10 @@ import fs from "fs";
 import path from "path";
 import zlib from "zlib";
 import strftime from "strftime";
-import { LogEntry, LogLevel } from "../common/logger-types";
+import { LogEntry, LogLevel, renderTemplate } from "../common/logger-types";
 
 const LOG_FILE_PATTERN = /^gymscore-\d{4}-\d{2}-\d{2}\.jsonl$/;
 const ONE_YEAR_MS = 365 * 24 * 60 * 60 * 1000;
-
-function renderTemplate(template: string, fields: Record<string, unknown>): string {
-  return template.replace(/\{(\w+)\}/g, (_match, key: string) => {
-    return key in fields ? String(fields[key]) : `{${key}}`;
-  });
-}
 
 export class Logger {
   private readonly sessionId: string;

@@ -15,6 +15,7 @@
 
 import { GymscoreVersion } from "./data/version";
 import { logger } from "./logger";
+import { hasDivisions } from "../common/data/division";
 import "./common.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.min.js";
@@ -104,6 +105,44 @@ export function setupFilterInputs(inputs: HTMLInputElement[], onFilter: () => vo
   inputs.forEach((input) => {
     input.addEventListener("input", onFilter);
   });
+}
+
+export function updateTableBody<T>(
+  body: HTMLTableSectionElement,
+  items: T[],
+  createRow: (body: HTMLTableSectionElement) => HTMLTableRowElement,
+  displayRow: (row: HTMLTableRowElement, item: T, index: number) => void
+): void {
+  while (body.rows.length > items.length) {
+    body.deleteRow(-1);
+  }
+  items.forEach((item, i) => {
+    const row = body.rows[i] ?? createRow(body);
+    displayRow(row, item, i);
+  });
+}
+
+export function populateStepSelect(select: HTMLSelectElement): void {
+  for (let i = 1; i <= 10; i++) {
+    select.add(new Option(i.toString(), i.toString()));
+  }
+}
+
+export function applyNarrowFilterStyle(input: HTMLInputElement): void {
+  input.style.width = "13ch";
+  input.style.minWidth = "0";
+}
+
+export function updateDivisionVisibility(stepSelect: HTMLSelectElement, labelId: string, colId: string): void {
+  const show = hasDivisions(parseInt(stepSelect.value, 10));
+  document.getElementById(labelId).classList.toggle("d-none", !show);
+  document.getElementById(colId).classList.toggle("d-none", !show);
+}
+
+export function getCompetitionIdFromUrl(): number | undefined {
+  const param = new URLSearchParams(window.location.search).get("compId");
+  const id = parseInt(param, 10);
+  return isNaN(id) ? undefined : id;
 }
 
 window.addEventListener("error", (event) => {

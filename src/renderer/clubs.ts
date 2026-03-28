@@ -77,16 +77,7 @@ async function updateClubsTable() {
   const clubs = await db.clubs.toCollection().sortBy("name");
   logger.debug("Updating clubs table", { count: clubs.length });
 
-  // If the table is too long, trim it; if it's short, we'll create more later
-  while (body.rows.length > clubs.length) {
-    body.deleteRow(-1);
-  }
-
-  clubs.forEach((club, i) => {
-    let row = body.rows[i];
-    if (row == undefined) {
-      row = createClubRow(body);
-    }
+  pageCommon.updateTableBody(body, clubs, createClubRow, (row, club) => {
     displayClubInRow(row, club);
   });
 }
