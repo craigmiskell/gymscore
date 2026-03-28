@@ -363,35 +363,27 @@ function setupAutocomplete(
   );
 }
 
-//TODO: convert to 'setupAutocomplete'
 async function setupCompetitorAutoComplete() {
-  const competitors = await fetchCompetitorsForAutocomplete();
-
   const competitorNameField = elements.competitorName;
-  competitorAutoComplete = new Autocomplete(
+  competitorAutoComplete = setupAutocomplete(
+    await fetchCompetitorsForAutocomplete(),
     competitorNameField,
-    {
-      data: competitors,
-      threshold: 1,
-      maximumItems: 8,
-      onSelectItem: (selected: {label: string, value: string}) => {
-        logger.debug("Competitor selected by autocomplete", { label: selected.label, competitorId: selected.value });
-        competitorNameField.setAttribute(COMPETITOR_ID_ATTR_NAME, selected.value);
-        const alreadyAdded = competition?.competitors.some((c) => c.competitorId === parseInt(selected.value));
-        if (alreadyAdded) {
-          logger.debug("Autocomplete-selected competitor already in competition", { competitorId: selected.value });
-          elements.competitorAlreadyAddedWarning.classList.remove("d-none");
-          return;
-        }
-        void openAddCompetitorModal();
-      },
-      onInput:() => {
-        // If the user types, clear the selection
-        competitorNameField.removeAttribute(COMPETITOR_ID_ATTR_NAME);
-        elements.addCompetitorButton.disabled = (competitorNameField.value === "");
-        elements.competitorAlreadyAddedWarning.classList.add("d-none");
+    COMPETITOR_ID_ATTR_NAME,
+    () => {
+      elements.addCompetitorButton.disabled = (competitorNameField.value === "");
+      elements.competitorAlreadyAddedWarning.classList.add("d-none");
+    },
+    false,
+    () => {
+      const competitorId = competitorNameField.getAttribute(COMPETITOR_ID_ATTR_NAME);
+      const alreadyAdded = competition?.competitors.some((c) => c.competitorId === parseInt(competitorId ?? ""));
+      if (alreadyAdded) {
+        logger.debug("Autocomplete-selected competitor already in competition", { competitorId });
+        elements.competitorAlreadyAddedWarning.classList.remove("d-none");
+        return;
       }
-    }
+      void openAddCompetitorModal();
+    },
   );
 
   competitorNameField.addEventListener("keydown", (e: KeyboardEvent) => {
@@ -412,31 +404,21 @@ async function setupCompetitorAutoComplete() {
   });
 }
 
-//TODO: convert to 'setupAutocomplete'
 async function setupClubAutoComplete() {
-  const clubs = await fetchClubsForAutocomplete();
-
   const clubField = elements.competitorClubModal;
-  clubAutoComplete = new Autocomplete(
+  clubAutoComplete = setupAutocomplete(
+    await fetchClubsForAutocomplete(),
     clubField,
-    {
-      data: clubs,
-      threshold: 1,
-      maximumItems: 8,
-      onSelectItem: async (selected: {label: string, value: string}) => {
-        const clubId = selected.value;
-        logger.debug("Club selected by autocomplete", { label: selected.label, clubId });
-        clubField.setAttribute(CLUB_ID_ATTR_NAME, clubId);
-        teamAutoComplete.setData(await fetchTeamsForClubForAutoComplete(parseInt(clubId)));
+    CLUB_ID_ATTR_NAME,
+    () => { teamAutoComplete.setData([]); },
+    true,
+    () => {
+      const clubId = clubField.getAttribute(CLUB_ID_ATTR_NAME);
+      void fetchTeamsForClubForAutoComplete(parseInt(clubId ?? "")).then((data) => {
+        teamAutoComplete.setData(data);
         elements.competitorTeamModal.focus();
-      },
-      onInput:() => {
-        // If the user types, clear the selection
-        clubField.removeAttribute(CLUB_ID_ATTR_NAME);
-        teamAutoComplete.setData([]);
-      },
-      showOnFocus: true,
-    }
+      });
+    },
   );
 
   clubField.addEventListener("blur", async () => {
