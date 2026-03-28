@@ -163,6 +163,60 @@ ipcMain.handle("export-db", async (event, jsonData: string) => {
   return { success: true };
 });
 
+ipcMain.handle("export-competition", async (event, { jsonData, competitionName }:
+  { jsonData: string, competitionName: string }) => {
+  logger.info("Competition export dialog opening", { jsonSizeBytes: jsonData.length });
+  const slug = competitionName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+  const win = BrowserWindow.fromWebContents(event.sender);
+  const { filePath, canceled } = await dialog.showSaveDialog(win, {
+    title: "Export Competition",
+    defaultPath: `${slug}.gscomp.gz`,
+    filters: [{ name: "GymScore Competition", extensions: ["gscomp.gz", "gz"] }],
+  });
+  if (canceled || !filePath) {
+    logger.info("Competition export dialog cancelled");
+    return { success: false, canceled: true };
+  }
+  logger.info("Writing competition export file", { filePath });
+  try {
+    fs.writeFileSync(filePath, zlib.gzipSync(jsonData));
+    logger.info("Competition export file written successfully", { filePath });
+  } catch (err) {
+    logger.error("Competition export file write failed", { filePath, error: String(err) });
+    return { success: false, canceled: false };
+  }
+  return { success: true };
+});
+
+ipcMain.handle("import-competition", async (event) => {
+  logger.info("Competition import dialog opening");
+  const win = BrowserWindow.fromWebContents(event.sender);
+  const { filePaths, canceled } = await dialog.showOpenDialog(win, {
+    title: "Import Competition",
+    filters: [{ name: "GymScore Competition", extensions: ["gscomp.gz", "gz", "json"] }],
+    properties: ["openFile"],
+  });
+  if (canceled || filePaths.length === 0) {
+    logger.info("Competition import dialog cancelled");
+    return { success: false, canceled: true };
+  }
+  const filePath = filePaths[0];
+  logger.info("Reading competition import file", { filePath });
+  try {
+    const raw = fs.readFileSync(filePath);
+    // Detect gzip by magic bytes (1f 8b) rather than extension alone
+    const isGzip = raw[0] === 0x1f && raw[1] === 0x8b;
+    const data = isGzip
+      ? zlib.gunzipSync(raw).toString("utf-8")
+      : raw.toString("utf-8");
+    logger.info("Competition import file read successfully", { filePath, isGzip, sizeBytes: data.length });
+    return { success: true, data };
+  } catch (err) {
+    logger.error("Competition import file read failed", { filePath, error: String(err) });
+    return { success: false, canceled: false };
+  }
+});
+
 ipcMain.handle("import-db", async (event) => {
   logger.info("DB import dialog opening");
   const win = BrowserWindow.fromWebContents(event.sender);

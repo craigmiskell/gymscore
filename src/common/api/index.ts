@@ -31,7 +31,8 @@ export default {
     }
   },
   invoke: (channel: string, data?: any): Promise<any> => {
-    const validChannels = ["export-db", "import-db", "get-log-session", "export-logs"];
+    const validChannels = ["export-db", "import-db", "get-log-session", "export-logs",
+      "export-competition", "import-competition"];
     if (validChannels.includes(channel)) {
       return ipcRenderer.invoke(channel, data);
     } else {

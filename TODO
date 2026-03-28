@@ -1,4 +1,4 @@
-* Export/import a single competition; needs to export enough of competitors and gyms to import correctly without assuming PKs (id).  The import will need to look for existing items and use the local PKs.  Or: this is not a native Dexie export/import, it is a careful data driven algorithm.  This will be for sharing between users.  Needs version handling as well, but do that with an explicit version in the export format (not the version of GymScore)
+* When loading editing competitors page, put focus on 'Name' filter
 * Questions for users:
     * Should results entry be per Step (and Division?).  Alternatively: if they are for multi-step, order by step and perhaps display that fact more clearly (deliniation)
     * Should the results modal have national id and club in the left column?  It expands the display quite a bit (3 lines in worst cases), and another column makes it wider.  Does it add benefit, or is name enough?  It matches the recorder sheets (sort of).

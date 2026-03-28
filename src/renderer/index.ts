@@ -42,6 +42,8 @@ import { generatePrepSheets, generateAllResultPDFs } from "./competition_pdfs";
 import { Collapse, Modal } from "bootstrap";
 import { exportDB, importInto } from "dexie-export-import";
 import { logger } from "./logger";
+import { buildCompetitionExport } from "./exportCompetition";
+import { importCompetition } from "./importCompetition";
 
 declare const api: typeof import("../common/api").default;
 
@@ -98,6 +100,8 @@ async function onLoaded() {
   document.getElementById("openLogsButton").addEventListener("click", () => {
     api.sendAsync("open-log-window", null);
   });
+
+  document.getElementById("import-competition-button").addEventListener("click", doImportCompetition);
 
   setupAccordion("archivedAccordionButton", "archivedCollapse");
   setupAccordion("recordsAccordionButton", "recordsCollapse");
@@ -180,6 +184,7 @@ function buildActionsDiv(competition: ICompetition, isArchived: boolean): HTMLDi
   div.appendChild(makeJSLink(competition, promptAndGeneratePrepSheets, "Rec/Programme PDFs", "file-earmark-text"));
   div.appendChild(makePageLink(competition, "live_competition", "Record Scores", "pencil-square"));
   div.appendChild(makeJSLink(competition, promptAndGenerateResultPDFs, "Result PDFs", "file-earmark-pdf"));
+  div.appendChild(makeJSLink(competition, doExportCompetition, "Export", "box-arrow-up"));
   if (isArchived) {
     div.appendChild(makeJSLink(competition, promptDeleteCompetition, "Delete", "trash"));
   } else {
@@ -389,6 +394,50 @@ function showDangerModal(config: DangerModalConfig) {
     config.onConfirm();
   });
   Modal.getOrCreateInstance(document.getElementById("dangerConfirmationModal")).show();
+}
+
+async function doExportCompetition(competition: ICompetition) {
+  logger.info("Competition export started", { competitionId: competition.id, competitionName: competition.name });
+  let jsonData: string;
+  try {
+    jsonData = await buildCompetitionExport(competition);
+  } catch (err) {
+    logger.error("Competition export build failed", { error: String(err) });
+    alert("Export failed: could not read competition data.");
+    return;
+  }
+  const result = await api.invoke("export-competition", { jsonData, competitionName: competition.name });
+  if (result?.canceled) {
+    logger.info("Competition export cancelled by user");
+  } else if (!result?.success) {
+    logger.error("Competition export failed", { result });
+    alert("Export failed.");
+  } else {
+    logger.info("Competition export completed successfully");
+  }
+}
+
+async function doImportCompetition() {
+  logger.info("Competition import started");
+  const result = await api.invoke("import-competition");
+  if (!result || result.canceled || !result.success) {
+    logger.info("Competition import cancelled or failed at file-read stage",
+      { canceled: result?.canceled, success: result?.success });
+    return;
+  }
+  logger.debug("Competition import file received", { sizeBytes: result.data?.length });
+  const importResult = await importCompetition(result.data);
+  if (importResult.canceled) {
+    logger.info("Competition import cancelled by user during reconciliation");
+    return;
+  }
+  if (!importResult.success) {
+    logger.error("Competition import failed", { errorMessage: importResult.errorMessage });
+    alert(`Import failed: ${importResult.errorMessage ?? "unknown error"}`);
+    return;
+  }
+  logger.info("Competition import completed", { newCompetitionId: importResult.newCompetitionId });
+  window.location.reload();
 }
 
 async function doImportDatabase() {

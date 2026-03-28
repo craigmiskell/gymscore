@@ -6,7 +6,12 @@
     <title>GymScore</title>
   </head>
   <body>
-    <a href="prepare_competition.html"><button type="button" class="btn btn-primary" id="createCompetition">Create New Competition</button></a>
+    <div class="d-flex gap-2 align-items-center mb-2">
+      <a href="prepare_competition.html"><button type="button" class="btn btn-primary" id="createCompetition">Create New Competition</button></a>
+      <button type="button" class="btn btn-outline-primary" id="import-competition-button">
+        <i class="bi bi-box-arrow-in-down"></i> Import Competition
+      </button>
+    </div>
     <hr>
     <table class="table table-sm table-striped table-bordered w-auto" id="activeCompetitions">
       <thead>
@@ -150,6 +155,65 @@
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
             <button type="button" class="btn btn-danger" id="dangerConfirmationModalYes"></button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal fade" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" role="dialog"
+         aria-hidden="true" id="importDuplicateModal">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header bg-warning">
+            <h4 class="modal-title"><i class="bi bi-exclamation-triangle-fill"></i> Duplicate Competition</h4>
+          </div>
+          <div class="modal-body">
+            <p>A competition named <strong><span id="importDuplicateName"></span></strong> already exists in your database.</p>
+            <p>What would you like to do?</p>
+            <ul>
+              <li><strong>Import as copy</strong> — add the imported competition with the name suffix "(imported)".</li>
+              <li><strong>Overwrite existing</strong> — permanently delete the existing competition and replace it with
+                the imported one.</li>
+            </ul>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-primary" id="importDuplicateCreateBtn">Import as copy</button>
+            <button type="button" class="btn btn-danger" id="importDuplicateOverwriteBtn">Overwrite existing</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal fade" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" role="dialog"
+         aria-hidden="true" id="importReconcileModal">
+      <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h4 class="modal-title"><i class="bi bi-person-exclamation"></i> Competitor Name Mismatch</h4>
+          </div>
+          <div class="modal-body">
+            <p>The following competitors were matched by national ID, but their names differ between the import file
+              and your local database. Choose which name to use for each.</p>
+            <p class="text-muted small mb-2">
+              <strong>Keep mine</strong> — keep your existing name (the imported competition snapshot will also use
+              this name).<br>
+              <strong>Use file name</strong> — update your local record and the competition snapshot to the name in the
+              file.
+            </p>
+            <table class="table table-sm table-bordered">
+              <thead class="table-light">
+                <tr>
+                  <th>National ID</th>
+                  <th>Name in your database</th>
+                  <th>Name in file</th>
+                  <th>Use which name?</th>
+                </tr>
+              </thead>
+              <tbody id="importReconcileTbody"></tbody>
+            </table>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel import</button>
+            <button type="button" class="btn btn-primary" id="importReconcileProceedBtn">Proceed with import</button>
           </div>
         </div>
       </div>
