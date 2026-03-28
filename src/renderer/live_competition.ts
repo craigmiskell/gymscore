@@ -19,6 +19,7 @@ import * as pageCommon from "./page_common";
 import { Modal } from "bootstrap";
 import { logger } from "./logger";
 import { formatScore, capitalise } from "../common/formatting";
+import { parseScore, averageJudgeEScores } from "../common/scoring";
 
 pageCommon.setup();
 
@@ -221,36 +222,6 @@ function editGroupApparatusResults(event: Event) {
   modal.show();
 }
 
-// Parse a score; zero if it doesn't parse.  Original number * 1000 as an integer if it does
-// So we can do maths in whole numbers and divide at the end for presentation, avoiding floating point
-// malarkey.
-function parseScore(score: string, nanAllowed=false) {
-  const res = parseFloat(score);
-  if (isNaN(res)) {
-    return nanAllowed ? res : 0;
-  }
-  return Math.round(res * 1000);
-}
-
-// Inputs are per-judge deductions.  There may be 2, 3, or 4 values (null or empty string if none).
-// When there are 2 or 3 judges, average all available values
-// When there are 4, drop the lowest + highest, average the other 2.
-
-function averageJudgeEScores(rawScores: string[]) : number {
-  const scores = rawScores
-    .map(score => { return parseScore(score, true); })
-    .filter(score => {return !isNaN(score);});
-  const totalScores = scores.reduce((prev, curr) => prev + curr, 0);
-
-  if(scores.length === 0 ) {
-    return 0.0;
-  } else if(scores.length === 4) {
-    // 4 judge scores; drop the min + max.
-    return (totalScores - Math.min(...scores) - Math.max(...scores)) / 2;
-  } else {
-    return totalScores / scores.length;
-  }
-}
 
 function valueOfCell(row: HTMLTableRowElement, index: number) {
   return (row.cells[index].firstChild as HTMLInputElement).value;
