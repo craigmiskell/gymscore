@@ -516,12 +516,10 @@ async function addCompetitor() {
     0, // Default is "no group", index 0
   ));
   await db.competitions.update(competition.id, competition);
+  const { name, identifier } = competitor;
   logger.info("Competitor added to competition", {
-    competitorId: competitor.id,
-    name: competitor.name,
-    identifier: competitor.identifier,
-    clubName: club.name,
-    competitionId: competition.id,
+    competitorId: competitor.id, name, identifier,
+    clubName: club.name, competitionId: competition.id,
     totalCompetitors: competition.competitors.length,
   });
   onCompetitorListChanged();

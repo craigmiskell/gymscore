@@ -255,14 +255,8 @@ async function saveEdit() {
     competitorId
   );
 
-  logger.info("Saving competitor edit", {
-    competitorId,
-    name: updated.name,
-    identifier: updated.identifier,
-    step: updated.step,
-    division: updated.division,
-    clubId,
-  });
+  const { name, identifier, step, division } = updated;
+  logger.info("Saving competitor edit", { competitorId, name, identifier, step, division, clubId });
   await db.competitors.put(updated);
   Modal.getOrCreateInstance(elements.editCompetitorModal).hide();
   await updateCompetitorsTable();

@@ -16,6 +16,7 @@
 import { GymscoreVersion } from "./data/version";
 import { logger } from "./logger";
 import { hasDivisions } from "../common/data/division";
+import { ICompetition } from "../common/data";
 import "./common.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.min.js";
@@ -137,6 +138,11 @@ export function updateDivisionVisibility(stepSelect: HTMLSelectElement, labelId:
   const show = hasDivisions(parseInt(stepSelect.value, 10));
   document.getElementById(labelId).classList.toggle("d-none", !show);
   document.getElementById(colId).classList.toggle("d-none", !show);
+}
+
+export function competitionFields(comp: ICompetition) {
+  const { name, date, location, vault, bar, beam, floor } = comp;
+  return { name, date, location, vault, bar, beam, floor };
 }
 
 export function getCompetitionIdFromUrl(): number | undefined {

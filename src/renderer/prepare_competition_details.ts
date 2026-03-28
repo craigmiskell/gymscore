@@ -18,6 +18,7 @@ import { ICompetition, Competition, CompetitionState } from "../common/data";
 import { Collapse } from "bootstrap";
 import { logger } from "./logger";
 import { elements, competition, setCompetition } from "./prepare_competition_state";
+import { competitionFields } from "./page_common";
 
 export function setupDetailsPanel() {
   elements.detailsEditButton.addEventListener("click", onDetailsButtonClick);
@@ -75,11 +76,6 @@ export function showInitialState() {
   } else {
     setFormFieldsEnabled(false);
   }
-}
-
-function competitionFields(comp: ICompetition) {
-  const { name, date, location, vault, bar, beam, floor } = comp;
-  return { name, date, location, vault, bar, beam, floor };
 }
 
 function updateCollapsedText(comp: ICompetition) {

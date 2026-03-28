@@ -86,14 +86,8 @@ async function loadCompetition(compId: number | undefined) {
     if(competition) {
       logger.info("Competition loaded for live scoring", {
         compId,
-        name: competition.name,
-        date: competition.date,
-        location: competition.location,
+        ...pageCommon.competitionFields(competition),
         competitorCount: competition.competitors.length,
-        vault: competition.vault,
-        bar: competition.bar,
-        beam: competition.beam,
-        floor: competition.floor,
       });
       elements.competitionTitle.textContent = `${competition.name} - ${competition.date}`;
       elements.competitionLocation.textContent = competition.location;
