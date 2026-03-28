@@ -713,6 +713,14 @@ async function addCompetitor() {
     competitionId: competition.id,
   });
 
+  // Capture and immediately clear before any awaits, to prevent the main field being visible
+  // with stale state after hidden.bs.modal fires focus back to it during our async operations.
+  const existingCompetitorIdAttr = elements.competitorName.getAttribute(COMPETITOR_ID_ATTR_NAME);
+  elements.competitorName.value = "";
+  elements.competitorName.removeAttribute(COMPETITOR_ID_ATTR_NAME);
+  elements.addCompetitorButton.disabled = true;
+  elements.competitorAlreadyAddedWarning.classList.add("d-none");
+
   let competitorId;
   const modal = Modal.getOrCreateInstance(elements.addCompetitorModal);
   // Hide early, so any failures the modal will be gone and the user can continue.
@@ -726,8 +734,8 @@ async function addCompetitor() {
   const teamId = await teamIndexWhenAddingCompetitor(club);
   let competitor;
 
-  if(elements.competitorName.hasAttribute(COMPETITOR_ID_ATTR_NAME)) {
-    competitorId = elements.competitorName.getAttribute(COMPETITOR_ID_ATTR_NAME);
+  if(existingCompetitorIdAttr !== null) {
+    competitorId = existingCompetitorIdAttr;
     // Update competitor with current step + club (for future)
     competitor = await db.competitors.where(":id").equals(parseInt(competitorId)).first();
     competitor.step = parseInt(elements.competitorStepSelectModal.value);
@@ -744,11 +752,6 @@ async function addCompetitor() {
       clubId);
     competitorId = await db.competitors.put(competitor);
   }
-  // Clear the name field before setData so the autocomplete dropdown doesn't reappear
-  elements.competitorName.value = "";
-  elements.competitorName.removeAttribute(COMPETITOR_ID_ATTR_NAME);
-  elements.addCompetitorButton.disabled = true;
-  elements.competitorAlreadyAddedWarning.classList.add("d-none");
 
   // Always update; for new competitor, or if the club has changed on an existing competitor
   competitorAutoComplete.setData(await fetchCompetitorsForAutocomplete());
