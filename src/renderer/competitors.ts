@@ -101,6 +101,7 @@ async function onLoaded() {
   elements.filterStep.style.minWidth = "0";
 
   await updateCompetitorsTable();
+  elements.filterName.focus();
 }
 
 async function loadCompetitorDisplays(): Promise<CompetitorDisplay[]> {

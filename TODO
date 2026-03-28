@@ -1,9 +1,9 @@
-* When loading editing competitors page, put focus on 'Name' filter
 * Questions for users:
     * Should results entry be per Step (and Division?).  Alternatively: if they are for multi-step, order by step and perhaps display that fact more clearly (deliniation)
     * Should the results modal have national id and club in the left column?  It expands the display quite a bit (3 lines in worst cases), and another column makes it wider.  Does it add benefit, or is name enough?  It matches the recorder sheets (sort of).
     * WDYT about the recorder sheets having #/Name/Club in columns, unlike the original examples (more like the recording *UI*)?
 * Can we edit the name of a competitor in the middle of a competition, e.g. we find a typo?
+  * CUrrently have to delete/re-add, but also don't want a tight link from the Edit Known COmpetitors to competitions, becuase we shouldn't retcon past comps.  Maybe only current preparing comps?
 * Unit tests
 * General cleanup refactor, with unit tests to validate.
 * Collate all production licenses and put them in an 'about' page/window.  Show "NOTICE" files from any Apache 2.0; check other license types for any other requirements
