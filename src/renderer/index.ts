@@ -98,7 +98,7 @@ async function onLoaded() {
     });
   });
 
-  document.getElementById("openLogsButton").addEventListener("click", () => {
+  document.getElementById("openLogsMenuItem").addEventListener("click", () => {
     api.sendAsync("open-log-window", null);
   });
 
