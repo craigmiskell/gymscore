@@ -3,3 +3,4 @@
     * Should the results modal have national id and club in the left column?  It expands the display quite a bit (3 lines in worst cases), and another column makes it wider.  Does it add benefit, or is name enough?  It matches the recorder sheets, but that might not be worth the screen real-estate
 * Can we edit the name of a competitor in the middle of a competition, e.g. we find a typo?
   * CUrrently have to delete/re-add, but also don't want a tight link from the Edit Known COmpetitors to competitions, becuase we shouldn't retcon past comps.  Maybe only current preparing comps?
+* Re-order the results entry UI to match the recording sheets.  Probably

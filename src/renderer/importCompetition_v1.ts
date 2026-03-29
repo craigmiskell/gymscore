@@ -390,7 +390,7 @@ export const v1Handler: CompetitionImportHandler = {
 
     try {
       const newId = await complete(prep._state, {
-        duplicateAction: duplicateAction ?? "create-duplicate",
+        duplicateAction: duplicateAction ?? "overwrite",
         nameChoices,
       });
       return { success: true, newCompetitionId: newId };
