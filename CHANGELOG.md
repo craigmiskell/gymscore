@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.9.6](https://github.com/craigmiskell/gymscore/compare/v0.9.5...v0.9.6) (2026-03-29)
+
+
+### Bug Fixes
+
+* Add a logo/icon ([f1efa76](https://github.com/craigmiskell/gymscore/commit/f1efa7687865d6f81aef0f2c4cfd8754f1ae5f71))
+
 ## [0.9.5](///compare/v0.9.3...v0.9.5) (2026-03-29)
 
 
