@@ -96,7 +96,8 @@
           "name": "@electron-forge/maker-zip",
           "platforms": [
             "darwin"
-          ]
+          ],
+          "arch": ["universal"]
         },
         {
           "name": "@electron-forge/maker-deb",
