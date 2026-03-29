@@ -41,6 +41,7 @@ const createWindow = () => {
   logger.info("Creating main browser window");
   const win = new BrowserWindow({
     show: false,
+    icon: path.join(app.getAppPath(), "gymscore.ico"),
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,

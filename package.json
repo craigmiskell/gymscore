@@ -93,10 +93,12 @@
     },
     "files": [
       "dist/**/*",
-      "package.json"
+      "package.json",
+      "gymscore.ico"
     ],
     "win": {
-      "target": "portable"
+      "target": "portable",
+      "icon": "gymscore.ico"
     },
     "linux": {
       "target": "deb",
