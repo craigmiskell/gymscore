@@ -1,6 +1,6 @@
 {
   "name": "gymscore",
-  "version": "0.9.3",
+  "version": "0.9.4",
   "description": "Gymnastics Competition Scores and Results",
   "main": "dist/main/main.js",
   "private": true,
@@ -8,15 +8,15 @@
     "test": "jest",
     "start": "rm -r dist/*; webpack && electron-forge start -- --use-gl=desktop",
     "restart": "electron-forge start -- --use-gl=desktop",
-    "package": "electron-forge package",
+    "package": "electron-builder --dir",
     "eslint": "eslint .",
     "eslintfix": "eslint . --fix",
     "mdlint": "markdownlint --ignore node_modules --ignore out .",
     "license-check": "license-checker --summary --production --excludePrivatePackages --onlyAllow 'MIT;Apache-2.0;GPL-3.0-or-later'",
     "generate-licenses": "node scripts/generate-licenses.js",
-    "make-linux": "electron-forge make",
-    "make-osx": "electron-forge make -p darwin",
-    "make-windows": "electron-forge make -p win32",
+    "make-linux": "electron-builder --linux",
+    "make-osx": "electron-builder --mac",
+    "make-windows": "electron-builder --win --x64",
     "build": "webpack --mode=production --node-env=production",
     "build:dev": "webpack --mode=development",
     "build:prod": "webpack --mode=production --node-env=production",
@@ -31,15 +31,12 @@
     "name": "Craig Miskell",
     "email": "craig@stroppykitten.com"
   },
+  "homepage": "https://github.com/craigmiskell/gymscore",
   "license": "GPL-3.0-or-later",
   "devDependencies": {
     "@babel/core": "^7.17.10",
     "@babel/preset-env": "^7.17.10",
     "@electron-forge/cli": "^7.11.1",
-    "@electron-forge/maker-deb": "^7.11.1",
-    "@electron-forge/maker-rpm": "^7.11.1",
-    "@electron-forge/maker-squirrel": "^7.11.1",
-    "@electron-forge/maker-zip": "^7.11.1",
     "@types/bootstrap": "^5.1.12",
     "@types/jest": "^27.5.1",
     "@types/strftime": "^0.9.8",
@@ -51,6 +48,7 @@
     "concurrently": "^7.6.0",
     "css-loader": "^6.7.1",
     "electron": "^41.0.0",
+    "electron-builder": "^26.8.1",
     "electron-reload": "^2.0.0-alpha.1",
     "eslint": "^8.16.0",
     "fork-ts-checker-webpack-plugin": "^7.2.11",
@@ -78,32 +76,34 @@
     "dexie": "^3.2.2",
     "dexie-export-import": "^4.1.4",
     "electron-is-dev": "^2.0.0",
-    "electron-squirrel-startup": "^1.0.0",
     "jspdf": "^2.5.1",
     "strftime": "^0.10.3"
   },
   "config": {
     "forge": {
       "packagerConfig": {},
-      "makers": [
-        {
-          "name": "@electron-forge/maker-squirrel",
-          "config": {
-            "name": "gymscore"
-          }
-        },
-        {
-          "name": "@electron-forge/maker-zip",
-          "platforms": [
-            "darwin"
-          ],
-          "arch": ["universal"]
-        },
-        {
-          "name": "@electron-forge/maker-deb",
-          "config": {}
-        }
-      ]
+      "makers": []
+    }
+  },
+  "build": {
+    "appId": "com.stroppykitten.gymscore",
+    "productName": "gymscore",
+    "directories": {
+      "output": "out"
+    },
+    "files": [
+      "dist/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": "nsis"
+    },
+    "linux": {
+      "target": "deb",
+      "category": "Utility"
+    },
+    "mac": {
+      "target": "zip"
     }
   }
 }

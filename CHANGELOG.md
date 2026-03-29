@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.9.4](///compare/v0.9.3...v0.9.4) (2026-03-29)
+
+
+### Bug Fixes
+
+* DO not append (imported) when an imported comp has a unique name 14bdcdd
+* Fix for Windows layout in prepare_competition 67dfb11
+* Some layout + formatting fixes for score recording a80a44f
+
 ## 0.9.3 (2026-03-29)
 
 
