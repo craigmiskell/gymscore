@@ -122,3 +122,15 @@
 .competitors-table thead tr:nth-child(2) th {
   top: var(--filter-row-top, 38px);
 }
+
+@media (max-width: 1199px) {
+  #groupApparatusResultsModalTable input[type="number"]::-webkit-inner-spin-button,
+  #groupApparatusResultsModalTable input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  #groupApparatusResultsModalTable input[type="number"] {
+    -moz-appearance: textfield;
+    min-width: 55px;
+  }
+}

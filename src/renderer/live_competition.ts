@@ -346,9 +346,9 @@ function fieldForCol(row: HTMLTableRowElement, columnNumber: number) :HTMLInputE
   return row.cells[columnNumber].firstChild as HTMLInputElement;
 }
 
-function populateScoreInField(row: HTMLTableRowElement, columnNumber: number, rawScore: number) {
+function populateScoreInField(row: HTMLTableRowElement, columnNumber: number, rawScore: number, decimals: number) {
   if(!isNaN(rawScore)) {
-    fieldForCol(row, columnNumber).value = formatScore(rawScore);
+    fieldForCol(row, columnNumber).value = (Math.floor(rawScore) / 1000).toFixed(decimals);
   }
 }
 
@@ -367,12 +367,12 @@ async function displayCompetitorInRow(
   if(competitorDetails.scores[apparatus]) {
     const scores = competitorDetails.scores[apparatus];
 
-    populateScoreInField(row, D_SCORE_COLUMN, scores.difficulty);
-    populateScoreInField(row, FIRST_E_COLUMN, scores.e1);
-    populateScoreInField(row, FIRST_E_COLUMN + 1, scores.e2);
-    populateScoreInField(row, FIRST_E_COLUMN + 2, scores.e3);
-    populateScoreInField(row, FIRST_E_COLUMN + 3, scores.e4);
-    populateScoreInField(row, NEUTRAL_DEDUCTIONS_COLUMN, scores.neutralDeductions);
+    populateScoreInField(row, D_SCORE_COLUMN, scores.difficulty, 1);
+    populateScoreInField(row, FIRST_E_COLUMN, scores.e1, 1);
+    populateScoreInField(row, FIRST_E_COLUMN + 1, scores.e2, 1);
+    populateScoreInField(row, FIRST_E_COLUMN + 2, scores.e3, 1);
+    populateScoreInField(row, FIRST_E_COLUMN + 3, scores.e4, 1);
+    populateScoreInField(row, NEUTRAL_DEDUCTIONS_COLUMN, scores.neutralDeductions, 3);
 
     updateScoreRow(row);
   } else {
