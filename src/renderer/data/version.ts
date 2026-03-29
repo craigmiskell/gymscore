@@ -13,4 +13,5 @@
 // You should have received a copy of the GNU General Public License along with this program. If not,
 // see <https://www.gnu.org/licenses/>.
 
-export const GymscoreVersion = "0.1.0";
+import pkg from "../../../package.json";
+export const GymscoreVersion = pkg.version;
