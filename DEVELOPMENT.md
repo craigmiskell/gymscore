@@ -77,6 +77,39 @@ To update the list for display in the UI, run
 npm exec generate-licenses
 ```
 
+## Releasing a new version
+
+Versioning follows [Conventional Commits](https://www.conventionalcommits.org/): commit messages prefixed with
+`fix:` trigger a patch bump, `feat:` triggers a minor bump, and `BREAKING CHANGE:` in the footer triggers a
+major bump.
+
+When ready to cut a release, run:
+
+```shell
+npm run release
+```
+
+This will:
+
+1. Determine the new version from commits since the last tag
+2. Update `version` in `package.json`
+3. Update `CHANGELOG.md`
+4. Commit both files
+5. Create a git tag (e.g. `v0.9.1`)
+
+To override the version bump type (e.g. to force a minor or major bump regardless of commits):
+
+```shell
+npm run release:minor
+npm run release:major
+```
+
+After releasing, push the commit and tag:
+
+```shell
+git push --follow-tags
+```
+
 ## Building for distribution
 
 Run the make command for your choice of target OS.

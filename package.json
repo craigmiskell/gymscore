@@ -22,7 +22,10 @@
     "build:prod": "webpack --mode=production --node-env=production",
     "watch": "webpack --watch",
     "serve": "webpack serve",
-    "dev": "webpack --mode=development && concurrently -k \"webpack --watch --mode=development\" \"electron-forge start -- --use-gl=desktop\""
+    "dev": "webpack --mode=development && concurrently -k \"webpack --watch --mode=development\" \"electron-forge start -- --use-gl=desktop\"",
+    "release": "commit-and-tag-version",
+    "release:minor": "commit-and-tag-version --release-as minor",
+    "release:major": "commit-and-tag-version --release-as major"
   },
   "author": {
     "name": "Craig Miskell",
@@ -44,6 +47,7 @@
     "@typescript-eslint/parser": "^5.25.0",
     "@webpack-cli/generators": "^2.4.2",
     "babel-loader": "^8.2.5",
+    "commit-and-tag-version": "^12.7.1",
     "concurrently": "^7.6.0",
     "css-loader": "^6.7.1",
     "electron": "^41.0.0",
