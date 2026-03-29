@@ -13,6 +13,11 @@ const path = require("path");
 
 const ROOT = path.resolve(__dirname, "..");
 const OUTPUT = path.join(ROOT, "src", "renderer", "data", "licenses.json");
+const COPYING_OUTPUT = path.join(ROOT, "src", "renderer", "data", "copying.json");
+
+const copyingText = fs.readFileSync(path.join(ROOT, "COPYING"), "utf-8");
+fs.writeFileSync(COPYING_OUTPUT, JSON.stringify({ text: copyingText }, null, 2) + "\n");
+console.log(`Generated COPYING text → ${COPYING_OUTPUT}`);
 
 licenseChecker.init(
   { start: ROOT, production: true, excludePrivatePackages: true },

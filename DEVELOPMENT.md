@@ -71,6 +71,12 @@ distributing them, they are only pulled *by* the developer into their developmen
 else has distributed them to the developer and is responsible for ensuring the distribution is legal, and
 they are then used locally for development purposes.
 
+To update the list for display in the UI, run
+
+```shell
+npm exec generate-licenses
+```
+
 ## Building for distribution
 
 Run the make command for your choice of target OS.

@@ -15,6 +15,7 @@
 
 import { Modal } from "bootstrap";
 import licensesData from "./data/licenses.json";
+import copyingData from "./data/copying.json";
 
 declare const api: typeof import("../common/api").default;
 
@@ -36,6 +37,74 @@ const KNOWN_LICENSES: Record<string, LicenseInfo> = {
   "MPL-2.0": { label: "Mozilla Public License 2.0", url: "https://www.mozilla.org/en-US/MPL/2.0/" },
   "GPL-3.0-or-later": { label: "GNU GPL v3+", url: "https://www.gnu.org/licenses/gpl-3.0.html" },
 };
+
+const MIT_PERMISSION_NOTICE =
+  "Permission is hereby granted, free of charge, to any person obtaining a copy of this software and " +
+  "associated documentation files (the \"Software\"), to deal in the Software without restriction, " +
+  "including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, " +
+  "and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, " +
+  "subject to the following conditions:\n\n" +
+  "The above copyright notice and this permission notice shall be included in all copies or substantial " +
+  "portions of the Software.\n\n" +
+  "THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT " +
+  "LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. " +
+  "IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, " +
+  "WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE " +
+  "SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.";
+
+function buildGymsScoreNotice(): HTMLElement {
+  const div = document.createElement("div");
+  div.className = "mb-4 p-3 border rounded";
+
+  const heading = document.createElement("h5");
+  heading.className = "mb-1";
+  heading.textContent = "GymScore";
+  div.appendChild(heading);
+
+  const p = document.createElement("p");
+  p.className = "mb-0 small";
+  p.appendChild(new Text("GymScore is free software licensed under the "));
+  p.appendChild(makeExtLink("https://www.gnu.org/licenses/gpl-3.0.html", "GNU General Public License v3 (GPLv3)"));
+  p.appendChild(new Text(". Copyright \u00a9 2022 Craig Miskell. The full license text is in the "));
+
+  const copyingLink = document.createElement("a");
+  copyingLink.href = "#";
+  copyingLink.id = "openCopyingLink";
+  copyingLink.textContent = "COPYING";
+  p.appendChild(copyingLink);
+
+  p.appendChild(new Text(" file distributed with this application."));
+  div.appendChild(p);
+
+  return div;
+}
+
+function buildMitCollapseSection(): HTMLElement {
+  const wrapper = document.createElement("div");
+  wrapper.className = "mb-1";
+
+  const btn = document.createElement("button");
+  btn.className = "btn btn-link btn-sm p-0 small text-decoration-none";
+  btn.setAttribute("type", "button");
+  btn.setAttribute("data-bs-toggle", "collapse");
+  btn.setAttribute("data-bs-target", "#mitLicenseText");
+  btn.setAttribute("aria-expanded", "false");
+  btn.setAttribute("aria-controls", "mitLicenseText");
+  btn.textContent = "Show full MIT license text\u2026";
+  wrapper.appendChild(btn);
+
+  const collapse = document.createElement("div");
+  collapse.id = "mitLicenseText";
+  collapse.className = "collapse";
+
+  const pre = document.createElement("pre");
+  pre.className = "small border rounded p-2 bg-light mt-1 license-text-pre";
+  pre.textContent = MIT_PERMISSION_NOTICE;
+  collapse.appendChild(pre);
+  wrapper.appendChild(collapse);
+
+  return wrapper;
+}
 
 function repoUrl(raw: string | null): string | null {
   if (!raw) {
@@ -112,6 +181,8 @@ function populateBody(bodyEl: HTMLElement): void {
     return a.localeCompare(b);
   });
 
+  bodyEl.appendChild(buildGymsScoreNotice());
+
   const intro = document.createElement("p");
   intro.className = "text-muted small mb-3";
   intro.textContent =
@@ -120,6 +191,9 @@ function populateBody(bodyEl: HTMLElement): void {
 
   for (const [key, pkgs] of sortedGroups) {
     bodyEl.appendChild(buildLicenseHeading(key, pkgs.length));
+    if (key === "MIT") {
+      bodyEl.appendChild(buildMitCollapseSection());
+    }
     bodyEl.appendChild(buildPackageList(pkgs));
   }
 }
@@ -135,7 +209,13 @@ export function setup(): void {
         api.sendAsync("open-external-url", url);
       }
     }
+    if (target.id === "openCopyingLink") {
+      event.preventDefault();
+      Modal.getOrCreateInstance(document.getElementById("copyingModal")).show();
+    }
   });
+
+  document.getElementById("copyingModalBody").textContent = copyingData.text;
 
   const body = document.getElementById("licensesModalBody");
   populateBody(body);
