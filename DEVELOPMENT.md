@@ -123,21 +123,13 @@ not yet tested or documented.
 
 ### Windows, from Linux
 
-When building for Windows from a Linux box, as well as a basic wine + mono install on Ubuntu 20.04, the
-following packages are also required:
-
-* libmono-windowsbase4.0-cil
-* libmono-system-componentmodel-composition4.0-cil
-* libmono-system-componentmodel-dataannotations4.0-cil
-* libmono-microsoft-build4.0-cil
-* libmono-system-xml-linq4.0-cil
-* libmono-system-data-services4.0-cil
-* libmono-microsoft-csharp4.0-cil
-* libmono-system-io-compression-filesystem4.0-cil
-
-There may be some over-arching package that will include these, but it's not clear what that might be; these
-were discovered empirically in the order shown.
+Electron-builder works without mono et al, and is far quicker than electron-forge which requires mono and ends up
+rebuilding all manner of things.  It still takes a hot minute to sign with signtool, but I was unable to find the
+incantation to disable that.
 
 To build an ISO image to mount on a network-disconnected VM that one might be using to test:
 
-genisoimage -o gymscore.iso out/make/squirrel.windows/x64/
+```shell
+version=$(jq -r .version package.json)
+genisoimage -o out/iso/gymscore-${version}.iso "out/gymscore ${version}.exe"
+```
