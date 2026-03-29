@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU General Public License along with this program. If not,
 // see <https://www.gnu.org/licenses/>.
 
-import {IpcMainEvent, app, BrowserWindow, ipcMain, dialog} from "electron";
+import {IpcMainEvent, app, BrowserWindow, ipcMain, dialog, shell} from "electron";
 import path from "path";
 import isDev from "electron-is-dev";
 import fs from "fs";
@@ -80,6 +80,10 @@ app.whenReady().then(() => {
 app.on("window-all-closed", () => {
   logger.info("All windows closed", { platform: process.platform });
   if (process.platform !== "darwin") {app.quit();}
+});
+
+ipcMain.on("open-external-url", (_event: IpcMainEvent, url: string) => {
+  shell.openExternal(url);
 });
 
 ipcMain.on("generate-pdfs", (event: IpcMainEvent, arg: any) => {

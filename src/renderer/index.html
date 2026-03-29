@@ -6,11 +6,26 @@
     <title>GymScore</title>
   </head>
   <body>
-    <div class="d-flex gap-2 align-items-center mb-2">
-      <a href="prepare_competition.html"><button type="button" class="btn btn-primary" id="createCompetition">Create New Competition</button></a>
-      <button type="button" class="btn btn-outline-primary" id="import-competition-button">
-        <i class="bi bi-box-arrow-in-down"></i> Import Competition
-      </button>
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <div class="d-flex gap-2 align-items-center">
+        <a href="prepare_competition.html"><button type="button" class="btn btn-primary" id="createCompetition">Create New Competition</button></a>
+        <button type="button" class="btn btn-outline-primary" id="import-competition-button">
+          <i class="bi bi-box-arrow-in-down"></i> Import Competition
+        </button>
+      </div>
+      <div class="dropdown">
+        <button class="btn btn-outline-secondary" type="button" id="hamburgerMenuToggle"
+                aria-expanded="false" title="Menu">
+          <i class="bi bi-list fs-5"></i>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="hamburgerMenuToggle">
+          <li>
+            <a class="dropdown-item" href="#" id="openLicensesMenuItem">
+              <i class="bi bi-file-earmark-text me-1"></i> Open Source Licenses
+            </a>
+          </li>
+        </ul>
+      </div>
     </div>
     <hr>
     <table class="table table-sm table-striped table-bordered w-auto" id="activeCompetitions">
@@ -113,6 +128,20 @@
       <button type="button" class="btn btn-sm btn-outline-secondary" id="openLogsButton">
         <i class="bi bi-journal-text"></i>Logs
       </button>
+    </div>
+    <div class="modal fade" tabindex="-1" role="dialog" aria-hidden="true" id="licensesModal">
+      <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h4 class="modal-title"><i class="bi bi-file-earmark-text me-2"></i>Open Source Licenses</h4>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body" id="licensesModalBody"></div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="modal fade" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" role="dialog" aria-hidden="true" id="deleteCompetitionModal">
       <div class="modal-dialog">

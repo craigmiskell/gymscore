@@ -17,11 +17,12 @@ import { db } from "./data/gymscoredb";
 import { ICompetition } from "../common/data";
 import * as pageCommon from "./page_common";
 import { generatePrepSheets, generateAllResultPDFs } from "./competition_pdfs";
-import { Collapse, Modal } from "bootstrap";
+import { Collapse, Dropdown, Modal } from "bootstrap";
 import { exportDB, importInto } from "dexie-export-import";
 import { logger } from "./logger";
 import { buildCompetitionExport } from "./exportCompetition";
 import { importCompetition } from "./importCompetition";
+import * as licensesModal from "./licenses_modal";
 
 declare const api: typeof import("../common/api").default;
 
@@ -99,6 +100,13 @@ async function onLoaded() {
 
   document.getElementById("openLogsButton").addEventListener("click", () => {
     api.sendAsync("open-log-window", null);
+  });
+
+  licensesModal.setup();
+  setupHamburgerMenu();
+  document.getElementById("openLicensesMenuItem").addEventListener("click", (e) => {
+    e.preventDefault();
+    licensesModal.show();
   });
 
   document.getElementById("import-competition-button").addEventListener("click", doImportCompetition);
@@ -318,6 +326,18 @@ function fillInLink(link: HTMLAnchorElement, text: string, iconName: string) {
   icon.classList.add("bi", `bi-${iconName}`);
   link.appendChild(icon);
   link.appendChild(new Text(` ${text}`));
+}
+
+function setupHamburgerMenu() {
+  const toggle = document.getElementById("hamburgerMenuToggle");
+  const menu = toggle.nextElementSibling as HTMLElement;
+  const dropdown = Dropdown.getOrCreateInstance(toggle, { display: "static" });
+  toggle.addEventListener("click", () => {
+    dropdown.toggle();
+  });
+  menu.addEventListener("click", () => {
+    dropdown.hide();
+  });
 }
 
 function setupAccordion(buttonId: string, collapseId: string) {

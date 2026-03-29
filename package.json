@@ -13,6 +13,7 @@
     "eslintfix": "eslint . --fix",
     "mdlint": "markdownlint --ignore node_modules --ignore out .",
     "license-check": "license-checker --summary --production --excludePrivatePackages --onlyAllow 'MIT;Apache-2.0;GPL-3.0-or-later'",
+    "generate-licenses": "node scripts/generate-licenses.js",
     "make-linux": "electron-forge make",
     "make-osx": "electron-forge make -p darwin",
     "make-windows": "electron-forge make -p win32",
