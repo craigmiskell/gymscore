@@ -55,7 +55,11 @@ export class TableSorter<T extends string = string> {
       th.addEventListener("click", () => this.onHeaderClick(th.dataset.col as T, onSortChange));
     });
     const firstRow = table.tHead.rows[0] as HTMLTableRowElement;
-    table.style.setProperty("--filter-row-top", `${firstRow.offsetHeight}px`);
+    const updateFilterRowTop = () => {
+      table.style.setProperty("--filter-row-top", `${firstRow.offsetHeight}px`);
+    };
+    updateFilterRowTop();
+    new ResizeObserver(updateFilterRowTop).observe(firstRow);
     this.updateSortIndicators();
   }
 
