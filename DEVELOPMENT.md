@@ -137,3 +137,7 @@ following packages are also required:
 
 There may be some over-arching package that will include these, but it's not clear what that might be; these
 were discovered empirically in the order shown.
+
+To build an ISO image to mount on a network-disconnected VM that one might be using to test:
+
+genisoimage -o gymscore.iso out/make/squirrel.windows/x64/
