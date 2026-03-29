@@ -4,4 +4,3 @@
     * WDYT about the recorder sheets having #/Name/Club in columns, unlike the original examples (more like the recording *UI*)?
 * Can we edit the name of a competitor in the middle of a competition, e.g. we find a typo?
   * CUrrently have to delete/re-add, but also don't want a tight link from the Edit Known COmpetitors to competitions, becuase we shouldn't retcon past comps.  Maybe only current preparing comps?
-* Check if we have actually ended up  using jquery; remove if not.

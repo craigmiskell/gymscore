@@ -132,22 +132,10 @@
     "repository": "https://github.com/niklasvh/html2canvas"
   },
   {
-    "name": "jquery",
-    "version": "3.6.0",
-    "license": "MIT",
-    "repository": "https://github.com/jquery/jquery"
-  },
-  {
     "name": "jspdf",
     "version": "2.5.1",
     "license": "MIT",
     "repository": "https://github.com/MrRio/jsPDF"
-  },
-  {
-    "name": "mktemp",
-    "version": "1.0.0",
-    "license": "MIT",
-    "repository": "https://github.com/sasaplus1/mktemp"
   },
   {
     "name": "ms",
