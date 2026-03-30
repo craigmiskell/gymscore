@@ -5,6 +5,8 @@
 After checking out the repo:
 
 1. Install [asdf](https://asdf-vm.com/guide/getting-started.html)
+1. Install [gh](https://cli.github.com) (GitHub CLI) >= 2.x — no asdf plugin exists for it, so install
+   via your system package manager or the instructions at that link
 1. Run ./scripts/update-dev-env.sh to install required plugins and versions
 1. Install NPM modules:
 
@@ -96,18 +98,19 @@ This will:
 3. Update `CHANGELOG.md`
 4. Commit both files
 5. Create a git tag (e.g. `v0.9.1`)
+6. Push the commit and tag to GitHub
+
+This triggers `scripts/publish-release.sh`, which builds packages for Linux, Windows, and macOS locally,
+pushes the tag to GitHub, then creates a GitHub Release and attaches the built packages as artifacts.
+
+The script uses the `gh` CLI for the GitHub release step. Run `gh auth login` once before your first
+release to authenticate; subsequent releases use the stored token.
 
 To override the version bump type (e.g. to force a minor or major bump regardless of commits):
 
 ```shell
 npm run release:minor
 npm run release:major
-```
-
-After releasing, push the commit and tag:
-
-```shell
-git push --follow-tags
 ```
 
 ## Building for distribution

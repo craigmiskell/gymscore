@@ -23,9 +23,9 @@
     "watch": "webpack --watch",
     "serve": "webpack serve",
     "dev": "webpack --mode=development && concurrently -k \"webpack --watch --mode=development\" \"electron-forge start -- --use-gl=desktop\"",
-    "release": "commit-and-tag-version",
-    "release:minor": "commit-and-tag-version --release-as minor",
-    "release:major": "commit-and-tag-version --release-as major"
+    "release": "commit-and-tag-version && ./scripts/publish-release.sh",
+    "release:minor": "commit-and-tag-version --release-as minor && ./scripts/publish-release.sh",
+    "release:major": "commit-and-tag-version --release-as major && ./scripts/publish-release.sh"
   },
   "author": {
     "name": "Craig Miskell",
