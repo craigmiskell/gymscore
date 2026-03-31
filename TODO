@@ -1,6 +1,5 @@
 * Only allow the app to run once; it hits an error about Indexed DB locking or similar, but that should be handled much more cleanly.
 * When adding a competitor, need to be clearer that the team name is not prefixed (is a full name); could suggest "<club> 1" for the first one, but make it clearly a suggestion
-* Remove spaces after club name in recording sheets (might have been an artifact of test; just do a trim regardless)
 * Order of competitors in group matters:
    1. The Organizer cares some of the time e.g. do not put noob competitors on first, it'll freak them out.  They need to be able to construct that order (drag'n'drop or similar)
    2. The order is reflected on the scoring sheets *but* it rotates; the stated order is for the first apparatus, then on the second apparatus the first competitor moves to the bottom, and so on with each subsequent apparatus.
