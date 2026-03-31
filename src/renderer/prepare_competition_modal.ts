@@ -160,12 +160,12 @@ async function setupClubAutoComplete() {
     await fetchClubsForAutocomplete(),
     clubField,
     CLUB_ID_ATTR_NAME,
-    () => { teamAutoComplete.setData([]); },
+    () => { updateTeamSuggestion(clubField.value, []); },
     true,
     () => {
       const clubId = clubField.getAttribute(CLUB_ID_ATTR_NAME);
       void fetchTeamsForClubForAutoComplete(parseInt(clubId ?? "")).then((data) => {
-        teamAutoComplete.setData(data);
+        updateTeamSuggestion(clubField.value, data);
         elements.competitorTeamModal.focus();
       });
     },
@@ -178,7 +178,7 @@ async function setupClubAutoComplete() {
     const existingClub = await db.clubs.where("name").equalsIgnoreCase(clubField.value).first();
     if (existingClub) {
       clubField.setAttribute(CLUB_ID_ATTR_NAME, existingClub.id.toString());
-      teamAutoComplete.setData(await fetchTeamsForClubForAutoComplete(existingClub.id));
+      updateTeamSuggestion(existingClub.name, await fetchTeamsForClubForAutoComplete(existingClub.id));
     }
   });
 }
@@ -190,8 +190,27 @@ async function setupTeamAutoComplete() {
     TEAM_INDEX_ATTR_NAME,
     undefined,
     true,
-    () => { elements.competitorTeamModal.focus(); },
+    () => {
+      // Sentinel value -1 means the suggestion item (team doesn't exist yet); remove the attribute
+      // so teamIndexWhenAddingCompetitor creates a new team from the text value.
+      if (elements.competitorTeamModal.getAttribute(TEAM_INDEX_ATTR_NAME) === "-1") {
+        elements.competitorTeamModal.removeAttribute(TEAM_INDEX_ATTR_NAME);
+      }
+      elements.competitorTeamModal.focus();
+    },
   );
+}
+
+function updateTeamSuggestion(clubName: string, teamsData: AutoCompleteData) {
+  const trimmed = clubName.trim();
+  if (teamsData.length === 0 && trimmed !== "") {
+    const suggested = `${trimmed} 1`;
+    elements.competitorTeamModal.placeholder = suggested;
+    teamAutoComplete.setData([{ label: suggested, value: -1 }]);
+  } else {
+    elements.competitorTeamModal.placeholder = "";
+    teamAutoComplete.setData(teamsData);
+  }
 }
 
 async function openAddCompetitorModal() {
@@ -228,11 +247,11 @@ async function openAddCompetitorModal() {
   const club = await clubById(competitor.clubId);
   if (club) {
     elements.competitorClubModal.value = club.name;
-    teamAutoComplete.setData(await fetchTeamsForClubForAutoComplete(club.id));
+    updateTeamSuggestion(club.name, await fetchTeamsForClubForAutoComplete(club.id));
   } else {
     elements.competitorClubModal.value = "";
     elements.competitorClubModal.removeAttribute(CLUB_ID_ATTR_NAME);
-    teamAutoComplete.setData([]);
+    updateTeamSuggestion("", []);
   }
 
   if (lastUsedStep !== null) {
@@ -296,11 +315,11 @@ export async function openEditCompetitorModal(competitorId: number) {
   if (club) {
     elements.competitorClubModal.value = club.name;
     elements.competitorClubModal.setAttribute(CLUB_ID_ATTR_NAME, club.id.toString());
-    teamAutoComplete.setData(await fetchTeamsForClubForAutoComplete(club.id));
+    updateTeamSuggestion(club.name, await fetchTeamsForClubForAutoComplete(club.id));
   } else {
     elements.competitorClubModal.value = "";
     elements.competitorClubModal.removeAttribute(CLUB_ID_ATTR_NAME);
-    teamAutoComplete.setData([]);
+    updateTeamSuggestion("", []);
   }
 
   elements.competitorTeamModal.value = competition.teams[competitorDetails.teamIndex]?.name ?? "";
