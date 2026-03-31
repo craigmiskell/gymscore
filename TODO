@@ -1,4 +1,3 @@
-* Re-order the results entry UI to match the recording sheets
 * Announcements.pdf: ORder columns as name, club, placing
 * Certificates are not required - remove active generation, although keep the code.
 * Only allow the app to run once; it hits an error about Indexed DB locking or similar, but that should be handled much more cleanly.

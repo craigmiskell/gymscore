@@ -272,14 +272,15 @@ function valueOfCell(row: HTMLTableRowElement, index: number) {
   return (row.cells[index].firstChild as HTMLInputElement).value;
 }
 
-// D-score, E1-E4, Neutral Deductions
-const D_SCORE_COLUMN = 1;
-const FIRST_E_COLUMN = 2;
-const LAST_E_COLUMN = 5;
-const AVERAGE_E_COLUMN = 6;
-const E_SCORE_COLUMN = 7;
-const NEUTRAL_DEDUCTIONS_COLUMN = 9;
-const FINAL_SCORE_COLUMN = 10;
+// Dedn1-4, Average, E Score, D Score, Total, Neutral Deductions, Score
+const FIRST_E_COLUMN = 1;
+const LAST_E_COLUMN = 4;
+const AVERAGE_E_COLUMN = 5;
+const E_SCORE_COLUMN = 6;
+const D_SCORE_COLUMN = 7;
+const TOTAL_COLUMN = 8;
+const NEUTRAL_DEDUCTIONS_COLUMN = 10;
+const FINAL_SCORE_COLUMN = 11;
 
 const E_COLUMNS = (function() {
   const result: number[] = [];
@@ -310,6 +311,7 @@ function updateScoreRow(row: HTMLTableRowElement) {
   if(!rowCanCalculateScore(row)) {
     row.cells[AVERAGE_E_COLUMN].textContent = "";
     row.cells[E_SCORE_COLUMN].textContent = "";
+    row.cells[TOTAL_COLUMN].textContent = "";
     row.cells[FINAL_SCORE_COLUMN].textContent = "";
     return;
   }
@@ -321,9 +323,12 @@ function updateScoreRow(row: HTMLTableRowElement) {
   const eScore = 10000 - avg;
   row.cells[E_SCORE_COLUMN].textContent = formatScore(eScore);
 
+  const total = dScore + eScore;
+  row.cells[TOTAL_COLUMN].textContent = formatScore(total);
+
   const neutralDeductions = parseScore(valueOfCell(row, NEUTRAL_DEDUCTIONS_COLUMN));
 
-  row.cells[FINAL_SCORE_COLUMN].textContent = formatScore(dScore + eScore - neutralDeductions);
+  row.cells[FINAL_SCORE_COLUMN].textContent = formatScore(total - neutralDeductions);
 }
 
 function scoreInputFieldChanged(event: Event) {
@@ -356,6 +361,7 @@ function deleteScores(event: Event) {
   }
   row.cells[AVERAGE_E_COLUMN].textContent = "";
   row.cells[E_SCORE_COLUMN].textContent = "";
+  row.cells[TOTAL_COLUMN].textContent = "";
   row.cells[FINAL_SCORE_COLUMN].textContent = "";
   row.setAttribute(SCORES_DELETED_ATTR_NAME, "true");
   elements.groupApparatusResultsModal.setAttribute(HAS_CHANGES_ATTR_NAME, "true");
@@ -363,7 +369,7 @@ function deleteScores(event: Event) {
 
 function createCompetitorRow(body: HTMLTableSectionElement): HTMLTableRowElement {
   const row = body.insertRow(-1);
-  for(let i=0; i < 11; i++) {
+  for(let i=0; i < 12; i++) {
     row.insertCell();
   }
 
