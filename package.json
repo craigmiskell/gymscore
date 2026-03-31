@@ -22,7 +22,7 @@
     "build:prod": "webpack --mode=production --node-env=production",
     "watch": "webpack --watch",
     "serve": "webpack serve",
-    "dev": "webpack --mode=development && npm run build-docs && concurrently -k \"webpack --watch --mode=development\" \"electron-forge start -- --use-gl=desktop\"",
+    "dev": "webpack --mode=development && pnpm build-docs && concurrently -k \"webpack --watch --mode=development\" \"electron-forge start -- --use-gl=desktop\"",
     "build-docs": "scripts/build-docs.sh --html-only && cp docs/user-guide.html dist/renderer/user-guide.html",
     "release": "commit-and-tag-version && ./scripts/publish-release.sh",
     "release:minor": "commit-and-tag-version --release-as minor && ./scripts/publish-release.sh",
@@ -79,6 +79,9 @@
     "electron-is-dev": "^2.0.0",
     "jspdf": "^2.5.1",
     "strftime": "^0.10.3"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["electron"]
   },
   "config": {
     "forge": {

@@ -11,7 +11,7 @@ After checking out the repo:
 1. Install NPM modules:
 
    ```shell
-   npm install
+   pnpm install
    ```
 
 ## Tasks
@@ -21,13 +21,13 @@ After checking out the repo:
 With hot reload:
 
 ```shell
-npm run dev
+pnpm run dev
 ```
 
 Clean build, no hot reload (not recommended, just kept for history)
 
 ```shell
-npm start
+pnpm start
 ```
 
 See package.json for job/script definitions
@@ -37,13 +37,13 @@ See package.json for job/script definitions
 To check style:
 
 ```shell
-npm run eslint
+pnpm run eslint
 ```
 
 To check and *fix* style automatically where possible:
 
 ```shell
-npm run eslintfix
+pnpm run eslintfix
 ```
 
 TODO: precommit with autofix
@@ -51,7 +51,7 @@ TODO: precommit with autofix
 To check markdown style:
 
 ```shell
-npm run mdlint
+pnpm run mdlint
 ```
 
 ## Licenses
@@ -60,7 +60,7 @@ The app is licensed under GPLv3 or later, which may constrain which libraries ca
 *production* modules are compatible with
 
 ```shell
-npm exec license-check
+pnpm run license-check
 ```
 
 The list of acceptable licenses is configured in the license-check script command in package.json.  If
@@ -68,7 +68,7 @@ non-listed licenses show up, license-check will fail; check the license and if i
 (see the [license list](http://www.gnu.org/licenses/license-list.html) for guidance) then add it to the
 list.  If it is not, find an alternative or rewrite as needed.
 
-The license-check does not need to be performend on development-only modules because we are not further
+The license-check does not need to be performed on development-only modules because we are not further
 distributing them, they are only pulled *by* the developer into their development environment, i.e. someone
 else has distributed them to the developer and is responsible for ensuring the distribution is legal, and
 they are then used locally for development purposes.
@@ -76,7 +76,7 @@ they are then used locally for development purposes.
 To update the list for display in the UI, run
 
 ```shell
-npm exec generate-licenses
+pnpm exec generate-licenses
 ```
 
 ## Building the user guide
@@ -85,7 +85,7 @@ The user guide source lives in `docs/user-guide.md`. To generate it as HTML (for
 and PDF (for release artifacts), run:
 
 ```shell
-npm run build-docs
+pnpm run build-docs
 ```
 
 This requires `pandoc` and `weasyprint`, both installed as OS packages by `setup-dev-env.sh`.
@@ -101,7 +101,7 @@ major bump.
 When ready to cut a release, run:
 
 ```shell
-npm run release
+pnpm run release
 ```
 
 This will:
@@ -122,8 +122,8 @@ release to authenticate; subsequent releases use the stored token.
 To override the version bump type (e.g. to force a minor or major bump regardless of commits):
 
 ```shell
-npm run release:minor
-npm run release:major
+pnpm run release:minor
+pnpm run release:major
 ```
 
 ## Building for distribution
@@ -131,7 +131,7 @@ npm run release:major
 Run the make command for your choice of target OS.
 
 ```shell
-npm run make-{linux,osx,windows}
+pnpm run make-{linux,osx,windows}
 ```
 
 The results will be a directory in `out/gymscore-<platform>-<arch>`; packing for distribution beyond that is

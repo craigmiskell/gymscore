@@ -8,20 +8,20 @@ echo "==> Cleaning previous build artifacts"
 rm -rf out/
 
 echo "==> Building (webpack)"
-npm run build
+pnpm build
 
 echo "==> Building documentation"
 ./scripts/build-docs.sh
 cp docs/user-guide.html dist/renderer/user-guide.html
 
 echo "==> Packaging for Linux"
-npm run make-linux
+pnpm make-linux
 
 echo "==> Packaging for Windows"
-npm run make-windows
+pnpm make-windows
 
 echo "==> Packaging for macOS"
-npm run make-osx
+pnpm make-osx
 
 echo "==> Pushing tag $TAG to GitHub"
 git push --follow-tags
