@@ -200,7 +200,7 @@ function addSheetsForStepGroup(doc: jsPDF, titles: Titles, competitors: Competit
       if (col.key === "competitor") {
         const nameLines = doc.splitTextToSize(competitor.competitorName, col.width - 2 * cellPad);
         doc.text(nameLines[0], x + cellPad, nameY);
-        doc.text(`(${competitor.competitorIdentifier} ${competitor.clubName})`, x + cellPad, detailY);
+        doc.text(`(${competitor.competitorIdentifier} ${competitor.clubName.trim()})`, x + cellPad, detailY);
       }
 
       x += col.width;
