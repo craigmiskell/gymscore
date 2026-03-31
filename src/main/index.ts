@@ -65,16 +65,29 @@ const createWindow = () => {
 const logger = new Logger(app.getPath("userData"));
 logger.setupIpc();
 
-app.whenReady().then(() => {
-  logger.info("Application started", { version: app.getVersion() });
-  createWindow();
-
-  // Recommended boilerplate to recreate a window when activated
-  // which gives the expected UX on OSX
-  app.on("activate", () => {
-    if (BrowserWindow.getAllWindows().length === 0) {createWindow();}
+if (!app.requestSingleInstanceLock()) {
+  logger.warn("Another instance is already running; this instance will quit");
+  app.quit();
+} else {
+  app.on("second-instance", () => {
+    const win = BrowserWindow.getAllWindows()[0];
+    if (win) {
+      if (win.isMinimized()) {win.restore();}
+      win.focus();
+    }
   });
-});
+
+  app.whenReady().then(() => {
+    logger.info("Application started", { version: app.getVersion() });
+    createWindow();
+
+    // Recommended boilerplate to recreate a window when activated
+    // which gives the expected UX on OSX
+    app.on("activate", () => {
+      if (BrowserWindow.getAllWindows().length === 0) {createWindow();}
+    });
+  });
+}
 
 // Recommended boiler-plate to quit the app when all windows are closed
 // except for OSX (see on activate above)
