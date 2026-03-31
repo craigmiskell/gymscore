@@ -48,6 +48,7 @@ export class Elements extends pageCommon.BaseElements {
   filterStep: HTMLInputElement = null;
   filterClub: HTMLInputElement = null;
   filterTeam: HTMLInputElement = null;
+  filterGroup: HTMLInputElement = null;
   duplicateCompetitorError: HTMLDivElement = null;
   competitorAlreadyAddedWarning: HTMLDivElement = null;
   nationalIdDuplicateWarning: HTMLDivElement = null;

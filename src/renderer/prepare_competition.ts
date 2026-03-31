@@ -52,7 +52,8 @@ function setupCompetitorsTable() {
   elements.selectAllCheckbox.addEventListener("change", selectAllChanged);
   setupGroupAssignToolbar();
   pageCommon.setupFilterInputs(
-    [elements.filterName, elements.filterNationalId, elements.filterStep, elements.filterClub, elements.filterTeam],
+    [elements.filterName, elements.filterNationalId, elements.filterStep,
+      elements.filterClub, elements.filterTeam, elements.filterGroup],
     updateCompetitorsTable
   );
   // Bootstrap's form-control sets width: 100%, which causes the table layout algorithm to size
@@ -60,6 +61,7 @@ function setupCompetitorsTable() {
   // th are ignored for the same reason. Setting directly on the input here is the reliable fix.
   pageCommon.applyNarrowFilterStyle(elements.filterNationalId);
   pageCommon.applyNarrowFilterStyle(elements.filterStep);
+  pageCommon.applyNarrowFilterStyle(elements.filterGroup);
   updateCompetitorsTable();
 }
 
@@ -164,6 +166,7 @@ function updateCompetitorsTable() {
   const stepFilter = elements.filterStep.value.toLowerCase();
   const clubFilter = elements.filterClub.value.toLowerCase();
   const teamFilter = elements.filterTeam.value.toLowerCase();
+  const groupFilter = elements.filterGroup.value.toLowerCase();
 
   const filtered = [...competition.competitors]
     .sort((a, b) => {
@@ -198,12 +201,15 @@ function updateCompetitorsTable() {
         ? `${competitor.step} ${Division[competitor.division]}`.toLowerCase()
         : `${competitor.step}`;
       const teamName = (competition.teams[competitor.teamIndex]?.name ?? "").toLowerCase();
+      const groupNum = competitor.groupNumber || 0;
+      const groupStr = groupNum === 0 ? "none" : groupNum.toString();
       return (
         competitor.competitorName.toLowerCase().includes(nameFilter) &&
         (competitor.competitorIdentifier ?? "").toLowerCase().includes(nationalIdFilter) &&
         stepStr.includes(stepFilter) &&
         (competitor.clubName ?? "").toLowerCase().includes(clubFilter) &&
-        teamName.includes(teamFilter)
+        teamName.includes(teamFilter) &&
+        groupStr.includes(groupFilter)
       );
     });
 
