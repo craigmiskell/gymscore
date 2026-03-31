@@ -27,6 +27,7 @@ let competition: ICompetition = undefined;
 
 const GROUP_ID_ATTR_NAME = "groupId";
 const APPARATUS_ATTR_NAME = "apparatus";
+const STEP_ATTR_NAME = "step";
 const COMPETITOR_ID_ATTR_NAME = "competitorId";
 const HAS_CHANGES_ATTR_NAME = "hasChanges";
 const SCORES_DELETED_ATTR_NAME = "scoresDeleted";
@@ -34,8 +35,7 @@ const SCORES_DELETED_ATTR_NAME = "scoresDeleted";
 class Elements extends pageCommon.BaseElements {
   competitionTitle: HTMLElement = null;
   competitionLocation: HTMLElement = null;
-  compResultsTable: HTMLTableElement = null;
-  compResultsTableHeaderRow: HTMLTableRowElement = null;
+  stepsContainer: HTMLElement = null;
   groupApparatusResultsModal: HTMLElement = null;
   groupApparatusResultsModalForm: HTMLFormElement = null;
   groupApparatusResultsModalTitle: HTMLHeadingElement = null;
@@ -99,17 +99,28 @@ async function loadCompetition(compId: number | undefined) {
     logger.warn("No competition ID in URL for live scoring page");
   }
 }
-function getGroupsForCompetition(): Array<number>{
-  const groups = Array.from(competition.competitors.reduce((
-    set, competitorDetails) => set.add(competitorDetails.groupNumber),
-  new Set()
-  )).filter((g: number) => g !== 0) as number[];
-  groups.sort((a, b) => { return (a as number - (b as number)); });
+function getStepsForCompetition(): number[] {
+  const steps = Array.from(
+    competition.competitors.reduce((set, c) => set.add(c.step), new Set<number>())
+  );
+  steps.sort((a, b) => a - b);
+  return steps;
+}
+
+function getGroupsForStep(step: number): number[] {
+  const groups = Array.from(
+    competition.competitors
+      .filter(c => c.step === step)
+      .reduce((set, c) => set.add(c.groupNumber), new Set<number>())
+  ).filter(g => g !== 0);
+  groups.sort((a, b) => a - b);
   return groups;
 }
 
-function getGroupRecordedCount(groupId: number, apparatus: string): { recorded: number; total: number } {
-  const groupCompetitors = competition.competitors.filter(c => c.groupNumber === groupId);
+function getGroupRecordedCount(groupId: number, apparatus: string, step: number): { recorded: number; total: number } {
+  const groupCompetitors = competition.competitors.filter(
+    c => c.groupNumber === groupId && c.step === step
+  );
   const recorded = groupCompetitors.filter(c => c.scores[apparatus] !== undefined).length;
   return { recorded, total: groupCompetitors.length };
 }
@@ -127,7 +138,8 @@ function statusDotColor(recorded: number, total: number): string {
 function updateCellStatus(link: HTMLAnchorElement) {
   const groupId = parseInt(link.getAttribute(GROUP_ID_ATTR_NAME));
   const apparatus = link.getAttribute(APPARATUS_ATTR_NAME);
-  const { recorded, total } = getGroupRecordedCount(groupId, apparatus);
+  const step = parseInt(link.getAttribute(STEP_ATTR_NAME));
+  const { recorded, total } = getGroupRecordedCount(groupId, apparatus, step);
 
   const existing = link.querySelector(".cell-status");
   if (existing) {
@@ -154,36 +166,67 @@ function updateCellStatus(link: HTMLAnchorElement) {
 }
 
 function populateCompetitionResultsTable() {
-  const table = elements.compResultsTable;
-  const headerRow = elements.compResultsTableHeaderRow;
-  const apparatuses = [];
-
-  for(const apparatus of ["bar", "beam", "floor", "vault"]) {
+  const apparatuses: string[] = [];
+  for (const apparatus of ["bar", "beam", "floor", "vault"]) {
     if (competition[apparatus as keyof typeof competition]) {
-      const cell = headerRow.insertCell();
-      cell.textContent = capitalise(apparatus);
-      cell.classList.add("col-2");
       apparatuses.push(apparatus);
     }
   }
 
-  for(const group of getGroupsForCompetition()) {
-    const row = table.insertRow();
-    const groupCell = row.insertCell();
-    groupCell.textContent = group.toString();
-    for(const apparatus of apparatuses) {
-      const aCell = row.insertCell();
-      const modalLink = document.createElement("a");
-      modalLink.href = "";
-      modalLink.addEventListener("click", editGroupApparatusResults);
-      modalLink.setAttribute(GROUP_ID_ATTR_NAME, group.toString());
-      modalLink.setAttribute(APPARATUS_ATTR_NAME, apparatus);
-      const icon = document.createElement("i");
-      icon.classList.add("bi", "bi-pencil");
-      modalLink.appendChild(icon);
-      updateCellStatus(modalLink);
-      aCell.appendChild(modalLink);
+  for (const step of getStepsForCompetition()) {
+    const card = document.createElement("div");
+    card.classList.add("card");
+
+    const cardHeader = document.createElement("div");
+    cardHeader.classList.add("card-header", "fw-bold");
+    cardHeader.textContent = `Step ${step}`;
+    card.appendChild(cardHeader);
+
+    const cardBody = document.createElement("div");
+    cardBody.classList.add("card-body", "p-1");
+
+    const table = document.createElement("table");
+    table.classList.add("table", "table-sm", "table-striped", "table-bordered", "w-auto", "mb-0");
+
+    const thead = document.createElement("thead");
+    const headerRow = document.createElement("tr");
+    const groupTh = document.createElement("th");
+    groupTh.textContent = "Group";
+    headerRow.appendChild(groupTh);
+    for (const apparatus of apparatuses) {
+      const th = document.createElement("th");
+      th.textContent = capitalise(apparatus);
+      th.classList.add("col-2");
+      headerRow.appendChild(th);
     }
+    thead.appendChild(headerRow);
+    table.appendChild(thead);
+
+    const tbody = document.createElement("tbody");
+    for (const group of getGroupsForStep(step)) {
+      const row = tbody.insertRow();
+      const groupCell = row.insertCell();
+      groupCell.textContent = group.toString();
+      for (const apparatus of apparatuses) {
+        const aCell = row.insertCell();
+        const modalLink = document.createElement("a");
+        modalLink.href = "";
+        modalLink.addEventListener("click", editGroupApparatusResults);
+        modalLink.setAttribute(GROUP_ID_ATTR_NAME, group.toString());
+        modalLink.setAttribute(APPARATUS_ATTR_NAME, apparatus);
+        modalLink.setAttribute(STEP_ATTR_NAME, step.toString());
+        const icon = document.createElement("i");
+        icon.classList.add("bi", "bi-pencil");
+        modalLink.appendChild(icon);
+        updateCellStatus(modalLink);
+        aCell.appendChild(modalLink);
+      }
+    }
+    table.appendChild(tbody);
+
+    cardBody.appendChild(table);
+    card.appendChild(cardBody);
+    elements.stepsContainer.appendChild(card);
   }
 }
 
@@ -197,14 +240,16 @@ function editGroupApparatusResults(event: Event) {
 
   const groupId = link.getAttribute(GROUP_ID_ATTR_NAME);
   const apparatus = link.getAttribute(APPARATUS_ATTR_NAME);
-  logger.debug("Opening group/apparatus results modal", { groupId, apparatus });
+  const step = link.getAttribute(STEP_ATTR_NAME);
+  logger.debug("Opening group/apparatus results modal", { groupId, apparatus, step });
 
   modalElement.setAttribute(GROUP_ID_ATTR_NAME, groupId);
   modalElement.setAttribute(APPARATUS_ATTR_NAME, apparatus);
+  modalElement.setAttribute(STEP_ATTR_NAME, step);
 
-  elements.groupApparatusResultsModalTitle.textContent = ` Group ${groupId} - ${capitalise(apparatus)}`;
+  elements.groupApparatusResultsModalTitle.textContent = `Step ${step} - Group ${groupId} - ${capitalise(apparatus)}`;
 
-  populateApparatusGroupResultsTable(parseInt(groupId), apparatus);
+  populateApparatusGroupResultsTable(parseInt(groupId), apparatus, parseInt(step));
   modalElement.removeAttribute(HAS_CHANGES_ATTR_NAME);
   elements.groupApparatusResultsModalForm.classList.remove("was-validated");
 
@@ -395,10 +440,9 @@ function createStepHeaderRow(body: HTMLTableSectionElement, step: number): HTMLT
   return row;
 }
 
-function populateApparatusGroupResultsTable(groupId: number, apparatus: string) {
+function populateApparatusGroupResultsTable(groupId: number, apparatus: string, step: number) {
   const groupCompetitors = competition.competitors
-    .filter(competitor => competitor.groupNumber === groupId)
-    .sort((a, b) => a.step - b.step);
+    .filter(competitor => competitor.groupNumber === groupId && competitor.step === step);
 
   const body = elements.groupApparatusResultsModalTable.tBodies[0];
 
@@ -406,12 +450,7 @@ function populateApparatusGroupResultsTable(groupId: number, apparatus: string) 
     body.deleteRow(-1);
   }
 
-  let currentStep: number | undefined = undefined;
   for (const competitor of groupCompetitors) {
-    if (competitor.step !== currentStep) {
-      currentStep = competitor.step;
-      createStepHeaderRow(body, currentStep);
-    }
     const row = createCompetitorRow(body);
     displayCompetitorInRow(row, competitor, apparatus);
   }
@@ -487,10 +526,10 @@ async function saveScores(event: Event) {
 
   const savedGroupId = elements.groupApparatusResultsModal.getAttribute(GROUP_ID_ATTR_NAME);
   const savedApparatus = elements.groupApparatusResultsModal.getAttribute(APPARATUS_ATTR_NAME);
-  const savedLink = document.querySelector(
+  const savedLinks = document.querySelectorAll<HTMLAnchorElement>(
     `a[${GROUP_ID_ATTR_NAME}="${savedGroupId}"][${APPARATUS_ATTR_NAME}="${savedApparatus}"]`
-  ) as HTMLAnchorElement;
-  if (savedLink) {
+  );
+  for (const savedLink of savedLinks) {
     updateCellStatus(savedLink);
   }
 

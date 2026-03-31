@@ -1,4 +1,3 @@
-* Score recording is split per Step, on the top level score recording page.
 * Re-order the results entry UI to match the recording sheets
 * Announcements.pdf: ORder columns as name, club, placing
 * Certificates are not required - remove active generation, although keep the code.
