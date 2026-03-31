@@ -1,4 +1,3 @@
-* Announcements.pdf: ORder columns as name, club, placing
 * Certificates are not required - remove active generation, although keep the code.
 * Only allow the app to run once; it hits an error about Indexed DB locking or similar, but that should be handled much more cleanly.
 * When adding a competitor, need to be clearer that the team name is not prefixed (is a full name); could suggest "<club> 1" for the first one, but make it clearly a suggestion

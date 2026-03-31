@@ -24,16 +24,17 @@ import {
 
 const TOP_X = 3;
 
-// Fixed apparatus display order for announcements (least dramatic to most dramatic).
+// Fixed apparatus display order for announcements
 // "bar" is displayed as "U Bars" per gymnastics convention.
 const ANNOUNCEMENT_APPARATUS_ORDER = ["floor", "beam", "bar", "vault"];
 
 // Competitor section column x-positions
 const NAME_COL = MARGIN;
 const NAME_WIDTH = 55;
-const PLACINGS_COL = NAME_COL + NAME_WIDTH;
+const CLUB_COL = NAME_COL + NAME_WIDTH;
+const CLUB_WIDTH = 55;
+const PLACINGS_COL = CLUB_COL + CLUB_WIDTH;
 const PLACINGS_WIDTH = 160;
-const CLUB_COL = PLACINGS_COL + PLACINGS_WIDTH;
 
 // Team section column x-positions
 const TEAM_PLACE_COL = MARGIN;
@@ -220,8 +221,8 @@ function addDivisionAnnouncements(
   state.y += ROW_HEIGHT;
 
   doc.text("Name", NAME_COL, state.y);
-  doc.text("Placings", PLACINGS_COL, state.y);
   doc.text("Club", CLUB_COL, state.y);
+  doc.text("Placings", PLACINGS_COL, state.y);
   doc.setFont("helvetica", "normal");
   state.y += 1;
   doc.line(MARGIN, state.y, PAGE_WIDTH - MARGIN, state.y);
@@ -237,10 +238,10 @@ function addDivisionAnnouncements(
 
     checkPageBreak(state, rowHeight, "Announcements");
     doc.text(row.competitor.competitorName, NAME_COL, state.y);
+    doc.text(row.competitor.clubName, CLUB_COL, state.y);
     for (let i = 0; i < lines.length; i++) {
       doc.text(lines[i], PLACINGS_COL, state.y + i * ROW_HEIGHT);
     }
-    doc.text(row.competitor.clubName, CLUB_COL, state.y);
     state.y += rowHeight;
   }
 }
