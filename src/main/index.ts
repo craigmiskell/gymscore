@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU General Public License along with this program. If not,
 // see <https://www.gnu.org/licenses/>.
 
-import {IpcMainEvent, app, BrowserWindow, ipcMain, dialog, shell} from "electron";
+import {IpcMainEvent, Menu, MenuItemConstructorOptions, app, BrowserWindow, ipcMain, dialog, shell} from "electron";
 import path from "path";
 import isDev from "electron-is-dev";
 import fs from "fs";
@@ -37,6 +37,62 @@ if (isDev) {
   });
 }
 
+const createHelpWindow = () => {
+  const userGuidePath = path.join(app.getAppPath(), "dist/renderer/user-guide.html");
+  if (!fs.existsSync(userGuidePath)) {
+    dialog.showMessageBox({
+      type: "info",
+      title: "User Guide Not Available",
+      message: "The user guide has not been built yet.\n\nRun: npm run build-docs",
+    });
+    return;
+  }
+  const helpWin = new BrowserWindow({
+    width: 900,
+    height: 700,
+    title: "GymScore User Guide",
+    webPreferences: {
+      nodeIntegration: false,
+      contextIsolation: true,
+    },
+  });
+  helpWin.setMenu(null);
+  helpWin.loadFile(userGuidePath);
+};
+
+const buildAppMenu = (): Menu => {
+  const viewSubmenu: MenuItemConstructorOptions[] = [
+    { role: "zoomIn" },
+    { role: "zoomOut" },
+    { role: "resetZoom" },
+    { type: "separator" },
+    { role: "togglefullscreen" },
+  ];
+  if (isDev) {
+    viewSubmenu.push({ type: "separator" }, { role: "reload" }, { role: "toggleDevTools" });
+  }
+  const template: MenuItemConstructorOptions[] = [
+    {
+      label: "Edit",
+      submenu: [
+        { role: "undo" },
+        { role: "redo" },
+        { type: "separator" },
+        { role: "cut" },
+        { role: "copy" },
+        { role: "paste" },
+        { role: "selectAll" },
+      ],
+    },
+    { label: "View", submenu: viewSubmenu },
+    {
+      role: "help",
+      submenu: [{ label: "User Guide", click: createHelpWindow }],
+    },
+  ];
+  return Menu.buildFromTemplate(template);
+};
+
 const createWindow = () => {
   logger.info("Creating main browser window");
   const win = new BrowserWindow({
@@ -52,8 +108,6 @@ const createWindow = () => {
   win.show();
 
   win.loadFile("dist/renderer/index.html");
-  // TODO: we'll add a menu again later when we have a need
-  // win.setMenu(null);
   if(isDev) {
     win.webContents.openDevTools();
   }
@@ -79,6 +133,7 @@ if (!app.requestSingleInstanceLock()) {
 
   app.whenReady().then(() => {
     logger.info("Application started", { version: app.getVersion() });
+    Menu.setApplicationMenu(buildAppMenu());
     createWindow();
 
     // Recommended boilerplate to recreate a window when activated
@@ -94,6 +149,10 @@ if (!app.requestSingleInstanceLock()) {
 app.on("window-all-closed", () => {
   logger.info("All windows closed", { platform: process.platform });
   if (process.platform !== "darwin") {app.quit();}
+});
+
+ipcMain.on("open-user-guide", () => {
+  createHelpWindow();
 });
 
 ipcMain.on("open-external-url", (_event: IpcMainEvent, url: string) => {

@@ -7,7 +7,7 @@ After checking out the repo:
 1. Install [asdf](https://asdf-vm.com/guide/getting-started.html)
 1. Install [gh](https://cli.github.com) (GitHub CLI) >= 2.x — no asdf plugin exists for it, so install
    via your system package manager or the instructions at that link
-1. Run ./scripts/update-dev-env.sh to install required plugins and versions
+1. Run ./scripts/setup-dev-env.sh to install required plugins, versions, and OS packages
 1. Install NPM modules:
 
    ```shell
@@ -78,6 +78,19 @@ To update the list for display in the UI, run
 ```shell
 npm exec generate-licenses
 ```
+
+## Building the user guide
+
+The user guide source lives in `docs/user-guide.md`. To generate it as HTML (for in-app display)
+and PDF (for release artifacts), run:
+
+```shell
+npm run build-docs
+```
+
+This requires `pandoc` and `weasyprint`, both installed as OS packages by `setup-dev-env.sh`.
+The generated `docs/user-guide.html` is also copied into `dist/renderer/` so the in-app Help
+menu works. Run `npm run build` (webpack) first if `dist/renderer/` does not exist yet.
 
 ## Releasing a new version
 

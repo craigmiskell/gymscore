@@ -102,6 +102,11 @@ async function onLoaded() {
     api.sendAsync("open-log-window", null);
   });
 
+  document.getElementById("openUserGuideMenuItem").addEventListener("click", (e) => {
+    e.preventDefault();
+    api.sendAsync("open-user-guide", null);
+  });
+
   licensesModal.setup();
   setupHamburgerMenu();
   document.getElementById("openLicensesMenuItem").addEventListener("click", (e) => {

@@ -2,3 +2,5 @@ node_modules
 out/
 dist/
 buildcache/
+docs/user-guide.html
+docs/user-guide.pdf

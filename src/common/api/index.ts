@@ -12,6 +12,7 @@ export interface Api {
   sendAsync(channel: "generate-pdfs", data: { type: PdfType; competition: CompetitionData }): void;
   sendAsync(channel: "log-entry", data: Omit<LogEntry, "timestamp" | "session">): void;
   sendAsync(channel: "open-log-window", data: null): void;
+  sendAsync(channel: "open-user-guide", data: null): void;
   sendAsync(channel: "open-external-url", data: string): void;
 
   invoke(channel: "export-db", data: string): Promise<FileOperationResult>;
@@ -30,7 +31,14 @@ export interface Api {
 // Implementation uses broad internal types; the Api interface above enforces correctness at call sites.
 const api = {
   sendAsync: (channel: string, data: unknown) => {
-    const validChannels = ["save-png", "generate-pdfs", "log-entry", "open-log-window", "open-external-url"];
+    const validChannels = [
+      "save-png",
+      "generate-pdfs",
+      "log-entry",
+      "open-log-window",
+      "open-user-guide",
+      "open-external-url"
+    ];
     if (validChannels.includes(channel)) {
       ipcRenderer.send(channel, data);
     } else {

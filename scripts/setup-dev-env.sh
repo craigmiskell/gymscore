@@ -5,6 +5,9 @@ if ! which asdf >/dev/null 2>&1; then
   exit 1
 fi
 
+echo "==> Installing OS packages for release tooling (pandoc, weasyprint)"
+sudo apt-get install -y pandoc weasyprint
+
 cut -d' ' -f 1 <.tool-versions | while read -r plugin; do
   asdf plugin add "${plugin}"
 done
