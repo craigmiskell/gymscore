@@ -59,7 +59,7 @@ importers:
         version: 5.25.0(eslint@8.16.0)(typescript@4.6.4)
       '@webpack-cli/generators':
         specifier: ^2.4.2
-        version: 2.4.2(encoding@0.1.13)(prettier@2.6.2)(webpack-dev-server@4.9.0)(webpack@5.72.0)
+        version: 2.4.2(encoding@0.1.13)(prettier@3.8.1)(webpack-dev-server@4.9.0)(webpack@5.72.0)
       babel-loader:
         specifier: ^8.2.5
         version: 8.2.5(@babel/core@7.17.10)(webpack@5.72.0)
@@ -106,8 +106,8 @@ importers:
         specifier: ^1.16.1
         version: 1.16.1
       prettier:
-        specifier: ^2.6.2
-        version: 2.6.2
+        specifier: ^3.8.1
+        version: 3.8.1
       style-loader:
         specifier: ^3.3.1
         version: 3.3.1(webpack@5.72.0)
@@ -128,7 +128,7 @@ importers:
         version: 5.72.0(webpack-cli@4.9.2)
       webpack-cli:
         specifier: ^4.9.2
-        version: 4.9.2(@webpack-cli/generators@2.4.2(encoding@0.1.13)(prettier@2.6.2)(webpack-dev-server@4.9.0)(webpack@5.72.0))(webpack-dev-server@4.9.0)(webpack@5.72.0)
+        version: 4.9.2(@webpack-cli/generators@2.4.2(encoding@0.1.13)(prettier@3.8.1)(webpack-dev-server@4.9.0)(webpack@5.72.0))(webpack-dev-server@4.9.0)(webpack@5.72.0)
       webpack-dev-server:
         specifier: ^4.9.0
         version: 4.9.0(webpack-cli@4.9.2)(webpack@5.72.0)
@@ -5133,11 +5133,6 @@ packages:
     resolution: {integrity: sha512-PhmXi5XmoyKw1Un4E+opM2KcsJInDvKyuOumcjjw3waw86ZNjHwVUOOWLc4bCzLdcKNaWBH9e99sbWzDQsVaYg==}
     engines: {node: '>=0.10.0'}
 
-  prettier@2.6.2:
-    resolution: {integrity: sha512-PkUpF+qoXTqhOeWL9fu7As8LXsIUZ1WYaJiY/a7McAQzxjk82OF0tibkFXVCDImZtWxbvojFjerkiLb0/q8mew==}
-    engines: {node: '>=10.13.0'}
-    hasBin: true
-
   prettier@3.8.1:
     resolution: {integrity: sha512-UOnG6LftzbdaHZcKoPFtOcCKztrQ57WkHDeRD9t/PTQtmT0NHSeWWepj6pS0z/N7+08BHFDQVUrfmfMRcZwbMg==}
     engines: {node: '>=14'}
@@ -8701,16 +8696,16 @@ snapshots:
   '@webpack-cli/configtest@1.1.1(webpack-cli@4.9.2)(webpack@5.72.0)':
     dependencies:
       webpack: 5.72.0(webpack-cli@4.9.2)
-      webpack-cli: 4.9.2(@webpack-cli/generators@2.4.2(encoding@0.1.13)(prettier@2.6.2)(webpack-dev-server@4.9.0)(webpack@5.72.0))(webpack-dev-server@4.9.0)(webpack@5.72.0)
+      webpack-cli: 4.9.2(@webpack-cli/generators@2.4.2(encoding@0.1.13)(prettier@3.8.1)(webpack-dev-server@4.9.0)(webpack@5.72.0))(webpack-dev-server@4.9.0)(webpack@5.72.0)
 
-  '@webpack-cli/generators@2.4.2(encoding@0.1.13)(prettier@2.6.2)(webpack-dev-server@4.9.0)(webpack@5.72.0)':
+  '@webpack-cli/generators@2.4.2(encoding@0.1.13)(prettier@3.8.1)(webpack-dev-server@4.9.0)(webpack@5.72.0)':
     dependencies:
       webpack: 5.72.0(webpack-cli@4.9.2)
-      webpack-cli: 4.9.2(@webpack-cli/generators@2.4.2(encoding@0.1.13)(prettier@2.6.2)(webpack-dev-server@4.9.0)(webpack@5.72.0))(webpack-dev-server@4.9.0)(webpack@5.72.0)
+      webpack-cli: 4.9.2(@webpack-cli/generators@2.4.2(encoding@0.1.13)(prettier@3.8.1)(webpack-dev-server@4.9.0)(webpack@5.72.0))(webpack-dev-server@4.9.0)(webpack@5.72.0)
       yeoman-environment: 2.10.3(encoding@0.1.13)
       yeoman-generator: 4.13.0(encoding@0.1.13)
     optionalDependencies:
-      prettier: 2.6.2
+      prettier: 3.8.1
     transitivePeerDependencies:
       - '@webpack-cli/migrate'
       - encoding
@@ -8721,11 +8716,11 @@ snapshots:
   '@webpack-cli/info@1.4.1(webpack-cli@4.9.2)':
     dependencies:
       envinfo: 7.8.1
-      webpack-cli: 4.9.2(@webpack-cli/generators@2.4.2(encoding@0.1.13)(prettier@2.6.2)(webpack-dev-server@4.9.0)(webpack@5.72.0))(webpack-dev-server@4.9.0)(webpack@5.72.0)
+      webpack-cli: 4.9.2(@webpack-cli/generators@2.4.2(encoding@0.1.13)(prettier@3.8.1)(webpack-dev-server@4.9.0)(webpack@5.72.0))(webpack-dev-server@4.9.0)(webpack@5.72.0)
 
   '@webpack-cli/serve@1.6.1(webpack-cli@4.9.2)(webpack-dev-server@4.9.0)':
     dependencies:
-      webpack-cli: 4.9.2(@webpack-cli/generators@2.4.2(encoding@0.1.13)(prettier@2.6.2)(webpack-dev-server@4.9.0)(webpack@5.72.0))(webpack-dev-server@4.9.0)(webpack@5.72.0)
+      webpack-cli: 4.9.2(@webpack-cli/generators@2.4.2(encoding@0.1.13)(prettier@3.8.1)(webpack-dev-server@4.9.0)(webpack@5.72.0))(webpack-dev-server@4.9.0)(webpack@5.72.0)
     optionalDependencies:
       webpack-dev-server: 4.9.0(webpack-cli@4.9.2)(webpack@5.72.0)
 
@@ -12915,8 +12910,6 @@ snapshots:
 
   prepend-http@1.0.4: {}
 
-  prettier@2.6.2: {}
-
   prettier@3.8.1: {}
 
   pretty-bytes@5.6.0: {}
@@ -14151,7 +14144,7 @@ snapshots:
 
   webidl-conversions@4.0.2: {}
 
-  webpack-cli@4.9.2(@webpack-cli/generators@2.4.2(encoding@0.1.13)(prettier@2.6.2)(webpack-dev-server@4.9.0)(webpack@5.72.0))(webpack-dev-server@4.9.0)(webpack@5.72.0):
+  webpack-cli@4.9.2(@webpack-cli/generators@2.4.2(encoding@0.1.13)(prettier@3.8.1)(webpack-dev-server@4.9.0)(webpack@5.72.0))(webpack-dev-server@4.9.0)(webpack@5.72.0):
     dependencies:
       '@discoveryjs/json-ext': 0.5.7
       '@webpack-cli/configtest': 1.1.1(webpack-cli@4.9.2)(webpack@5.72.0)
@@ -14167,7 +14160,7 @@ snapshots:
       webpack: 5.72.0(webpack-cli@4.9.2)
       webpack-merge: 5.8.0
     optionalDependencies:
-      '@webpack-cli/generators': 2.4.2(encoding@0.1.13)(prettier@2.6.2)(webpack-dev-server@4.9.0)(webpack@5.72.0)
+      '@webpack-cli/generators': 2.4.2(encoding@0.1.13)(prettier@3.8.1)(webpack-dev-server@4.9.0)(webpack@5.72.0)
       webpack-dev-server: 4.9.0(webpack-cli@4.9.2)(webpack@5.72.0)
 
   webpack-dev-middleware@5.3.1(webpack@5.72.0):
@@ -14211,7 +14204,7 @@ snapshots:
       webpack-dev-middleware: 5.3.1(webpack@5.72.0)
       ws: 8.6.0
     optionalDependencies:
-      webpack-cli: 4.9.2(@webpack-cli/generators@2.4.2(encoding@0.1.13)(prettier@2.6.2)(webpack-dev-server@4.9.0)(webpack@5.72.0))(webpack-dev-server@4.9.0)(webpack@5.72.0)
+      webpack-cli: 4.9.2(@webpack-cli/generators@2.4.2(encoding@0.1.13)(prettier@3.8.1)(webpack-dev-server@4.9.0)(webpack@5.72.0))(webpack-dev-server@4.9.0)(webpack@5.72.0)
     transitivePeerDependencies:
       - bufferutil
       - debug
@@ -14252,7 +14245,7 @@ snapshots:
       watchpack: 2.3.1
       webpack-sources: 3.2.3
     optionalDependencies:
-      webpack-cli: 4.9.2(@webpack-cli/generators@2.4.2(encoding@0.1.13)(prettier@2.6.2)(webpack-dev-server@4.9.0)(webpack@5.72.0))(webpack-dev-server@4.9.0)(webpack@5.72.0)
+      webpack-cli: 4.9.2(@webpack-cli/generators@2.4.2(encoding@0.1.13)(prettier@3.8.1)(webpack-dev-server@4.9.0)(webpack@5.72.0))(webpack-dev-server@4.9.0)(webpack@5.72.0)
     transitivePeerDependencies:
       - '@swc/core'
       - esbuild
