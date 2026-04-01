@@ -58,7 +58,6 @@
     "license-checker": "^25.0.1",
     "markdownlint-cli": "^0.48.0",
     "mini-css-extract-plugin": "^2.6.0",
-    "popper.js": "^1.16.1",
     "prettier": "^3.8.1",
     "style-loader": "^3.3.1",
     "thread-loader": "^3.0.4",
