@@ -18,7 +18,7 @@ import { Division, hasDivisions, ICompetitor, Competitor, Club, IClub } from "..
 import * as pageCommon from "./page_common";
 import { Autocomplete } from "./autocomplete";
 import { Modal } from "bootstrap";
-import { CompetitionCompetitorDetails, Team } from "../common/data/competition";
+import { CompetitionCompetitorDetails, CompetitionData, Team } from "../common/data/competition";
 import { logger } from "./logger";
 import {
   elements, competition,
@@ -365,7 +365,7 @@ async function saveEditedCompetitor() {
     pruneEmptyTeams(clubId);
   }
 
-  await db.competitions.update(competition.id, competition);
+  await db.competitions.update(competition.id, competition as CompetitionData);
   logger.info("Competitor edit saved", {
     competitorId: editingCompetitorId,
     step: competitorDetails.step,
@@ -534,7 +534,7 @@ async function addCompetitor() {
     teamId,
     0, // Default is "no group", index 0
   ));
-  await db.competitions.update(competition.id, competition);
+  await db.competitions.update(competition.id, competition as CompetitionData);
   const { name, identifier } = competitor;
   logger.info("Competitor added to competition", {
     competitorId: competitor.id, name, identifier,

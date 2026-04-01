@@ -16,7 +16,7 @@
 import { db } from "./data/gymscoredb";
 import { Division, hasDivisions } from "../common/data";
 import * as pageCommon from "./page_common";
-import { CompetitionCompetitorDetails } from "../common/data/competition";
+import { CompetitionCompetitorDetails, CompetitionData } from "../common/data/competition";
 import { logger } from "./logger";
 import { elements, competition, COMPETITOR_ID_ATTR_NAME } from "./prepare_competition_state";
 import { setupDetailsPanel, loadCompetition, showInitialState } from "./prepare_competition_details";
@@ -73,7 +73,7 @@ async function removeCompetitor(event: Event) {
   logger.info("Removing competitor from competition", { competitorId, competitionId: competition.id });
   selectedCompetitorIds.delete(competitorId);
   competition.removeCompetitorById(competitorId);
-  await db.competitions.update(competition.id, competition);
+  await db.competitions.update(competition.id, competition as CompetitionData);
   updateGroupAssignToolbar();
   updateCompetitorsTable();
 }
@@ -247,7 +247,7 @@ async function groupSelectChanged(event: Event) {
     oldGroup,
     newGroup: competitor.groupNumber,
   });
-  await db.competitions.update(competition.id, competition);
+  await db.competitions.update(competition.id, competition as CompetitionData);
 
   const row = select.closest("tr") as HTMLTableRowElement;
   if (competitor.groupNumber > 0) {
@@ -323,7 +323,7 @@ async function assignGroupToSelected(groupNumber: number) {
       competitor.groupNumber = groupNumber;
     }
   }
-  await db.competitions.update(competition.id, competition);
+  await db.competitions.update(competition.id, competition as CompetitionData);
   updateCompetitorsTable();
 }
 

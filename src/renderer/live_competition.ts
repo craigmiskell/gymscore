@@ -14,7 +14,7 @@
 // see <https://www.gnu.org/licenses/>.
 import { db } from "./data/gymscoredb";
 import { ICompetition, ICompetitor } from "../common/data";
-import { CompetitionCompetitorDetails, CompetitorScore } from "../common/data/competition";
+import { CompetitionCompetitorDetails, CompetitionData, CompetitorScore } from "../common/data/competition";
 import * as pageCommon from "./page_common";
 import { Modal } from "bootstrap";
 import { logger } from "./logger";
@@ -528,7 +528,7 @@ async function saveScores(event: Event) {
     savedCount++;
   }
   logger.info("Scores saved", { competitionId: competition.id, groupId, apparatus, savedCount });
-  await db.competitions.update(competition.id, competition);
+  await db.competitions.update(competition.id, competition as CompetitionData);
 
   const savedGroupId = elements.groupApparatusResultsModal.getAttribute(GROUP_ID_ATTR_NAME);
   const savedApparatus = elements.groupApparatusResultsModal.getAttribute(APPARATUS_ATTR_NAME);
