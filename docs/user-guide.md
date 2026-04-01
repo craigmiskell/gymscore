@@ -278,7 +278,7 @@ GymScore generates three PDF files, saves them in the same location as the progr
 sheets, and opens them (typically in your web browser):
 
 | File | Purpose |
-|---|---|
+| --- | --- |
 | `results.pdf` | Full detailed results for every competitor |
 | `places.pdf` | Top-three placements per apparatus and overall, with team results |
 | `announcements.pdf` | A script for reading placings aloud at the awards ceremony |

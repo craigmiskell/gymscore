@@ -8,11 +8,11 @@ handles competitor registration, live score entry, and results.
 Pre-built packages for Windows, Linux, and macOS are available on the
 [Releases page](https://github.com/craigmiskell/gymscore/releases).
 
-| Platform | File type |
-|----------|-----------|
+| Platform | File type                                              |
+| -------- | ------------------------------------------------------ |
 | Windows  | Portable `.exe` (no installation needed — just run it) |
-| Linux    | `.deb` package (Debian/Ubuntu and derivatives) |
-| macOS    | `.zip` archive |
+| Linux    | `.deb` package (Debian/Ubuntu and derivatives)         |
+| macOS    | `.zip` archive                                         |
 
 ### Windows
 
