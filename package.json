@@ -35,8 +35,8 @@
   "homepage": "https://github.com/craigmiskell/gymscore",
   "license": "GPL-3.0-or-later",
   "devDependencies": {
-    "@babel/core": "^7.17.10",
-    "@babel/preset-env": "^7.17.10",
+    "@babel/core": "^7.29.0",
+    "@babel/preset-env": "^7.29.2",
     "@electron-forge/cli": "^7.11.1",
     "@eslint/eslintrc": "^3.3.5",
     "@eslint/js": "^10.0.1",
@@ -46,7 +46,7 @@
     "@typescript-eslint/eslint-plugin": "^8.58.0",
     "@typescript-eslint/parser": "^8.58.0",
     "@webpack-cli/generators": "^2.4.2",
-    "babel-loader": "^8.2.5",
+    "babel-loader": "^10.1.1",
     "commit-and-tag-version": "^12.7.1",
     "concurrently": "^9.2.1",
     "css-loader": "^7.1.4",
@@ -73,6 +73,7 @@
     "webpack-merge": "^5.8.0"
   },
   "dependencies": {
+    "@babel/plugin-syntax-dynamic-import": "^7.8.3",
     "bootstrap": "^5.3.8",
     "bootstrap-icons": "^1.13.1",
     "cross-blob": "^3.0.2",
