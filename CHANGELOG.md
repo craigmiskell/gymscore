@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.9.7](https://github.com/craigmiskell/gymscore/compare/v0.9.6...v0.9.7) (2026-04-01)
+
+
+### Features
+
+* Add a user-guide ([9f2b27f](https://github.com/craigmiskell/gymscore/commit/9f2b27fae2e135a367f9fa9bb08c411a1e5b3b2d))
+* Add filter/sort to group column when preparing competition ([19a70a6](https://github.com/craigmiskell/gymscore/commit/19a70a62a26f518f78fdaeed2247ce54c45b047a))
+* Auto suggest a team name ([d7f5153](https://github.com/craigmiskell/gymscore/commit/d7f51532bc731621292e9822fa9fbe86cfeac56b))
+* Only allow one instance of the application ([79f851a](https://github.com/craigmiskell/gymscore/commit/79f851ae3ac4576c36e5ec263bfe773968fc652b))
+* Split score recording by step ([1b25b6d](https://github.com/craigmiskell/gymscore/commit/1b25b6d81c54ad303a18ab49a7477d4b5da08e5f))
+
+
+### Bug Fixes
+
+* Final npm updates, including typescript to 4.9.5 ([fd1e8f3](https://github.com/craigmiskell/gymscore/commit/fd1e8f31307cbf6919d919525bfdc6bec5f2d853))
+* fix ([afede45](https://github.com/craigmiskell/gymscore/commit/afede45f82a9ef5905529fe3775857e066705bb6))
+* Fix focus in score recording modal after column re-ordering ([e994eae](https://github.com/craigmiskell/gymscore/commit/e994eae209a69ac2fd085a754d8677b8442941a5))
+* Fix occasional failure to populate competitor modal when adding a competitor ([1439c77](https://github.com/craigmiskell/gymscore/commit/1439c772db2693930f6cd80aa5ba41e9a9c8a66f))
+* Make score entry mirror the recording sheet ([241686b](https://github.com/craigmiskell/gymscore/commit/241686bb51b1c7a83788ef3575b33643a947d2fc))
+* Re-order columns in announcements pdf ([86bc68e](https://github.com/craigmiskell/gymscore/commit/86bc68e687792db3984f8c0c3d3fbc3ed505ba50))
+* Stop generating certificates ([47bb04c](https://github.com/craigmiskell/gymscore/commit/47bb04c7bd6de0e9a18b1dad31682d7239a76fe8))
+* Trim whitespace on club name in recorder sheets ([125574a](https://github.com/craigmiskell/gymscore/commit/125574a9caf3cd304aa4fd3ef78584812d6efa76))
+
 ## [0.9.6](https://github.com/craigmiskell/gymscore/compare/v0.9.5...v0.9.6) (2026-03-29)
 
 
