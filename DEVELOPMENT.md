@@ -126,6 +126,20 @@ pnpm run release:minor
 pnpm run release:major
 ```
 
+## Updating NPM packages
+
+### See what's outdated
+
+pnpm outdated
+
+### Update within your existing semver ranges (^ or ~)
+
+pnpm update
+
+### Update to latest, ignoring semver ranges
+
+pnpm update --latest
+
 ## Building for distribution
 
 Run the make command for your choice of target OS.

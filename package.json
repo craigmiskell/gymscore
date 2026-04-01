@@ -77,11 +77,13 @@
     "dexie": "^3.2.2",
     "dexie-export-import": "^4.1.4",
     "electron-is-dev": "^2.0.0",
-    "jspdf": "^2.5.1",
+    "jspdf": "^4.2.1",
     "strftime": "^0.10.3"
   },
   "pnpm": {
-    "onlyBuiltDependencies": ["electron"]
+    "onlyBuiltDependencies": [
+      "electron"
+    ]
   },
   "config": {
     "forge": {
