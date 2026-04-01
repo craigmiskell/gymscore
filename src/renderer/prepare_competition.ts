@@ -236,6 +236,7 @@ function updateGroupButtonCounts() {
     // TODO: No, use DOM.
     btn.innerHTML = `<span class="group-btn-label">${label}</span><span class="group-btn-count">(${count})</span>`;
   });
+
 }
 
 function rationalizeGroupOrder(step: number, groupNumber: number) {

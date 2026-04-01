@@ -72,6 +72,44 @@ function renderCards(): void {
   const container = document.getElementById("stepsContainer");
   container.innerHTML = "";
 
+  const alertContainer = document.getElementById("ungroupedAlert");
+  alertContainer.innerHTML = "";
+  const ungroupedCount = competition ? competition.competitors.filter((c) => (c.groupNumber ?? 0) === 0).length : 0;
+  if (ungroupedCount > 0) {
+    const noun = ungroupedCount === 1 ? "competitor has" : "competitors have";
+    const alertEl = document.createElement("div");
+    alertEl.className = "alert alert-warning d-flex align-items-center gap-2 mt-3";
+    alertEl.setAttribute("role", "alert");
+
+    const icon = document.createElement("i");
+    icon.className = "bi bi-exclamation-triangle-fill";
+    alertEl.appendChild(icon);
+
+    const msg = document.createElement("span");
+    msg.textContent = `${ungroupedCount} ${noun} not been assigned to a group. `;
+    alertEl.appendChild(msg);
+
+    const link = document.createElement("a");
+    link.href = "#";
+    link.textContent = "Review on Competitors tab.";
+    link.addEventListener("click", (e) => {
+      e.preventDefault();
+      document.getElementById("competitorsTab").click();
+    });
+    alertEl.appendChild(link);
+
+    const closeBtn = document.createElement("button");
+    closeBtn.type = "button";
+    closeBtn.className = "btn-close ms-auto";
+    closeBtn.setAttribute("aria-label", "Dismiss");
+    closeBtn.addEventListener("click", () => {
+      alertContainer.innerHTML = "";
+    });
+    alertEl.appendChild(closeBtn);
+
+    alertContainer.appendChild(alertEl);
+  }
+
   if (!stepGroups || stepGroups.length === 0) {
     return;
   }
