@@ -436,16 +436,6 @@ async function displayCompetitorInRow(
   }
 }
 
-function createStepHeaderRow(body: HTMLTableSectionElement, step: number): HTMLTableRowElement {
-  const row = body.insertRow(-1);
-  row.setAttribute("data-step-header", "true");
-  const cell = row.insertCell();
-  cell.colSpan = 12;
-  cell.textContent = `Step ${step}`;
-  cell.classList.add("fw-bold", "table-secondary", "py-1", "small");
-  return row;
-}
-
 function populateApparatusGroupResultsTable(groupId: number, apparatus: string, step: number) {
   const groupCompetitors = competition.competitors
     .filter(competitor => competitor.groupNumber === groupId && competitor.step === step);

@@ -14,7 +14,7 @@
 // see <https://www.gnu.org/licenses/>.
 
 import { db } from "./data/gymscoredb";
-import { Division, hasDivisions, ICompetitor, Competitor, Club, IClub } from "../common/data";
+import { Division, ICompetitor, Competitor, Club, IClub } from "../common/data";
 import * as pageCommon from "./page_common";
 import { Autocomplete } from "./autocomplete";
 import { Modal } from "bootstrap";
@@ -519,7 +519,7 @@ async function addCompetitor() {
       parseInt(elements.competitorStepSelectModal.value),
       parseInt(elements.competitorDivisionSelectModal.value),
       clubId);
-    competitorId = await db.competitors.put(competitor);
+    await db.competitors.put(competitor);
   }
 
   // Always update; for new competitor, or if the club has changed on an existing competitor

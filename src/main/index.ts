@@ -30,7 +30,7 @@ import { Logger } from "./logger";
 import { savePDF } from "./pdfs/savePdf";
 
 if (isDev) {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   require("electron-reload")(path.join(__dirname, ".."), {
     electron: process.execPath,
     hardResetMethod: "exit",
