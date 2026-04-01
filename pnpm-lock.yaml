@@ -18,11 +18,11 @@ importers:
         specifier: ^3.0.1
         version: 3.0.1
       dexie:
-        specifier: ^3.2.2
-        version: 3.2.2
+        specifier: ^4.4.2
+        version: 4.4.2
       dexie-export-import:
-        specifier: ^4.1.4
-        version: 4.1.4(dexie@3.2.2)
+        specifier: ^4.4.0
+        version: 4.4.0(dexie@4.4.2)
       electron-is-dev:
         specifier: ^3.0.1
         version: 3.0.1
@@ -2672,14 +2672,13 @@ packages:
   devlop@1.1.0:
     resolution: {integrity: sha512-RWmIqhcFf1lRYBvNmr7qTNuyCt/7/ns2jbpp1+PalgE/rDQcBT0fioSMUpJ93irlUhC5hrg4cYqe6U+0ImW0rA==}
 
-  dexie-export-import@4.1.4:
-    resolution: {integrity: sha512-3bw171qUuOTWSYLXI7C/0M6p1X65Rho3tu1IvD9By8jn0+3t3dLSkDlZ1BC6MbABl3kRlhtGigzC+SF+qcS5Og==}
+  dexie-export-import@4.4.0:
+    resolution: {integrity: sha512-r2yvfkcwzP0klAAsiwcCtyioD9xJG0m/mELsiuJnvJ4oP74NabUBblupYtxplEwAnDxF1JzOcsoKU+srfrkyaw==}
     peerDependencies:
-      dexie: ^2.0.4 || ^3.0.0 || ^4.0.1
+      dexie: ^4.4.0
 
-  dexie@3.2.2:
-    resolution: {integrity: sha512-q5dC3HPmir2DERlX+toCBbHQXW5MsyrFqPFcovkH9N2S/UW/H3H5AWAB6iEOExeraAu+j+zRDG+zg/D7YhH0qg==}
-    engines: {node: '>=6.0'}
+  dexie@4.4.2:
+    resolution: {integrity: sha512-zMtV8q79EFE5U8FKZvt0Y/77PCU/Hr/RDxv1EDeo228L+m/HTbeN2AjoQm674rhQCX8n3ljK87lajt7UQuZfvw==}
 
   dezalgo@1.0.4:
     resolution: {integrity: sha512-rXSP0bf+5n0Qonsb+SVVfNfIsimO4HEtmnIpPHY8Q1UCzKlQrDMfdobr8nJOOsRgWCyMRqeSBQzmWUMq7zvVig==}
@@ -8751,7 +8750,7 @@ snapshots:
 
   agent-base@6.0.2:
     dependencies:
-      debug: 4.4.3
+      debug: 4.3.4
     transitivePeerDependencies:
       - supports-color
 
@@ -9895,11 +9894,11 @@ snapshots:
     dependencies:
       dequal: 2.0.3
 
-  dexie-export-import@4.1.4(dexie@3.2.2):
+  dexie-export-import@4.4.0(dexie@4.4.2):
     dependencies:
-      dexie: 3.2.2
+      dexie: 4.4.2
 
-  dexie@3.2.2: {}
+  dexie@4.4.2: {}
 
   dezalgo@1.0.4:
     dependencies:
@@ -11034,7 +11033,7 @@ snapshots:
     dependencies:
       '@tootallnate/once': 2.0.0
       agent-base: 6.0.2
-      debug: 4.4.3
+      debug: 4.3.4
     transitivePeerDependencies:
       - supports-color
 
@@ -11073,7 +11072,7 @@ snapshots:
   https-proxy-agent@5.0.1:
     dependencies:
       agent-base: 6.0.2
-      debug: 4.4.3
+      debug: 4.3.4
     transitivePeerDependencies:
       - supports-color
 
@@ -13472,7 +13471,7 @@ snapshots:
   socks-proxy-agent@7.0.0:
     dependencies:
       agent-base: 6.0.2
-      debug: 4.4.3
+      debug: 4.3.4
       socks: 2.8.7
     transitivePeerDependencies:
       - supports-color
