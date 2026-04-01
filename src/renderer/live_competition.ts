@@ -260,7 +260,7 @@ function editGroupApparatusResults(event: Event) {
       return fieldForCol(row, D_SCORE_COLUMN).value === "";
     });
     if (firstEmptyRow) {
-      fieldForCol(firstEmptyRow, D_SCORE_COLUMN).focus();
+      fieldForCol(firstEmptyRow, FIRST_E_COLUMN).focus();
     }
   }, { once: true });
 
