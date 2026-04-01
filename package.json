@@ -42,6 +42,7 @@
     "@eslint/js": "^10.0.1",
     "@types/bootstrap": "^5.2.10",
     "@types/jest": "^30.0.0",
+    "@types/sortablejs": "^1.15.9",
     "@types/strftime": "^0.9.8",
     "@typescript-eslint/eslint-plugin": "^8.58.0",
     "@typescript-eslint/parser": "^8.58.0",
@@ -81,6 +82,7 @@
     "dexie-export-import": "^4.4.0",
     "electron-is-dev": "^3.0.1",
     "jspdf": "^4.2.1",
+    "sortablejs": "^1.15.7",
     "strftime": "^0.10.3"
   },
   "pnpm": {

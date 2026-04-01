@@ -15,7 +15,12 @@
 
 import { jsPDF } from "jspdf";
 import { CompetitionData, CompetitionCompetitorDetails } from "../../common/data/competition";
-import { getCompetitorsByGroup, getCompetitorsByStep } from "../../common/competitors_by";
+import {
+  getCompetitorsByGroup,
+  getCompetitorsByStep,
+  sortByGroupOrderForApparatus,
+} from "../../common/competitors_by";
+import { APPARATUSES } from "../../common/apparatus";
 import { PAGE_WIDTH } from "./common";
 
 interface Titles {
@@ -60,23 +65,25 @@ export function generateRecorderSheets(competition: CompetitionData) {
   titles.competitionSlug = competitionSlug(competition);
 
   // For each apparatus and step combination that exists, produce a recording sheet
-  if (competition.vault) {
-    addSheetsForApparatus(doc, titles, competition.competitors, "Vault");
-  }
-  if (competition.bar) {
-    addSheetsForApparatus(doc, titles, competition.competitors, "Bar");
-  }
-  if (competition.beam) {
-    addSheetsForApparatus(doc, titles, competition.competitors, "Beam");
-  }
-  if (competition.floor) {
-    addSheetsForApparatus(doc, titles, competition.competitors, "Floor");
+  const enabledApparatuses = APPARATUSES.filter((a) => competition[a]);
+  const numApparatuses = enabledApparatuses.length;
+  const apparatusLabel: Record<string, string> = { vault: "Vault", bar: "Bar", beam: "Beam", floor: "Floor" };
+
+  for (let aIdx = 0; aIdx < enabledApparatuses.length; aIdx++) {
+    addSheetsForApparatus(
+      doc,
+      titles,
+      competition.competitors,
+      apparatusLabel[enabledApparatuses[aIdx]],
+      aIdx,
+      numApparatuses
+    );
   }
   return doc;
 }
 
 function addSheetsForApparatus(doc: jsPDF, titles: Titles,
-  competitors: CompetitionCompetitorDetails[], apparatus: string) {
+  competitors: CompetitionCompetitorDetails[], apparatus: string, apparatusIndex: number, numApparatuses: number) {
 
   titles.apparatus = apparatus;
 
@@ -85,18 +92,30 @@ function addSheetsForApparatus(doc: jsPDF, titles: Titles,
   const sortedSteps = Array.from(Object.keys(stepCompetitors)).sort();
 
   for (const step of sortedSteps) {
-    addSheetsForStep(doc, titles, stepCompetitors[step], step);
+    addSheetsForStep(doc, titles, stepCompetitors[step], step, apparatusIndex, numApparatuses);
   }
 }
 
-function addSheetsForStep(doc: jsPDF, titles: Titles, competitors: CompetitionCompetitorDetails[], step: string) {
+function addSheetsForStep(
+  doc: jsPDF, titles: Titles, competitors: CompetitionCompetitorDetails[], step: string,
+  apparatusIndex: number, numApparatuses: number
+) {
   const groupCompetitors = getCompetitorsByGroup(competitors);
+  const sortedGroups = Object.keys(groupCompetitors).sort().filter((g) => g !== "0");
 
   titles.step = step;
 
-  for (const group of Object.keys(groupCompetitors).sort().filter(g => g !== "0")) {
-    titles.group = group;
-    addSheetsForStepGroup(doc, titles, groupCompetitors[group]);
+  for (let gIdx = 0; gIdx < sortedGroups.length; gIdx++) {
+    titles.group = sortedGroups[gIdx];
+    addSheetsForStepGroup(
+      doc,
+      titles,
+      sortByGroupOrderForApparatus(groupCompetitors[sortedGroups[gIdx]],
+        apparatusIndex,
+        gIdx,
+        numApparatuses
+      )
+    );
   }
 }
 

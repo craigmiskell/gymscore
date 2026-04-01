@@ -49,6 +49,7 @@ export class CompetitionCompetitorDetails {
   clubName: string;
   teamIndex: number | null;
   groupNumber: number;
+  groupOrder: number;
   scores: CompetitorScores;
 
   constructor(competitor: ICompetitor, step: number, division: Division, clubId: number,
@@ -62,6 +63,7 @@ export class CompetitionCompetitorDetails {
     this.clubName = clubName;
     this.teamIndex = teamIndex;
     this.groupNumber = groupNumber;
+    this.groupOrder = 0;
     this.scores = {};
   }
 }

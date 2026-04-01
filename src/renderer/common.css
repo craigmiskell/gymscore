@@ -123,6 +123,15 @@
   top: var(--filter-row-top, 38px);
 }
 
+.step-card {
+  min-width: 14rem;
+}
+
+.step-card .badge {
+  min-width: 5.5rem;
+  text-align: center;
+}
+
 @media (max-width: 1199px) {
   #groupApparatusResultsModalTable input[type="number"]::-webkit-inner-spin-button,
   #groupApparatusResultsModalTable input[type="number"]::-webkit-outer-spin-button {

@@ -1,7 +1,5 @@
-* Order of competitors in group matters:
-   1. The Organizer cares some of the time e.g. do not put noob competitors on first, it'll freak them out.  They need to be able to construct that order (drag'n'drop or similar)
-   2. The order is reflected on the scoring sheets *but* it rotates; the stated order is for the first apparatus, then on the second apparatus the first competitor moves to the bottom, and so on with each subsequent apparatus.
-   3. However, on the programme it need only list groups and apparatus order for each group; everyone knows about the rotation.
+* Fix "errors" in vscode; might just need some type modules.
+* Re-order apparatus in scores recording; Vault/Bar/Beam/Floor to match the natural "first" order.
 * Questions for users:
     * Should the results modal have national id and club in the left column?  It expands the display quite a bit (3 lines in worst cases), and another column makes it wider.  Does it add benefit, or is name enough?  It matches the recorder sheets, but that might not be worth the screen real-estate
 * Can we edit the name of a competitor in the middle of a competition, e.g. we find a typo?

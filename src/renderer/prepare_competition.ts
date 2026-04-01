@@ -41,6 +41,11 @@ async function onLoaded() {
 
   await loadCompetition(compId);
 
+  if (compId) {
+    (document.getElementById("orderGroupsLink") as HTMLAnchorElement).href =
+      `order_groups.html?compId=${compId}`;
+  }
+
   setupDetailsPanel();
   await setupCompetitorSection(updateCompetitorsTable);
   setupCompetitorsTable();
@@ -235,18 +240,61 @@ function updateGroupButtonCounts() {
   });
 }
 
+function rationalizeGroupOrder(step: number, groupNumber: number) {
+  if (groupNumber === 0) {
+    return;
+  }
+  const members = competition.competitors.filter(
+    (c) => c.step === step && c.groupNumber === groupNumber
+  );
+  if (members.every((c) => (c.groupOrder ?? 0) === 0)) {
+    return;
+  }
+  members.sort((a, b) => {
+    const ao = a.groupOrder ?? 0;
+    const bo = b.groupOrder ?? 0;
+    if (ao === 0 && bo === 0) { return 0; }
+    if (ao === 0) { return 1; }
+    if (bo === 0) { return -1; }
+    return ao - bo;
+  });
+  members.forEach((c, i) => { c.groupOrder = i + 1; });
+}
+
+function changeCompetitorGroup(competitor: CompetitionCompetitorDetails, newGroupNumber: number) {
+  const step = competitor.step;
+  const oldGroupNumber = competitor.groupNumber;
+
+  competitor.groupOrder = 0;
+  competitor.groupNumber = newGroupNumber;
+
+  if (oldGroupNumber > 0) {
+    rationalizeGroupOrder(step, oldGroupNumber);
+  }
+
+  if (newGroupNumber > 0) {
+    const siblings = competition.competitors.filter(
+      (c) => c.step === step && c.groupNumber === newGroupNumber && c.competitorId !== competitor.competitorId
+    );
+    const newGroupOrdered = siblings.some((c) => (c.groupOrder ?? 0) > 0);
+    if (newGroupOrdered) {
+      const maxOrder = siblings.reduce((max, c) => Math.max(max, c.groupOrder ?? 0), 0);
+      competitor.groupOrder = maxOrder + 1;
+    }
+  }
+}
+
 async function groupSelectChanged(event: Event) {
   const select = event.target as HTMLSelectElement;
   const competitorId = parseInt(select.getAttribute(COMPETITOR_ID_ATTR_NAME));
 
   const competitor: CompetitionCompetitorDetails = competition.getCompetitorById(competitorId);
   const oldGroup = competitor.groupNumber;
-  competitor.groupNumber = parseInt(select.value);
-  logger.debug("Competitor group changed via select", {
-    competitorId,
-    oldGroup,
-    newGroup: competitor.groupNumber,
-  });
+  const newGroup = parseInt(select.value);
+  logger.debug("Competitor group changed via select", { competitorId, oldGroup, newGroup });
+
+  changeCompetitorGroup(competitor, newGroup);
+
   await db.competitions.update(competition.id, competition as CompetitionData);
 
   const row = select.closest("tr") as HTMLTableRowElement;
@@ -320,7 +368,7 @@ async function assignGroupToSelected(groupNumber: number) {
   for (const competitorId of selectedCompetitorIds) {
     const competitor = competition.getCompetitorById(competitorId);
     if (competitor) {
-      competitor.groupNumber = groupNumber;
+      changeCompetitorGroup(competitor, groupNumber);
     }
   }
   await db.competitions.update(competition.id, competition as CompetitionData);

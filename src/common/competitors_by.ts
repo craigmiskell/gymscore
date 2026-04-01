@@ -14,6 +14,7 @@
 // see <https://www.gnu.org/licenses/>.
 
 import { CompetitionCompetitorDetails } from "../common/data/competition";
+import { APPARATUSES } from "./apparatus";
 
 export interface KeyedCompetitors {
   [key: string]: CompetitionCompetitorDetails[]
@@ -34,8 +35,78 @@ export function getCompetitorsByStep(competitors: CompetitionCompetitorDetails[]
   return keyedCompetitorsByFunc(competitors, (c) => c.step.toString());
 }
 
+export function sortByGroupOrder(competitors: CompetitionCompetitorDetails[]): CompetitionCompetitorDetails[] {
+  const allUnordered = competitors.every((c) => (c.groupOrder ?? 0) === 0);
+  if (allUnordered) {
+    return [...competitors].sort((a, b) => a.competitorName.localeCompare(b.competitorName));
+  }
+  return [...competitors].sort((a, b) => (a.groupOrder ?? 0) - (b.groupOrder ?? 0));
+}
+
 export function getCompetitorsByGroup(competitors: CompetitionCompetitorDetails[]): KeyedCompetitors {
   return keyedCompetitorsByFunc(competitors, (c) => c.groupNumber.toString());
+}
+
+/**
+ * Returns how many positions to rotate competitor order when a group is at the
+ * given apparatus. Groups rotate through apparatuses starting from
+ * apparatus (groupIndex % numApparatuses), matching the competition schedule.
+ * Each time a group advances to their next apparatus the first competitor in
+ * the previous order moves to the end.
+ */
+export function apparatusRotation(apparatusIndex: number, groupIndex: number, numApparatuses: number): number {
+  return ((apparatusIndex - groupIndex) % numApparatuses + numApparatuses) % numApparatuses;
+}
+
+/**
+ * Rotates a competitor array by `rotation` positions: competitors.slice(rotation)
+ * comes first, competitors.slice(0, rotation) moves to the end.
+ */
+export function rotateCompetitorOrder(
+  competitors: CompetitionCompetitorDetails[],
+  rotation: number
+): CompetitionCompetitorDetails[] {
+  const n = competitors.length;
+  if (n === 0) {
+    return competitors;
+  }
+  const r = rotation % n;
+  if (r === 0) {
+    return competitors;
+  }
+  return [...competitors.slice(r), ...competitors.slice(0, r)];
+}
+
+/**
+ * Returns the 0-based index of `apparatus` in the list of enabled apparatuses
+ * for the competition, and the total count of enabled apparatuses — the two
+ * values needed to call `sortByGroupOrderForApparatus`.
+ *
+ * Callers pass `competition` as a record so this file stays independent of
+ * the renderer/main process split.
+ */
+export function enabledApparatusContext(
+  competition: Partial<Record<string, boolean>>,
+  apparatus: string
+): { apparatusIndex: number; numApparatuses: number } {
+  const enabled = APPARATUSES.filter((a) => competition[a]);
+  return { apparatusIndex: enabled.findIndex((a) => a === apparatus), numApparatuses: enabled.length };
+}
+
+/**
+ * Sorts competitors by groupOrder then rotates the result to reflect the group's
+ * position in the competition apparatus rotation.
+ */
+export function sortByGroupOrderForApparatus(
+  competitors: CompetitionCompetitorDetails[],
+  apparatusIndex: number,
+  groupIndex: number,
+  numApparatuses: number
+): CompetitionCompetitorDetails[] {
+  return rotateCompetitorOrder(
+    sortByGroupOrder(competitors),
+    apparatusRotation(apparatusIndex, groupIndex, numApparatuses)
+  );
 }
 
 function keyedCompetitorsByFunc(

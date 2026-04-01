@@ -17,7 +17,7 @@ import { CompetitionData, Team} from "../../common/data";
 import { Division, hasDivisions } from "../../common/data";
 import { jsPDF } from "jspdf";
 import { CompetitionCompetitorDetails } from "../../common/data/competition";
-import { getCompetitorsByGroup, getCompetitorsByStep } from "../../common/competitors_by";
+import { getCompetitorsByGroup, getCompetitorsByStep, sortByGroupOrder } from "../../common/competitors_by";
 import { PAGE_WIDTH } from "./common";
 
 export function generateProgramme(competition: CompetitionData) {
@@ -123,7 +123,7 @@ function addTableForGroup(
   y += lineHeight*1.5;
 
   //TODO: maxWidth option?
-  for (const competitor of competitors) {
+  for (const competitor of sortByGroupOrder(competitors)) {
     doc.text(competitor.competitorName, columnOffsets.name + xOffset, y);
     doc.text(competitor.competitorIdentifier, columnOffsets.num + xOffset, y);
     if (showDiv) {

@@ -20,6 +20,7 @@ import { Modal } from "bootstrap";
 import { logger } from "./logger";
 import { formatScore, capitalise } from "../common/formatting";
 import { parseScore, averageJudgeEScores } from "../common/scoring";
+import { enabledApparatusContext, sortByGroupOrderForApparatus } from "../common/competitors_by";
 
 pageCommon.setup();
 
@@ -437,8 +438,18 @@ async function displayCompetitorInRow(
 }
 
 function populateApparatusGroupResultsTable(groupId: number, apparatus: string, step: number) {
-  const groupCompetitors = competition.competitors
-    .filter(competitor => competitor.groupNumber === groupId && competitor.step === step);
+  const { apparatusIndex, numApparatuses } = enabledApparatusContext(
+    competition as unknown as Record<string, boolean>,
+    apparatus
+  );
+  const groupIndex = getGroupsForStep(step).indexOf(groupId);
+
+  const competitors = sortByGroupOrderForApparatus(
+    competition.competitors.filter((c) => c.groupNumber === groupId && c.step === step),
+    apparatusIndex,
+    groupIndex,
+    numApparatuses
+  );
 
   const body = elements.groupApparatusResultsModalTable.tBodies[0];
 
@@ -446,7 +457,7 @@ function populateApparatusGroupResultsTable(groupId: number, apparatus: string, 
     body.deleteRow(-1);
   }
 
-  for (const competitor of groupCompetitors) {
+  for (const competitor of competitors) {
     const row = createCompetitorRow(body);
     displayCompetitorInRow(row, competitor, apparatus);
   }
