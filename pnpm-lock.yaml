@@ -9,11 +9,11 @@ importers:
   .:
     dependencies:
       bootstrap:
-        specifier: ^5.1.3
-        version: 5.1.3(@popperjs/core@2.11.5)
+        specifier: ^5.3.8
+        version: 5.3.8(@popperjs/core@2.11.8)
       bootstrap-icons:
-        specifier: ^1.8.3
-        version: 1.8.3
+        specifier: ^1.13.1
+        version: 1.13.1
       cross-blob:
         specifier: ^3.0.1
         version: 3.0.1
@@ -43,8 +43,8 @@ importers:
         specifier: ^7.11.1
         version: 7.11.1(encoding@0.1.13)(webpack-cli@4.9.2)
       '@types/bootstrap':
-        specifier: ^5.1.12
-        version: 5.1.12
+        specifier: ^5.2.10
+        version: 5.2.10
       '@types/jest':
         specifier: ^27.5.1
         version: 27.5.1
@@ -1187,8 +1187,8 @@ packages:
     resolution: {integrity: sha512-QNqXyfVS2wm9hweSYD2O7F0G06uurj9kZ96TRQE5Y9hU7+tgdZwIkbAKc5Ocy1HxEY2kuDQa6cQ1WRs/O5LFKA==}
     engines: {node: ^12.20.0 || ^14.18.0 || >=16.0.0}
 
-  '@popperjs/core@2.11.5':
-    resolution: {integrity: sha512-9X2obfABZuDVLCgPK9aX0a/x4jaOEweTTWE2+9sr0Qqqevj2Uv5XorvusThmc9XGYpS9yI+fhh8RTafBtGposw==}
+  '@popperjs/core@2.11.8':
+    resolution: {integrity: sha512-P1st0aksCrn9sGZhp8GMYwBnQsbvAWsZAX44oXNNvLHGqAOcoVxmjZiohstwQ7SqKnbR47akdNi+uleWD8+g6A==}
 
   '@sinclair/typebox@0.34.49':
     resolution: {integrity: sha512-brySQQs7Jtn0joV8Xh9ZV/hZb9Ozb0pmazDIASBkYKCjXrXU3mpcFahmK/z4YDhGkQvP9mWJbVyahdtU5wQA+A==}
@@ -1232,8 +1232,8 @@ packages:
   '@types/bonjour@3.5.10':
     resolution: {integrity: sha512-p7ienRMiS41Nu2/igbJxxLDWrSZ0WxM8UQgCeO9KhoVF7cOVFkrKsiDr1EsJIla8vV3oEEjGcz11jc5yimhzZw==}
 
-  '@types/bootstrap@5.1.12':
-    resolution: {integrity: sha512-pSS5BGEgepwzdbsBGswBWFmgrnYpp7c4UfuYe1FJWwkrcjm/JVwfG4gBkOYtd92Otd3RdJK0ByBWMkBROfLEPw==}
+  '@types/bootstrap@5.2.10':
+    resolution: {integrity: sha512-F2X+cd6551tep0MvVZ6nM8v7XgGN/twpdNDjqS1TUM7YFNEtQYWk+dKAnH+T1gr6QgCoGMPl487xw/9hXooa2g==}
 
   '@types/cacheable-request@6.0.3':
     resolution: {integrity: sha512-IQ3EbTzGxIigb1I3qPZc1rWJnH0BmSKv5QYTalEwweFvyBDLSAe24zP0le/hyi7ecGfZVlIVAg4BZqb8WBwKqw==}
@@ -1986,13 +1986,13 @@ packages:
     resolution: {integrity: sha512-d0II/GO9uf9lfUHH2BQsjxzRJZBdsjgsBiW4BvhWk/3qoKwQFjIDVN19PfX8F2D/r9PCMTtLWjYVCFrpeYUzsw==}
     deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
 
-  bootstrap-icons@1.8.3:
-    resolution: {integrity: sha512-s5kmttnbq4BXbx3Bwnj39y+t7Vc3blTtyD77W3aYQ1LlNoS3lNbbGvSYhIbg26Im8KmjScyFpHEevlPOBcIDdA==}
+  bootstrap-icons@1.13.1:
+    resolution: {integrity: sha512-ijombt4v6bv5CLeXvRWKy7CuM3TRTuPEuGaGKvTV5cz65rQSY8RQ2JcHt6b90cBBAC7s8fsf2EkQDldzCoXUjw==}
 
-  bootstrap@5.1.3:
-    resolution: {integrity: sha512-fcQztozJ8jToQWXxVuEyXWW+dSo8AiXWKwiSSrKWsRB/Qt+Ewwza+JWoLKiTuQLaEPhdNAJ7+Dosc9DOIqNy7Q==}
+  bootstrap@5.3.8:
+    resolution: {integrity: sha512-HP1SZDqaLDPwsNiqRqi5NcP0SSXciX2s9E+RyqJIIqGo+vJeN5AJVM98CXmW/Wux0nQ5L7jeWUdplCEf0Ee+tg==}
     peerDependencies:
-      '@popperjs/core': ^2.10.2
+      '@popperjs/core': ^2.11.8
 
   brace-expansion@1.1.11:
     resolution: {integrity: sha512-iCuPHDFgrHX7H2vEI/5xpz07zSHB00TpugqhmYtVmMO6518mCuRMoOYFldEBl0g187ufozdaHgWKcYFb61qGiA==}
@@ -8239,7 +8239,7 @@ snapshots:
 
   '@pkgr/core@0.2.9': {}
 
-  '@popperjs/core@2.11.5': {}
+  '@popperjs/core@2.11.8': {}
 
   '@sinclair/typebox@0.34.49': {}
 
@@ -8294,9 +8294,9 @@ snapshots:
     dependencies:
       '@types/node': 24.12.0
 
-  '@types/bootstrap@5.1.12':
+  '@types/bootstrap@5.2.10':
     dependencies:
-      '@popperjs/core': 2.11.5
+      '@popperjs/core': 2.11.8
 
   '@types/cacheable-request@6.0.3':
     dependencies:
@@ -9149,11 +9149,11 @@ snapshots:
   boolean@3.2.0:
     optional: true
 
-  bootstrap-icons@1.8.3: {}
+  bootstrap-icons@1.13.1: {}
 
-  bootstrap@5.1.3(@popperjs/core@2.11.5):
+  bootstrap@5.3.8(@popperjs/core@2.11.8):
     dependencies:
-      '@popperjs/core': 2.11.5
+      '@popperjs/core': 2.11.8
 
   brace-expansion@1.1.11:
     dependencies:
