@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.9.8](https://github.com/craigmiskell/gymscore/compare/v0.9.7...v0.9.8) (2026-04-01)
+
+
+### Bug Fixes
+
+* Make build work again after webpack upgrade ([57acbd1](https://github.com/craigmiskell/gymscore/commit/57acbd1ee36a1b2662b397e9b94c4286f967347e))
+
 ## [0.9.7](https://github.com/craigmiskell/gymscore/compare/v0.9.6...v0.9.7) (2026-04-01)
 
 
