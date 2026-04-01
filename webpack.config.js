@@ -75,7 +75,7 @@ const rendererConfig = merge(commonConfig, {
   ],
 });
 
-const pageConfigs = ["prepare_competition", "live_competition", "clubs", "competitors", "logs", "order_groups"].map(
+const pageConfigs = ["prepare_competition", "live_competition", "clubs", "competitors", "logs"].map(
   (pageName) => {
     return merge(commonConfig, {
       entry: [`./src/renderer/${pageName}.ts`],

@@ -21,6 +21,7 @@ import { logger } from "./logger";
 import { elements, competition, COMPETITOR_ID_ATTR_NAME } from "./prepare_competition_state";
 import { setupDetailsPanel, loadCompetition, showInitialState } from "./prepare_competition_details";
 import { setupCompetitorSection, editCompetitor } from "./prepare_competition_modal";
+import { setupOrderTab } from "./prepare_competition_order";
 
 pageCommon.setup();
 
@@ -41,12 +42,8 @@ async function onLoaded() {
 
   await loadCompetition(compId);
 
-  if (compId) {
-    (document.getElementById("orderGroupsLink") as HTMLAnchorElement).href =
-      `order_groups.html?compId=${compId}`;
-  }
-
   setupDetailsPanel();
+  setupOrderTab();
   await setupCompetitorSection(updateCompetitorsTable);
   setupCompetitorsTable();
   showInitialState();
@@ -236,6 +233,7 @@ function updateGroupButtonCounts() {
     const g = parseInt(btn.dataset.group);
     const label = g === 0 ? "None" : g.toString();
     const count = counts.get(g) ?? 0;
+    // TODO: No, use DOM.
     btn.innerHTML = `<span class="group-btn-label">${label}</span><span class="group-btn-count">(${count})</span>`;
   });
 }

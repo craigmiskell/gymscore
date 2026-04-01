@@ -6,120 +6,124 @@
     <title>GymScore - Preparing Competition</title>
   </head>
   <body>
-    <h1 class="text-center">Preparing Competition</h1>
-    <div class="d-flex justify-content-between align-items-center">
+    <div class="d-flex align-items-center mb-2">
       <a href="index.html"><i class="bi bi-arrow-90deg-left"></i></a>
-      <a href="#" id="orderGroupsLink" class="btn btn-outline-secondary btn-sm">
-        <i class="bi bi-sort-numeric-down"></i> Order Groups
-      </a>
+      <h1 class="flex-grow-1 text-center mb-0">Preparing Competition</h1>
     </div>
-    <hr>
-    <div class="accordion mb-3" id="competitionDetailsAccordion">
-      <div class="accordion-item">
-        <h2 class="accordion-header">
-          <button class="accordion-button collapsed" type="button"
-                  aria-expanded="false" aria-controls="detailsEditable"
-                  id="detailsEditButton">
-            Competition Details: <span id="detailsCollapsedText" class="fw-bold fst-italic ms-1"></span>
-          </button>
-        </h2>
-        <div id="detailsEditable" class="accordion-collapse collapse">
-          <div class="accordion-body">
-            <form id="detailsForm" class="needs-validation" novalidate>
-              <div class="row">
-                <label for="competitionName" class="form-label col-2 col-md-1 col-form-label">Name</label>
-                <div class="col">
-                  <input type="text" class="form-control" id="competitionName"
-                         placeholder="Competition title/name" required>
-                  <div class="invalid-feedback">
-                    A competition name is required
-                  </div>
-                </div>
+    <ul class="nav nav-tabs" id="prepTabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="detailsTab" data-bs-toggle="tab" data-bs-target="#detailsPane"
+                type="button" role="tab">Details</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="competitorsTab" data-bs-toggle="tab" data-bs-target="#competitorsPane"
+                type="button" role="tab">Competitors</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="groupOrderTab" data-bs-toggle="tab" data-bs-target="#groupOrderPane"
+                type="button" role="tab">Group Order</button>
+      </li>
+    </ul>
+    <div class="tab-content" id="prepTabContent">
+      <div class="tab-pane fade" id="detailsPane" role="tabpanel">
+        <form id="detailsForm" class="needs-validation mt-3" novalidate>
+          <div class="row">
+            <label for="competitionName" class="form-label col-2 col-md-1 col-form-label">Name</label>
+            <div class="col">
+              <input type="text" class="form-control" id="competitionName"
+                     placeholder="Competition title/name" required>
+              <div class="invalid-feedback">
+                A competition name is required
               </div>
-              <div class="row">
-                <label for="competitionDate" class="form-label col-2 col-md-1 col-form-label">Date</label>
-                <div class="col">
-                  <input type="date" class="form-control w-25" id="competitionDate" placeholder="DD/MM/YYYY" required>
-                  <div class="invalid-feedback">
-                    A competition date is required
-                  </div>
-                </div>
-              </div>
-              <div class="row">
-                <label for="competitionLocation" class="form-label col-2 col-md-1 col-form-label">Location</label>
-                <div class="col">
-                  <input type="text" class="form-control w-75" id="competitionLocation" placeholder="Location" required>
-                  <div class="invalid-feedback">
-                    A location is required
-                  </div>
-                </div>
-              </div>
-              <div class="row"><h5>Disciplines</h5></div>
-              <div class="row">
-                <div class="col-3">
-                  <label for="enableVault" class="form-label">Vault</label>
-                  <input type="checkbox" class="form-check-input" id="enableVault">
-                </div>
-                <div class="col-3">
-                  <label for="enableBar" class="form-label">Uneven Bars</label>
-                  <input type="checkbox" class="form-check-input" id="enableBar">
-                </div>
-                <div class="col-3">
-                  <label for="enableBeam" class="form-label">Balance Beam</label>
-                  <input type="checkbox" class="form-check-input" id="enableBeam">
-                </div>
-                <div class="col-3">
-                  <label for="enableFloor" class="form-label">Floor</label>
-                  <input type="checkbox" class="form-check-input" id="enableFloor">
-                </div>
-              </div>
-            </form>
+            </div>
           </div>
+          <div class="row">
+            <label for="competitionDate" class="form-label col-2 col-md-1 col-form-label">Date</label>
+            <div class="col">
+              <input type="date" class="form-control w-25" id="competitionDate" placeholder="DD/MM/YYYY" required>
+              <div class="invalid-feedback">
+                A competition date is required
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <label for="competitionLocation" class="form-label col-2 col-md-1 col-form-label">Location</label>
+            <div class="col">
+              <input type="text" class="form-control w-75" id="competitionLocation" placeholder="Location" required>
+              <div class="invalid-feedback">
+                A location is required
+              </div>
+            </div>
+          </div>
+          <div class="row"><h5>Disciplines</h5></div>
+          <div class="row">
+            <div class="col-3">
+              <label for="enableVault" class="form-label">Vault</label>
+              <input type="checkbox" class="form-check-input" id="enableVault">
+            </div>
+            <div class="col-3">
+              <label for="enableBar" class="form-label">Uneven Bars</label>
+              <input type="checkbox" class="form-check-input" id="enableBar">
+            </div>
+            <div class="col-3">
+              <label for="enableBeam" class="form-label">Balance Beam</label>
+              <input type="checkbox" class="form-check-input" id="enableBeam">
+            </div>
+            <div class="col-3">
+              <label for="enableFloor" class="form-label">Floor</label>
+              <input type="checkbox" class="form-check-input" id="enableFloor">
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="tab-pane fade" id="competitorsPane" role="tabpanel">
+        <div class="mt-3">
+          <div class="row">
+            <input type="text" class="form-control col-9 w-75" id="competitorName" placeholder="Competitor Name">
+            <button type="button" class="btn btn-primary col-2" id="addCompetitorButton" disabled>Add to Competition</button>
+          </div>
+          <div id="competitorAlreadyAddedWarning" class="text-danger small d-none">This competitor is already in the competition.</div>
+          <div id="groupAssignToolbar" class="mb-2 d-flex align-items-center gap-2">
+            <div class="group-assign-label">
+              <span id="groupAssignGuidance">Select competitors to assign a group</span>
+              <span id="groupAssignCount"></span>
+              <span class="text-muted group-count-hint">Competitors in group</span>
+            </div>
+            <div id="groupAssignButtons" class="btn-group btn-group-sm"></div>
+          </div>
+          <table class="table table-sm table-striped table-bordered w-auto competitors-table" id="competitors">
+            <thead>
+              <tr>
+                <th class="group-checkbox-col"><input type="checkbox" class="form-check-input" id="selectAllCheckbox"></th>
+                <th data-col="name"><span>Name</span> <i class="bi bi-arrow-down-up text-muted"></i></th>
+                <th data-col="nationalId"><span>National ID</span> <i class="bi bi-arrow-down-up text-muted"></i></th>
+                <th data-col="step"><span>Step</span> <i class="bi bi-arrow-down-up text-muted"></i></th>
+                <th data-col="club"><span>Club</span> <i class="bi bi-arrow-down-up text-muted"></i></th>
+                <th data-col="team"><span>Team</span> <i class="bi bi-arrow-down-up text-muted"></i></th>
+                <th data-col="group"><span>Group</span> <i class="bi bi-arrow-down-up text-muted"></i></th>
+                <th>Edit</th>
+                <th>Remove from competition</th>
+              </tr>
+              <tr>
+                <th class="group-checkbox-col"></th>
+                <th><input type="text" class="form-control form-control-sm" id="filterName" placeholder="Filter..."></th>
+                <th><input type="text" class="form-control form-control-sm" id="filterNationalId" placeholder="Filter..."></th>
+                <th><input type="text" class="form-control form-control-sm" id="filterStep" placeholder="Filter..."></th>
+                <th><input type="text" class="form-control form-control-sm" id="filterClub" placeholder="Filter..."></th>
+                <th><input type="text" class="form-control form-control-sm" id="filterTeam" placeholder="Filter..."></th>
+                <th><input type="text" class="form-control form-control-sm" id="filterGroup" placeholder="Filter..."></th>
+                <th></th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
         </div>
       </div>
-    </div>
-    <hr>
-    <h4>Competitors</h4>
-    <div class="row">
-      <input type="text" class="form-control col-9 w-75" id="competitorName" placeholder="Competitor Name"></input>
-      <button type="button" class="btn btn-primary col-2" id="addCompetitorButton" disabled>Add to Competition</button>
-    </div>
-    <div id="competitorAlreadyAddedWarning" class="text-danger small d-none">This competitor is already in the competition.</div>
-    <div id="groupAssignToolbar" class="mb-2 d-flex align-items-center gap-2">
-      <div class="group-assign-label">
-        <span id="groupAssignGuidance">Select competitors to assign a group</span>
-        <span id="groupAssignCount"></span>
-        <span class="text-muted group-count-hint">Competitors in group</span>
+      <div class="tab-pane fade" id="groupOrderPane" role="tabpanel">
+        <div class="d-flex flex-wrap gap-3 mt-3" id="stepsContainer"></div>
       </div>
-      <div id="groupAssignButtons" class="btn-group btn-group-sm"></div>
     </div>
-    <table class="table table-sm table-striped table-bordered w-auto competitors-table" id="competitors">
-      <thead>
-        <tr>
-          <th class="group-checkbox-col"><input type="checkbox" class="form-check-input" id="selectAllCheckbox"></th>
-          <th data-col="name"><span>Name</span> <i class="bi bi-arrow-down-up text-muted"></i></th>
-          <th data-col="nationalId"><span>National ID</span> <i class="bi bi-arrow-down-up text-muted"></i></th>
-          <th data-col="step"><span>Step</span> <i class="bi bi-arrow-down-up text-muted"></i></th>
-          <th data-col="club"><span>Club</span> <i class="bi bi-arrow-down-up text-muted"></i></th>
-          <th data-col="team"><span>Team</span> <i class="bi bi-arrow-down-up text-muted"></i></th>
-          <th data-col="group"><span>Group</span> <i class="bi bi-arrow-down-up text-muted"></i></th>
-          <th>Edit</th>
-          <th>Remove from competition</th>
-        </tr>
-        <tr>
-          <th class="group-checkbox-col"></th>
-          <th><input type="text" class="form-control form-control-sm" id="filterName" placeholder="Filter..."></th>
-          <th><input type="text" class="form-control form-control-sm" id="filterNationalId" placeholder="Filter..."></th>
-          <th><input type="text" class="form-control form-control-sm" id="filterStep" placeholder="Filter..."></th>
-          <th><input type="text" class="form-control form-control-sm" id="filterClub" placeholder="Filter..."></th>
-          <th><input type="text" class="form-control form-control-sm" id="filterTeam" placeholder="Filter..."></th>
-          <th><input type="text" class="form-control form-control-sm" id="filterGroup" placeholder="Filter..."></th>
-          <th></th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
     <div class="modal fade" tabindex="-1" data-bs-backdrop="static" role="dialog" aria-hidden="true" id="addCompetitorModal">
       <div class="modal-dialog modal-xl">
         <div class="modal-content">
@@ -177,6 +181,25 @@
               This competitor is already in the competition.
             </div>
             <button type="button" class="btn btn-primary" id="addCompetitorModalYes">Add to competition</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal fade" tabindex="-1" data-bs-backdrop="static" role="dialog" aria-hidden="true" id="orderModal">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="orderModalTitle"></h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cancel"></button>
+          </div>
+          <div class="modal-body">
+            <p class="text-muted small mb-2">Drag and drop to reorder.</p>
+            <ul class="list-group" id="orderList"></ul>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-success d-none" id="saveAndNextButton">Save &amp; Next</button>
+            <button type="button" class="btn btn-primary" id="saveOrderButton">Save</button>
           </div>
         </div>
       </div>

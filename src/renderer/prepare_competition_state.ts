@@ -21,9 +21,6 @@ export const CLUB_ID_ATTR_NAME = "clubId";
 export const TEAM_INDEX_ATTR_NAME = "teamId";
 
 export class Elements extends pageCommon.BaseElements {
-  detailsEditable: HTMLDivElement = null;
-  detailsCollapsedText: HTMLSpanElement = null;
-  detailsEditButton: HTMLButtonElement = null;
   detailsForm: HTMLFormElement = null;
   competitionName: HTMLInputElement = null;
   competitionDate: HTMLInputElement = null;

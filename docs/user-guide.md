@@ -40,8 +40,14 @@ To start a new competition, click the **Create New Competition** button near the
 
 ![Create New Competition button](screenshots/main-page-create-button.png){width=100%}
 
-This opens the **Prepare Competition** page. A **Competition Details** panel will be expanded
-and ready for you to fill in:
+This opens the **Prepare Competition** page, which has three tabs:
+
+- **Details** — competition name, date, location, and disciplines.
+- **Competitors** — add, edit, and organise the competitor list.
+- **Group Order** — set the running order of competitors within each group.
+
+When creating a new competition, the **Details** tab opens automatically with the cursor ready in
+the Name field. Fill in:
 
 - **Name** — The title of the competition (e.g. "Spring Regional 2026").
 - **Date** — The date the competition takes place.
@@ -51,17 +57,18 @@ and ready for you to fill in:
 
 ![Competition Details form](screenshots/competition-details-form.png){width=100%}
 
-There is no Save button — GymScore saves your details automatically as you type. After the first
-time you view a competition, the panel collapses to show a summary only. You can click on it at
-any time to expand and make changes.
+There is no Save button — GymScore saves your details automatically as you type. To edit the
+details of an existing competition, open it from the main screen and click the **Details** tab.
+
+When opening an existing competition, GymScore starts on the **Competitors** tab.
 
 ---
 
 ### Adding Competitors
 
-After filling in the competition details, you can add competitors in the section below. GymScore
-keeps a local database of known competitors so that you can quickly find and add people who have
-competed before.
+After filling in the competition details, switch to the **Competitors** tab to add competitors.
+GymScore keeps a local database of known competitors so that you can quickly find and add people
+who have competed before.
 
 #### Finding an existing competitor
 
@@ -142,6 +149,31 @@ are already in that group, which helps you keep groups balanced.
 Rows in the table are colour-coded by group so you can see at a glance how competitors are distributed.
 
 > **Note:** Group assignments are saved automatically as you make them.
+
+---
+
+### Group Order
+
+Once competitors have been assigned to groups, you can optionally set the order in which they
+compete within each group. If no order is set, the programme and recording sheets list competitors
+alphabetically.
+
+To set the order, click the **Group Order** tab on the Prepare Competition page. The tab shows a
+card for each Step that has competitors, and within each card a table listing the groups for that
+Step. Each row shows whether that group has been ordered yet (**Ordered** in green, or
+**Not ordered** in grey).
+
+Click **Order** on any row to open the ordering panel for that Step and group. The panel lists
+every competitor in the group. Drag and drop the rows (using the grip handle on the left) to set
+the order you want, then click **Save**.
+
+If there are more groups still to be ordered, a **Save & Next** button also appears — clicking it
+saves the current order and immediately opens the next unordered group, so you can work through
+them in sequence without closing and reopening the panel each time.
+
+> **Note:** Changes to group assignments made after ordering will not automatically adjust the
+> saved order. If competitors are moved between groups, revisit the Group Order tab to update the
+> order as needed.
 
 ---
 
