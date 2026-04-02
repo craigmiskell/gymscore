@@ -67,6 +67,8 @@ const buildAppMenu = (): Menu => {
     { role: "resetZoom" },
     { type: "separator" },
     { role: "togglefullscreen" },
+    { type: "separator" },
+    { label: "Logs", click: () => logger.openLogWindow() },
   ];
   if (isDev) {
     viewSubmenu.push({ type: "separator" }, { role: "reload" }, { role: "toggleDevTools" });

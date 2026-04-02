@@ -13,14 +13,20 @@
 // You should have received a copy of the GNU General Public License along with this program. If not,
 // see <https://www.gnu.org/licenses/>.
 
+import hamburgerMenuHtml from "./partials/hamburger_menu.html";
+import licensesModalsHtml from "./partials/licenses_modals.html";
 import { GymscoreVersion } from "./data/version";
 import { logger } from "./logger";
 import { hasDivisions } from "../common/data/division";
 import { ICompetition } from "../common/data";
 import "./common.css";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { Dropdown } from "bootstrap";
 import "bootstrap/dist/js/bootstrap.min.js";
 import "bootstrap-icons/font/bootstrap-icons.css";
+import * as licensesModal from "./licenses_modal";
+
+declare const api: typeof import("../common/api").default;
 
 function displayVersion() {
   document.title = `GymScore (v${GymscoreVersion})`;
@@ -32,9 +38,39 @@ export class BaseElements {
   _: HTMLElement = null;
 }
 
+export function setupHamburgerMenu() {
+  document.getElementById("hamburgerMenuContainer").innerHTML = hamburgerMenuHtml;
+  const modalsContainer = document.createElement("div");
+  modalsContainer.innerHTML = licensesModalsHtml;
+  document.body.appendChild(modalsContainer);
+  const toggle = document.getElementById("hamburgerMenuToggle");
+  const menu = toggle.nextElementSibling as HTMLElement;
+  const dropdown = Dropdown.getOrCreateInstance(toggle, { display: "static" });
+  toggle.addEventListener("click", () => {
+    dropdown.toggle();
+  });
+  menu.addEventListener("click", () => {
+    dropdown.hide();
+  });
+
+  document.getElementById("openLogsMenuItem").addEventListener("click", () => {
+    api.sendAsync("open-log-window", null);
+  });
+  document.getElementById("openUserGuideMenuItem").addEventListener("click", (e) => {
+    e.preventDefault();
+    api.sendAsync("open-user-guide", null);
+  });
+  licensesModal.setup();
+  document.getElementById("openLicensesMenuItem").addEventListener("click", (e) => {
+    e.preventDefault();
+    licensesModal.show();
+  });
+}
+
 export function setup() {
   window.addEventListener("DOMContentLoaded", () => {
     displayVersion();
+    setupHamburgerMenu();
   });
 }
 

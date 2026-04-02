@@ -30,6 +30,10 @@ const commonConfig = {
         type: "asset",
       },
       {
+        test: /partials\/.*\.html$/,
+        type: "asset/source",
+      },
+      {
         test: /\.tsx?$/,
         use: {
           loader: "ts-loader",

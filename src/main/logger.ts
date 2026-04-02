@@ -76,7 +76,7 @@ export class Logger {
     }
   }
 
-  private openLogWindow() {
+  openLogWindow() {
     if (this.logWindow && !this.logWindow.isDestroyed()) {
       this.logWindow.focus();
       return;
