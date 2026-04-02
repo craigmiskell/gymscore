@@ -16,9 +16,9 @@
 import { jsPDF } from "jspdf";
 import { CompetitionData, CompetitionCompetitorDetails } from "../../common/data/competition";
 import { Division, hasDivisions } from "../../common/data/division";
-import { Apparatus, APPARATUSES } from "../../common/apparatus";
+import { type Apparatus, APPARATUSES } from "../../common/apparatus";
 
-export { Apparatus } from "../../common/apparatus";
+export type { Apparatus } from "../../common/apparatus";
 
 export const PAGE_WIDTH = 297;   // landscape A4
 export const PAGE_HEIGHT = 210;  // landscape A4
