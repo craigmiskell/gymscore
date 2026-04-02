@@ -168,7 +168,7 @@ function updateCellStatus(link: HTMLAnchorElement) {
 
 function populateCompetitionResultsTable() {
   const apparatuses: string[] = [];
-  for (const apparatus of ["bar", "beam", "floor", "vault"]) {
+  for (const apparatus of ["vault", "bar", "beam", "floor"]) {
     if (competition[apparatus as keyof typeof competition]) {
       apparatuses.push(apparatus);
     }
