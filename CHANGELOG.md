@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.9.9](https://github.com/craigmiskell/gymscore/compare/v0.9.8...v0.9.9) (2026-04-02)
+
+
+### Features
+
+* Add group ordering of competitors ([54275d6](https://github.com/craigmiskell/gymscore/commit/54275d68418822f1f9534dabbcab39a3b4bb715c))
+* Alert on ungrouped competitors when ordering ([1d38549](https://github.com/craigmiskell/gymscore/commit/1d38549c86806a54b4abc7fb6927e7554f487e6b))
+* Put hamburger menu on every page ([689eb21](https://github.com/craigmiskell/gymscore/commit/689eb212cb32eba55f94afb6419554bebdd1e845))
+* Rework competition preparation UI ([bde051e](https://github.com/craigmiskell/gymscore/commit/bde051e3a8a015dc8d1a1cca1332d12a570f7ec5))
+
+
+### Bug Fixes
+
+* reorder apparatus in score recording ([cd374b8](https://github.com/craigmiskell/gymscore/commit/cd374b8e44e2bdd6330936b85550d1c1b223e1cf))
+* stop error when displaying logs window ([a871a23](https://github.com/craigmiskell/gymscore/commit/a871a23a03b463df53b9ec7a14d46fb6934be68e))
+
 ## [0.9.8](https://github.com/craigmiskell/gymscore/compare/v0.9.7...v0.9.8) (2026-04-01)
 
 
