@@ -14,11 +14,9 @@
 // see <https://www.gnu.org/licenses/>.
 
 import { LogEntry, LogLevel, LOG_LEVEL_NAMES } from "../common/logger-types";
-import * as pageCommon from "./page_common";
+import "./page_common";
 
 declare const api: typeof import("../common/api").default;
-
-pageCommon.setup();
 
 const BADGE_CLASSES: Record<number, string> = {
   [LogLevel.TRACE]: "bg-secondary",
